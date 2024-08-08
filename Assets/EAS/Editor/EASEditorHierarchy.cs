@@ -18,6 +18,7 @@ namespace EAS
         protected int m_SelectedAnimationIndex = 0;
 
         protected List<Rect> m_HierarchyRects = new List<Rect>();
+        protected List<EASSerializable> m_NotCollapsedHierarchyTracks = new List<EASSerializable>();
 
         public void OnUpdate()
         {
@@ -65,6 +66,7 @@ namespace EAS
             EditorGUI.DrawRect(hierarchyRect, EASSkin.BackgroundColor);
 
             m_HierarchyRects.Clear();
+            m_NotCollapsedHierarchyTracks.Clear();
             Rect hierarchyTrackRect = Rect.MinMaxRect(hierarchyRect.x + EASSkin.HierarchyLeftMargin, hierarchyRect.y + EASSkin.HierarchyUpperMargin, hierarchyRect.xMax, hierarchyRect.y + EASSkin.HierarchyTrackHeight);
 
             List<EASSerializable> tracksAndGroups = EASEditor.Instance.Controller.Data.GetTracksAndGroups(m_SelectedAnimationName);
@@ -99,14 +101,14 @@ namespace EAS
                     trackGroup.Collapsed = !trackGroup.Collapsed;
                 }
 
-                Rect dropdownIconRect = ExtendedGUI.ExtendedGUI.GetInnerRect(dropDownRect, 1.0f);
+                Rect dropdownIconRect = ExtendedGUI.ExtendedGUI.GetInnerRect(dropDownRect, EASSkin.HierarchyTrackGroupDropdownSize, EASSkin.HierarchyTrackGroupDropdownSize);
                 if (trackGroup.Collapsed)
                 {
                     GUIUtility.RotateAroundPivot(-90, dropdownIconRect.center);
                     GUI.DrawTexture(dropdownIconRect, EASSkin.Icon("icon dropdown"));
                     GUIUtility.RotateAroundPivot(90, dropdownIconRect.center);
 
-                    EditorGUI.DrawRect(trackGroupRect, EASSkin.HierarchyTrackGroupColor);
+                    EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.SelectedBlueColor : EASSkin.HierarchyTrackGroupColor);
                 }
                 else
                 {
@@ -114,7 +116,7 @@ namespace EAS
 
                     trackGroupRect = new Rect(hierarchyTrackRect.x, hierarchyTrackRect.y, hierarchyTrackRect.width, hierarchyTrackRect.height + (EASSkin.HierarchyTrackSpacing + hierarchyTrackRect.height) * trackGroup.Tracks.Count +
                         EASSkin.HierarchyTrackSpacingSingle);
-                    EditorGUI.DrawRect(trackGroupRect, EASSkin.HierarchyTrackGroupColor);
+                    EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.SelectedBlueColor : EASSkin.HierarchyTrackGroupColor);
 
                     Rect tracksRects = new Rect(hierarchyTrackRect.x + EASSkin.HierarchyLeftMargin, trackGroupRect.y + EASSkin.HierarchyTrackSpacing + hierarchyTrackRect.height, hierarchyTrackRect.width - EASSkin.HierarchyLeftMargin,
                         hierarchyTrackRect.height);
@@ -126,7 +128,7 @@ namespace EAS
             }
             else
             {
-                EditorGUI.DrawRect(trackGroupRect, EASSkin.HierarchyTrackGroupColor);
+                EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.SelectedBlueColor : EASSkin.HierarchyTrackGroupColor);
             }
 
             if (OnGUITrackSpecialControls(hierarchyTrackRect, trackGroup, optionsButtonIcon: "Toolbar Plus", false, false))
@@ -142,12 +144,13 @@ namespace EAS
             }
 
             m_HierarchyRects.Add(trackGroupRect);
+            m_NotCollapsedHierarchyTracks.Add(trackGroup);
             hierarchyTrackRect.y = trackGroupRect.yMax + EASSkin.HierarchyTrackSpacing;
         }
 
         protected void OnGUITrack(ref Rect hierarchyTrackRect, EASTrack track, bool externalLock, bool externalMute)
         {
-            EditorGUI.DrawRect(hierarchyTrackRect, EASSkin.HierarchyTrackColor);
+            EditorGUI.DrawRect(hierarchyTrackRect, EASEditor.Instance.IsSelected(track) ? EASSkin.SelectedBlueColor : EASSkin.HierarchyTrackColor);
 
             Rect trackIconRect = ExtendedGUI.ExtendedGUI.GetInnerRect(new Rect(hierarchyTrackRect.x, hierarchyTrackRect.y, hierarchyTrackRect.height, hierarchyTrackRect.height),
                 hierarchyTrackRect.height * EASSkin.HierarchyTrackIconMultiplier, hierarchyTrackRect.height * EASSkin.HierarchyTrackIconMultiplier);
@@ -165,6 +168,7 @@ namespace EAS
             }
 
             m_HierarchyRects.Add(hierarchyTrackRect);
+            m_NotCollapsedHierarchyTracks.Add(track);
             hierarchyTrackRect.y = hierarchyTrackRect.yMax + EASSkin.HierarchyTrackSpacing;
         }
 
@@ -182,6 +186,7 @@ namespace EAS
             if (ExtendedGUI.ExtendedGUI.IconButton(controlButtonRect, GUIContent.none, GUIStyle.none, EASSkin.Icon(baseTrack.Locked || externalLock ? "IN LockButton on" : "IN LockButton"), 1.0f, iconIsOnTop: true, isSelected: false))
             {
                 baseTrack.Locked = !baseTrack.Locked;
+                GUI.FocusControl(null);
             }
 
             GUI.enabled = !externalMute;
@@ -189,17 +194,22 @@ namespace EAS
             if (ExtendedGUI.ExtendedGUI.IconButton(controlButtonRect, GUIContent.none, GUIStyle.none, EASSkin.Icon(baseTrack.Muted || externalMute ? "animationvisibilitytoggleoff" : "animationvisibilitytoggleon"), 2.0f, iconIsOnTop: true, isSelected: false))
             {
                 baseTrack.Muted = !baseTrack.Muted;
+                GUI.FocusControl(null);
             }
 
             GUI.enabled = true;
 
-            Rect trackGroupLabelRect = Rect.MinMaxRect(hierarchyTrackRect.x + EASSkin.HierarchyTrackLabelLeftMargin, hierarchyTrackRect.y, controlsRect.x, hierarchyTrackRect.yMax); 
+            Rect trackGroupLabelRect = Rect.MinMaxRect(hierarchyTrackRect.x + EASSkin.HierarchyTrackLabelLeftMargin, hierarchyTrackRect.y, controlsRect.x, hierarchyTrackRect.yMax);
             string baseTrackName = baseTrack.Name;
+
+            trackGroupLabelRect.width = Mathf.Min(EditorStyles.label.CalcSize(new GUIContent(baseTrackName)).x, trackGroupLabelRect.width);
+
             EditorGUI.BeginChangeCheck();
             baseTrackName = EditorGUI.DelayedTextField(trackGroupLabelRect, baseTrack.Name, EditorStyles.label);
             if (EditorGUI.EndChangeCheck())
             {
-                baseTrack.Name = baseTrackName;
+                baseTrack.Name = string.IsNullOrEmpty(baseTrackName) || string.IsNullOrWhiteSpace(baseTrackName) ? baseTrack.DefaultName : baseTrackName;
+
                 GUI.FocusControl(null);
             }
 
@@ -210,14 +220,32 @@ namespace EAS
         {
             if (Event.current.type == EventType.MouseDown)
             {
-                if (Event.current.button == 1)
+                if (hierarchyRect.Contains(Event.current.mousePosition))
                 {
-                    if (hierarchyRect.Contains(Event.current.mousePosition))
+                    if (Event.current.button == 0)
+                    {
+                        OnHierarchyLeftClick();
+                    }
+                    else if (Event.current.button == 1)
                     {
                         OnHierarchyRightClick();
                     }
                 }
             }
+        }
+
+        protected void OnHierarchyLeftClick()
+        {
+            for (int i = 0; i < m_HierarchyRects.Count; ++i)
+            {
+                if (m_HierarchyRects[i].Contains(Event.current.mousePosition))
+                {
+                    EASEditor.Instance.SelectObject(m_NotCollapsedHierarchyTracks[i], Event.current.modifiers != EventModifiers.Shift);
+                    return;
+                }
+            }
+
+            EASEditor.Instance.SelectObject(null, true);
         }
 
         protected void OnHierarchyRightClick()

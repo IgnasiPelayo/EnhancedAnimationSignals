@@ -37,6 +37,9 @@ namespace EAS
         protected bool m_ShowParticleSystems;
         public bool ShowParticleSystems { get => m_ShowParticleSystems; set { if (m_ShowParticleSystems != value) { m_ShowParticleSystems = value; } } }
 
+        [SerializeReference]
+        protected List<EASSerializable> m_SelectedObjects = new List<EASSerializable>();
+
         [SerializeField]
         protected EASEditorControls m_Controls = new EASEditorControls();
 
@@ -168,10 +171,10 @@ namespace EAS
             windowRect.x = windowRect.y = 0;
 
             Rect toolbarRect = new Rect(0, 0, windowRect.width, EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing);
-            m_Controls.OnGUI(toolbarRect);
-
             Rect hierarchyRect = new Rect(0, toolbarRect.yMax, windowRect.width / 4.0f, windowRect.height - toolbarRect.height);
+
             m_Hierarchy.OnGUI(hierarchyRect);
+            m_Controls.OnGUI(toolbarRect);
         }
 
         protected void OnSelectionChange()
@@ -223,6 +226,41 @@ namespace EAS
         public bool RemoveTrackOrGroup(EASSerializable trackOrGroup)
         {
             return Controller.Data.RemoveTrackOrGroup(m_Hierarchy.SelectedAnimationName, trackOrGroup);
+        }
+
+        public bool IsSelected(EASSerializable selectedObject)
+        {
+            return m_SelectedObjects.Contains(selectedObject);
+        }
+
+        public void SelectObject(EASSerializable selectedObject, bool singleSelection)
+        {
+            if (selectedObject == null)
+            {
+                m_SelectedObjects.Clear();
+            }
+            else
+            {
+                if (singleSelection)
+                {
+                    m_SelectedObjects.Clear();
+                    m_SelectedObjects.Add(selectedObject);
+                }
+                else
+                {
+                    if (IsSelected(selectedObject))
+                    {
+                        m_SelectedObjects.Remove(selectedObject);
+                    }
+                    else
+                    {
+                        m_SelectedObjects.Add(selectedObject);
+                    }
+                }
+            }
+
+            GUI.FocusControl(null);
+            Repaint();
         }
     }
 }

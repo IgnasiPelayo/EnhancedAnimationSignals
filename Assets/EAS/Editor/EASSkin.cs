@@ -29,6 +29,7 @@ namespace EAS
         public static float HierarchyTrackHeight = 1.8f * ControlToolbarHeight;
         public static float HierarchyTrackSpacing = 2.0f * EditorGUIUtility.standardVerticalSpacing;
         public static float HierarchyTrackSpacingSingle = HierarchyTrackSpacing / 2.0f;
+        public static float HierarchyTrackGroupDropdownSize = 12.0f;
         public static float HierarchyTrackIconMultiplier = 0.6f;
         public static float HierarchyTrackLabelLeftMargin = 25.0f;
         public static float HierarchyTrackOptionsIconMargin = 5.0f;

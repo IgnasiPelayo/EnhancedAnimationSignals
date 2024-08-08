@@ -64,6 +64,8 @@ namespace EAS
     [System.Serializable]
     public class EASTrack : EASBaseTrack
     {
+        public override string DefaultName { get => "Track"; }
+
         [SerializeReference, ArrayElementTitle("m_Name")]
         protected List<EASSerializable> m_Events;
 
@@ -72,7 +74,7 @@ namespace EAS
             if (ID == INVALID_ID)
             {
                 ID = GenerateID();
-                m_Name = "Track";
+                m_Name = DefaultName;
 
                 m_Events = new List<EASSerializable>();
             }
@@ -82,6 +84,8 @@ namespace EAS
     [System.Serializable]
     public class EASTrackGroup : EASBaseTrack
     {
+        public override string DefaultName { get => "Track Group"; }
+
         [SerializeField, HideInInspector]
         protected bool m_Collapsed;
         public bool Collapsed { get => m_Collapsed; set => m_Collapsed = value; }
@@ -95,7 +99,7 @@ namespace EAS
             if (ID == INVALID_ID)
             {
                 ID = GenerateID();
-                m_Name = "Track Group";
+                m_Name = DefaultName;
 
                 m_Tracks = new List<EASTrack>();
             }

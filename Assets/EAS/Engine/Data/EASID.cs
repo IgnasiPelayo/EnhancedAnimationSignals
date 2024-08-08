@@ -20,6 +20,8 @@ namespace EAS
         public string m_Name;
         public string Name { get => m_Name; set => m_Name = value; }
 
+        public virtual string DefaultName { get; }
+
         public static int GenerateID() => System.Guid.NewGuid().GetHashCode();
     }
 }
