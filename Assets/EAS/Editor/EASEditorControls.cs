@@ -9,6 +9,7 @@ namespace EAS
     {
         public void OnGUI(Rect rect)
         {
+            EditorGUI.DrawRect(rect, EASSkin.ToolbarBackgroundColor);
             Rect buttonRect = new Rect(0, 0, rect.height * 1.4f, rect.height);
 
             if (ControlRect(ref buttonRect, EASSkin.Icon("d_Animation.FirstKey")))
@@ -44,7 +45,7 @@ namespace EAS
             ExtendedGUI.ExtendedGUI.CenterLabel(loopButtonRect, new GUIContent("Loop"), EASEditor.Instance.Loop ? EditorStyles.whiteLabel : EditorStyles.label);
             if (EASEditor.Instance.Loop)
             {
-                EditorGUI.DrawRect(loopButtonRect, EASSkin.SelectedColor);
+                EditorGUI.DrawRect(loopButtonRect, EASSkin.SelectedWhiteColor);
             }
 
             Rect framesRect = new Rect(loopButtonRect.xMax + loopButtonRect.width / 2.0f, loopButtonRect.y, loopButtonRect.width, loopButtonRect.height);
@@ -89,6 +90,8 @@ namespace EAS
 
             Rect separatorRect = new Rect(0, rect.yMax - 1.0f, rect.width, 1.0f);
             EditorGUI.DrawRect(separatorRect, EASSkin.SeparatorColor);
+
+            HandleInput();
         }
 
         protected bool ControlRect(ref Rect rect, Texture2D icon = null, float iconPadding = 2, bool isSelected = false, int direction = 1)
@@ -96,12 +99,24 @@ namespace EAS
             bool buttonPressed = ExtendedGUI.ExtendedGUI.IconButton(rect, GUIContent.none, EditorStyles.toolbarButton, icon, iconPadding, iconIsOnTop: true, isSelected: false);
             if (isSelected)
             {
-                EditorGUI.DrawRect(rect, EASSkin.SelectedColor);
+                EditorGUI.DrawRect(rect, EASSkin.SelectedWhiteColor);
             }
 
             rect.x += rect.width * direction;
 
             return buttonPressed;
+        }
+
+        protected void HandleInput()
+        {
+            if (Event.current.type == EventType.KeyDown)
+            {
+                if (Event.current.keyCode == KeyCode.Space)
+                {
+                    EASEditor.Instance.Playing = !EASEditor.Instance.Playing;
+                    EASEditor.Instance.Repaint();
+                }
+            }
         }
     }
 }

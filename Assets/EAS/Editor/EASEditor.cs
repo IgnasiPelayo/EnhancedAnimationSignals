@@ -40,6 +40,9 @@ namespace EAS
         [SerializeField]
         protected EASEditorControls m_Controls = new EASEditorControls();
 
+        [SerializeField]
+        protected EASEditorHierarchy m_Hierarchy = new EASEditorHierarchy();
+
         internal T GetComponent<T>() where T : Component
         {
             Object obj = EditorUtility.InstanceIDToObject(m_InstanceId);
@@ -98,6 +101,7 @@ namespace EAS
         {
             if (Controller != null)
             {
+                m_Hierarchy.OnUpdate();
 
                 if (m_Playing)
                 {
@@ -165,6 +169,9 @@ namespace EAS
 
             Rect toolbarRect = new Rect(0, 0, windowRect.width, EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing);
             m_Controls.OnGUI(toolbarRect);
+
+            Rect hierarchyRect = new Rect(0, toolbarRect.yMax, windowRect.width / 4.0f, windowRect.height - toolbarRect.height);
+            m_Hierarchy.OnGUI(hierarchyRect);
         }
 
         protected void OnSelectionChange()
@@ -201,6 +208,21 @@ namespace EAS
         protected void OnPlayModeChanged()
         {
 
+        }
+
+        public EASTrackGroup AddTrackGroup()
+        {
+            return Controller.Data.AddTrackGroup(m_Hierarchy.SelectedAnimationName);
+        }
+
+        public EASTrack AddTrack()
+        {
+            return Controller.Data.AddTrack(m_Hierarchy.SelectedAnimationName);
+        }
+
+        public bool RemoveTrackOrGroup(EASSerializable trackOrGroup)
+        {
+            return Controller.Data.RemoveTrackOrGroup(m_Hierarchy.SelectedAnimationName, trackOrGroup);
         }
     }
 }

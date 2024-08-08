@@ -461,6 +461,18 @@ namespace ExtendedGUI
             }
         }
 
+        public static void GenericMenuAddItem(GenericMenu menu, GUIContent content, bool enabled, GenericMenu.MenuFunction func)
+        {
+            if (enabled)
+            {
+                menu.AddItem(content, false, func);
+            }
+            else
+            {
+                menu.AddDisabledItem(content, false);
+            }
+        }
+
         public class ZoomTextureRect
         {
             protected Rect m_ZoomRect = new Rect(0, 0, 1, 1);
