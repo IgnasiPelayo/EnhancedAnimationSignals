@@ -66,7 +66,7 @@ namespace EAS
                 Selection.activeGameObject = EASEditor.Instance.Controller.gameObject;
             }
 
-            buttonRect.x = controllerRect.x - buttonRect.width * 1.5f;
+            buttonRect.x = controllerRect.x - buttonRect.width;
             if (ControlRect(ref buttonRect, EASSkin.Icon("d_UnityEditor.InspectorWindow"), 2, false, -1))
             {
 

@@ -21,6 +21,46 @@ namespace EAS
 
             return new string[0];
         }
+
+        public override object GetAnimation(string animationName)
+        {
+            Animator animator = GetComponent<Animator>();
+
+            if (animator != null && animator.runtimeAnimatorController != null)
+            {
+                for (int i = 0; i < animator.runtimeAnimatorController.animationClips.Length; ++i)
+                {
+                    if (animator.runtimeAnimatorController.animationClips[i].name == animationName)
+                    {
+                        return animator.runtimeAnimatorController.animationClips[i];
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public override float GetLength(object animation)
+        {
+            AnimationClip animationClip = animation as AnimationClip;
+            if (animationClip != null)
+            {
+                return animationClip.length;
+            }
+
+            return 0;
+        }
+
+        public override float GetFrameRate(object animation)
+        {
+            AnimationClip animationClip = animation as AnimationClip;
+            if (animationClip != null)
+            {
+                return animationClip.frameRate;
+            }
+
+            return 0;
+        }
     }
 }
 

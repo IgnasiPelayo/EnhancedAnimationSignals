@@ -12,5 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b821b977351e283478d7f75fd0718cb3, type: 3}
   m_Name: EAS Data
   m_EditorClassIdentifier: 
-  m_TimeStamp: 0
-  m_Data: []
+  m_TimeStamp: 638587250734725087
+  m_AnimationsData:
+  - m_ID: -2091767308
+    m_Name: Idle
+    m_TracksAndGroups: []
+  - m_ID: -495418529
+    m_Name: New Animation
+    m_TracksAndGroups: []
+  - m_ID: -1589107352
+    m_Name: New Animation2
+    m_TracksAndGroups: []
+  references:
+    version: 2
+    RefIds: []

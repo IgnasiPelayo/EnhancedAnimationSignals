@@ -17,17 +17,26 @@ namespace EAS
         [SerializeField]
         protected int m_SelectedAnimationIndex = 0;
 
-        protected List<Rect> m_HierarchyRects = new List<Rect>();
-        protected List<EASSerializable> m_NotCollapsedHierarchyTracks = new List<EASSerializable>();
+
+        protected List<EASBaseGUIItem> m_HierarchyGUIItems = new List<EASBaseGUIItem>();
 
         public void OnUpdate()
         {
             if (m_SelectedAnimationName == null)
             {
-                string[] animationNames = EASEditor.Instance.Controller.GetAnimationNames();
+                string[] animationNames = EASEditor.Instance.GetAnimationNames();
 
-                m_SelectedAnimationName = animationNames.Length > 0 ? animationNames[0] : "No animations";
-                m_SelectedAnimationIndex = 0;
+                if (animationNames.Length > 0)
+                {
+                    m_SelectedAnimationName = animationNames[0];
+                    m_SelectedAnimationIndex = 0;
+
+                    EASEditor.Instance.OnAnimationChanged();
+                }
+                else
+                {
+                    m_SelectedAnimationName = "No animations";
+                }
             }
         }
 
@@ -39,8 +48,13 @@ namespace EAS
                 string[] animationNames = EASEditor.Instance.Controller.GetAnimationNames();
                 Action<int> onSelect = i =>
                 {
-                    m_SelectedAnimationName = animationNames[i];
-                    m_SelectedAnimationIndex = i;
+                    if (m_SelectedAnimationName != animationNames[i])
+                    {
+                        m_SelectedAnimationName = animationNames[i];
+                        m_SelectedAnimationIndex = i;
+
+                        EASEditor.Instance.OnAnimationChanged();
+                    }
                 };
 
                 SearchablePopup.Show(animationsRect, animationNames, m_SelectedAnimationIndex, onSelect);
@@ -65,11 +79,10 @@ namespace EAS
         {
             EditorGUI.DrawRect(hierarchyRect, EASSkin.BackgroundColor);
 
-            m_HierarchyRects.Clear();
-            m_NotCollapsedHierarchyTracks.Clear();
+            m_HierarchyGUIItems.Clear();
             Rect hierarchyTrackRect = Rect.MinMaxRect(hierarchyRect.x + EASSkin.HierarchyLeftMargin, hierarchyRect.y + EASSkin.HierarchyUpperMargin, hierarchyRect.xMax, hierarchyRect.y + EASSkin.HierarchyTrackHeight);
 
-            List<EASSerializable> tracksAndGroups = EASEditor.Instance.Controller.Data.GetTracksAndGroups(m_SelectedAnimationName);
+            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
             for (int i = 0; i < tracksAndGroups.Count; ++i)
             {
                 OnGUITrackAndGroup(ref hierarchyTrackRect, tracksAndGroups[i]);
@@ -108,7 +121,7 @@ namespace EAS
                     GUI.DrawTexture(dropdownIconRect, EASSkin.Icon("icon dropdown"));
                     GUIUtility.RotateAroundPivot(90, dropdownIconRect.center);
 
-                    EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.SelectedBlueColor : EASSkin.HierarchyTrackGroupColor);
+                    EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.HierarchySelectedColor : EASSkin.HierarchyTrackGroupColor);
                 }
                 else
                 {
@@ -116,7 +129,7 @@ namespace EAS
 
                     trackGroupRect = new Rect(hierarchyTrackRect.x, hierarchyTrackRect.y, hierarchyTrackRect.width, hierarchyTrackRect.height + (EASSkin.HierarchyTrackSpacing + hierarchyTrackRect.height) * trackGroup.Tracks.Count +
                         EASSkin.HierarchyTrackSpacingSingle);
-                    EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.SelectedBlueColor : EASSkin.HierarchyTrackGroupColor);
+                    EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.HierarchySelectedColor : EASSkin.HierarchyTrackGroupColor);
 
                     Rect tracksRects = new Rect(hierarchyTrackRect.x + EASSkin.HierarchyLeftMargin, trackGroupRect.y + EASSkin.HierarchyTrackSpacing + hierarchyTrackRect.height, hierarchyTrackRect.width - EASSkin.HierarchyLeftMargin,
                         hierarchyTrackRect.height);
@@ -128,11 +141,13 @@ namespace EAS
             }
             else
             {
-                EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.SelectedBlueColor : EASSkin.HierarchyTrackGroupColor);
+                EditorGUI.DrawRect(trackGroupRect, EASEditor.Instance.IsSelected(trackGroup) ? EASSkin.HierarchySelectedColor : EASSkin.HierarchyTrackGroupColor);
             }
 
             if (OnGUITrackSpecialControls(hierarchyTrackRect, trackGroup, optionsButtonIcon: "Toolbar Plus", false, false))
             {
+                Event.current.Use();
+
                 GenericMenu trackOptionsMenu = new GenericMenu();
                 ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Add Track"), !trackGroup.Locked, () => { trackGroup.AddTrack(); });
                 ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !trackGroup.Locked, () => { EASEditor.Instance.RemoveTrackOrGroup(trackGroup); });
@@ -143,14 +158,13 @@ namespace EAS
                 trackOptionsMenu.ShowAsContext();
             }
 
-            m_HierarchyRects.Add(trackGroupRect);
-            m_NotCollapsedHierarchyTracks.Add(trackGroup);
+            m_HierarchyGUIItems.Add(new EASBaseGUIItem(trackGroupRect, trackGroup));
             hierarchyTrackRect.y = trackGroupRect.yMax + EASSkin.HierarchyTrackSpacing;
         }
 
         protected void OnGUITrack(ref Rect hierarchyTrackRect, EASTrack track, bool externalLock, bool externalMute)
         {
-            EditorGUI.DrawRect(hierarchyTrackRect, EASEditor.Instance.IsSelected(track) ? EASSkin.SelectedBlueColor : EASSkin.HierarchyTrackColor);
+            EditorGUI.DrawRect(hierarchyTrackRect, EASEditor.Instance.IsSelected(track) ? EASSkin.HierarchySelectedColor : EASSkin.HierarchyTrackColor);
 
             Rect trackIconRect = ExtendedGUI.ExtendedGUI.GetInnerRect(new Rect(hierarchyTrackRect.x, hierarchyTrackRect.y, hierarchyTrackRect.height, hierarchyTrackRect.height),
                 hierarchyTrackRect.height * EASSkin.HierarchyTrackIconMultiplier, hierarchyTrackRect.height * EASSkin.HierarchyTrackIconMultiplier);
@@ -158,17 +172,18 @@ namespace EAS
 
             if (OnGUITrackSpecialControls(hierarchyTrackRect, track, optionsButtonIcon: "_Menu", externalLock, externalMute))
             {
+                Event.current.Use();
+
                 GenericMenu trackOptionsMenu = new GenericMenu();
                 ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !track.Locked && !externalLock, () => { EASEditor.Instance.RemoveTrackOrGroup(track); });
                 trackOptionsMenu.AddSeparator("");
-                trackOptionsMenu.AddItem(new GUIContent($"{(track.Locked ? "Unl" : "L")}ock _L"), false, () => { track.Locked = !track.Locked; });
-                trackOptionsMenu.AddItem(new GUIContent($"{(track.Muted ? "Unm" : "M")}ute _M"), false, () => { track.Muted = !track.Muted; });
+                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Locked ? "Unl" : "L")}ock _L"), !externalLock, () => { track.Locked = !track.Locked; });
+                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Muted ? "Unm" : "M")}ute _M"), !externalMute, () => { track.Muted = !track.Muted; });
 
                 trackOptionsMenu.ShowAsContext();
             }
 
-            m_HierarchyRects.Add(hierarchyTrackRect);
-            m_NotCollapsedHierarchyTracks.Add(track);
+            m_HierarchyGUIItems.Add(new EASBaseGUIItem(hierarchyTrackRect, track));
             hierarchyTrackRect.y = hierarchyTrackRect.yMax + EASSkin.HierarchyTrackSpacing;
         }
 
@@ -186,6 +201,7 @@ namespace EAS
             if (ExtendedGUI.ExtendedGUI.IconButton(controlButtonRect, GUIContent.none, GUIStyle.none, EASSkin.Icon(baseTrack.Locked || externalLock ? "IN LockButton on" : "IN LockButton"), 1.0f, iconIsOnTop: true, isSelected: false))
             {
                 baseTrack.Locked = !baseTrack.Locked;
+                Event.current.Use();
                 GUI.FocusControl(null);
             }
 
@@ -194,6 +210,7 @@ namespace EAS
             if (ExtendedGUI.ExtendedGUI.IconButton(controlButtonRect, GUIContent.none, GUIStyle.none, EASSkin.Icon(baseTrack.Muted || externalMute ? "animationvisibilitytoggleoff" : "animationvisibilitytoggleon"), 2.0f, iconIsOnTop: true, isSelected: false))
             {
                 baseTrack.Muted = !baseTrack.Muted;
+                Event.current.Use();
                 GUI.FocusControl(null);
             }
 
@@ -218,7 +235,7 @@ namespace EAS
 
         protected void HandleInput(Rect hierarchyRect)
         {
-            if (Event.current.type == EventType.MouseDown)
+            if (Event.current.type == EventType.MouseUp)
             {
                 if (hierarchyRect.Contains(Event.current.mousePosition))
                 {
@@ -236,11 +253,11 @@ namespace EAS
 
         protected void OnHierarchyLeftClick()
         {
-            for (int i = 0; i < m_HierarchyRects.Count; ++i)
+            for (int i = 0; i < m_HierarchyGUIItems.Count; ++i)
             {
-                if (m_HierarchyRects[i].Contains(Event.current.mousePosition))
+                if (m_HierarchyGUIItems[i].Rect.Contains(Event.current.mousePosition))
                 {
-                    EASEditor.Instance.SelectObject(m_NotCollapsedHierarchyTracks[i], Event.current.modifiers != EventModifiers.Shift);
+                    EASEditor.Instance.SelectObject(m_HierarchyGUIItems[i].EASSerializable, Event.current.modifiers != EventModifiers.Shift);
                     return;
                 }
             }

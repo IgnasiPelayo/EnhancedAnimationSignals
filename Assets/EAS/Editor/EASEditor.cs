@@ -37,6 +37,8 @@ namespace EAS
         protected bool m_ShowParticleSystems;
         public bool ShowParticleSystems { get => m_ShowParticleSystems; set { if (m_ShowParticleSystems != value) { m_ShowParticleSystems = value; } } }
 
+        public string SelectedAnimationName { get => m_Hierarchy.SelectedAnimationName; }
+
         [SerializeReference]
         protected List<EASSerializable> m_SelectedObjects = new List<EASSerializable>();
 
@@ -45,6 +47,9 @@ namespace EAS
 
         [SerializeField]
         protected EASEditorHierarchy m_Hierarchy = new EASEditorHierarchy();
+
+        [SerializeField]
+        protected EASEditorTimeline m_Timeline = new EASEditorTimeline();
 
         internal T GetComponent<T>() where T : Component
         {
@@ -172,8 +177,10 @@ namespace EAS
 
             Rect toolbarRect = new Rect(0, 0, windowRect.width, EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing);
             Rect hierarchyRect = new Rect(0, toolbarRect.yMax, windowRect.width / 4.0f, windowRect.height - toolbarRect.height);
+            Rect timelineRect = Rect.MinMaxRect(hierarchyRect.xMax, hierarchyRect.y, windowRect.xMax, hierarchyRect.yMax);
 
             m_Hierarchy.OnGUI(hierarchyRect);
+            m_Timeline.OnGUI(timelineRect);
             m_Controls.OnGUI(toolbarRect);
         }
 
@@ -213,19 +220,43 @@ namespace EAS
 
         }
 
+        public void OnAnimationChanged()
+        {
+            m_SelectedObjects.Clear();
+
+            m_Timeline.OnAnimationChanged();
+        }
+
+        public string[] GetAnimationNames()
+        {
+            return Controller.GetAnimationNames();
+        }
+
+        public EASAnimationInformation GetAnimationInformation()
+        {
+            object animation = Controller.GetAnimation(SelectedAnimationName);
+
+            return new EASAnimationInformation(animation, Controller.GetLength(animation), Controller.GetFrameRate(animation));
+        }
+
+        public List<EASSerializable> GetTracksAndGroups()
+        {
+            return Controller.Data.GetTracksAndGroups(SelectedAnimationName);
+        }
+
         public EASTrackGroup AddTrackGroup()
         {
-            return Controller.Data.AddTrackGroup(m_Hierarchy.SelectedAnimationName);
+            return Controller.Data.AddTrackGroup(SelectedAnimationName);
         }
 
         public EASTrack AddTrack()
         {
-            return Controller.Data.AddTrack(m_Hierarchy.SelectedAnimationName);
+            return Controller.Data.AddTrack(SelectedAnimationName);
         }
 
         public bool RemoveTrackOrGroup(EASSerializable trackOrGroup)
         {
-            return Controller.Data.RemoveTrackOrGroup(m_Hierarchy.SelectedAnimationName, trackOrGroup);
+            return Controller.Data.RemoveTrackOrGroup(SelectedAnimationName, trackOrGroup);
         }
 
         public bool IsSelected(EASSerializable selectedObject)
