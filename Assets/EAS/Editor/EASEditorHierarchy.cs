@@ -99,7 +99,7 @@ namespace EAS
             }
             else if (trackOrGroup is EASTrack)
             {
-                OnGUITrack(ref hierarchyTrackRect, trackOrGroup as EASTrack, false, false);
+                OnGUITrack(ref hierarchyTrackRect, trackOrGroup as EASTrack);
             }
         }
 
@@ -135,7 +135,7 @@ namespace EAS
                         hierarchyTrackRect.height);
                     for (int i = 0; i < trackGroup.Tracks.Count; ++i)
                     {
-                        OnGUITrack(ref tracksRects, trackGroup.Tracks[i], trackGroup.Locked, trackGroup.Muted);
+                        OnGUITrack(ref tracksRects, trackGroup.Tracks[i]);
                     }
                 }
             }
@@ -148,21 +148,14 @@ namespace EAS
             {
                 Event.current.Use();
 
-                GenericMenu trackOptionsMenu = new GenericMenu();
-                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Add Track"), !trackGroup.Locked, () => { trackGroup.AddTrack(); });
-                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !trackGroup.Locked, () => { EASEditor.Instance.RemoveTrackOrGroup(trackGroup); });
-                trackOptionsMenu.AddSeparator("");
-                trackOptionsMenu.AddItem(new GUIContent($"{(trackGroup.Locked ? "Unl" : "L")}ock _L"), false, () => { trackGroup.Locked = !trackGroup.Locked; });
-                trackOptionsMenu.AddItem(new GUIContent($"{(trackGroup.Muted ? "Unm" : "M")}ute _M"), false, () => { trackGroup.Muted = !trackGroup.Muted; });
-
-                trackOptionsMenu.ShowAsContext();
+                EASEditor.Instance.ShowTrackGroupOptionsMenu(trackGroup);
             }
 
             m_HierarchyGUIItems.Add(new EASBaseGUIItem(trackGroupRect, trackGroup));
             hierarchyTrackRect.y = trackGroupRect.yMax + EASSkin.HierarchyTrackSpacing;
         }
 
-        protected void OnGUITrack(ref Rect hierarchyTrackRect, EASTrack track, bool externalLock, bool externalMute)
+        protected void OnGUITrack(ref Rect hierarchyTrackRect, EASTrack track)
         {
             EditorGUI.DrawRect(hierarchyTrackRect, EASEditor.Instance.IsSelected(track) ? EASSkin.HierarchySelectedColor : EASSkin.HierarchyTrackColor);
 
@@ -170,17 +163,11 @@ namespace EAS
                 hierarchyTrackRect.height * EASSkin.HierarchyTrackIconMultiplier, hierarchyTrackRect.height * EASSkin.HierarchyTrackIconMultiplier);
             GUI.DrawTexture(trackIconRect, EASSkin.Icon("d_UnityEditor.Timeline.TimelineWindow"));
 
-            if (OnGUITrackSpecialControls(hierarchyTrackRect, track, optionsButtonIcon: "_Menu", externalLock, externalMute))
+            if (OnGUITrackSpecialControls(hierarchyTrackRect, track, optionsButtonIcon: "_Menu", track.ParentTrackGroupLocked, track.ParentTrackGroupMuted))
             {
                 Event.current.Use();
 
-                GenericMenu trackOptionsMenu = new GenericMenu();
-                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !track.Locked && !externalLock, () => { EASEditor.Instance.RemoveTrackOrGroup(track); });
-                trackOptionsMenu.AddSeparator("");
-                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Locked ? "Unl" : "L")}ock _L"), !externalLock, () => { track.Locked = !track.Locked; });
-                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Muted ? "Unm" : "M")}ute _M"), !externalMute, () => { track.Muted = !track.Muted; });
-
-                trackOptionsMenu.ShowAsContext();
+                EASEditor.Instance.ShowTrackOptionsMenu(track);
             }
 
             m_HierarchyGUIItems.Add(new EASBaseGUIItem(hierarchyTrackRect, track));
@@ -253,25 +240,48 @@ namespace EAS
 
         protected void OnHierarchyLeftClick()
         {
-            for (int i = 0; i < m_HierarchyGUIItems.Count; ++i)
+            EASSerializable hierarchyTrack = HierarchyTrackAtMousePosition();
+            if (hierarchyTrack != null)
             {
-                if (m_HierarchyGUIItems[i].Rect.Contains(Event.current.mousePosition))
-                {
-                    EASEditor.Instance.SelectObject(m_HierarchyGUIItems[i].EASSerializable, Event.current.modifiers != EventModifiers.Shift);
-                    return;
-                }
+                EASEditor.Instance.SelectObject(hierarchyTrack, Event.current.modifiers != EventModifiers.Shift);
             }
-
-            EASEditor.Instance.SelectObject(null, true);
+            else
+            {
+                EASEditor.Instance.SelectObject(null, true);
+            }
         }
 
         protected void OnHierarchyRightClick()
         {
-            GenericMenu menu = new GenericMenu();
-            menu.AddItem(new GUIContent("Add Track Group"), false, () => { EASEditor.Instance.AddTrackGroup(); });
-            menu.AddItem(new GUIContent("Add Track"), false, () => { EASEditor.Instance.AddTrack(); });
+            EASSerializable rightClickedHierarchyTrack = HierarchyTrackAtMousePosition();
+            if (rightClickedHierarchyTrack != null)
+            {
+                if (rightClickedHierarchyTrack is EASTrackGroup)
+                {
+                    EASEditor.Instance.ShowTrackGroupOptionsMenu(rightClickedHierarchyTrack as EASTrackGroup);
+                }
+                else if (rightClickedHierarchyTrack is EASTrack)
+                {
+                    EASEditor.Instance.ShowTrackOptionsMenu(rightClickedHierarchyTrack as EASTrack);
+                }
+            }
+            else
+            {
+                EASEditor.Instance.ShowOptionsMenu();
+            }
+        }
 
-            menu.ShowAsContext();
+        protected EASSerializable HierarchyTrackAtMousePosition()
+        {
+            for (int i = 0; i < m_HierarchyGUIItems.Count; ++i)
+            {
+                if (m_HierarchyGUIItems[i].Rect.Contains(Event.current.mousePosition))
+                {
+                    return m_HierarchyGUIItems[i].EASSerializable;
+                }
+            }
+
+            return null;
         }
 
         protected void OnGUIBottomControls(Rect bottomControlsRect)

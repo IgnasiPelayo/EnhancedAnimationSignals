@@ -66,6 +66,13 @@ namespace EAS
     {
         public override string DefaultName { get => "Track"; }
 
+        public bool ParentTrackGroupMuted { get => m_ParentTrackGroup != null ? m_ParentTrackGroup.Muted : false; }
+        public bool ParentTrackGroupLocked { get => m_ParentTrackGroup != null ? m_ParentTrackGroup.Locked : false; }
+
+        [SerializeReference, HideInInspector]
+        protected EASTrackGroup m_ParentTrackGroup;
+        public EASTrackGroup ParentTrackGroup { get => m_ParentTrackGroup; set => m_ParentTrackGroup = value; }
+
         [SerializeReference, ArrayElementTitle("m_Name")]
         protected List<EASSerializable> m_Events;
 
@@ -78,6 +85,16 @@ namespace EAS
 
                 m_Events = new List<EASSerializable>();
             }
+        }
+
+        public EASTrack(EASTrackGroup parentTrackGroup) : this()
+        {
+            m_ParentTrackGroup = parentTrackGroup;
+        }
+
+        public void AddEvent()
+        {
+            m_Events.Add(new EASTrack());
         }
     }
 
@@ -107,8 +124,21 @@ namespace EAS
 
         public EASTrack AddTrack()
         {
-            EASTrack track = new EASTrack();
+            EASTrack track = new EASTrack(parentTrackGroup: this);
             m_Tracks.Add(track);
+
+            return track;
+        }
+
+        public EASTrack AddTrack(EASTrack track)
+        {
+            if (track.ParentTrackGroup != null)
+            {
+                track.ParentTrackGroup.RemoveTrack(track);
+            }
+
+            m_Tracks.Add(track);
+            track.ParentTrackGroup = this;
 
             return track;
         }

@@ -293,5 +293,54 @@ namespace EAS
             GUI.FocusControl(null);
             Repaint();
         }
+
+        public void ShowTrackGroupOptionsMenu(EASTrackGroup trackGroup)
+        {
+            GenericMenu trackOptionsMenu = new GenericMenu();
+
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Copy"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Paste"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Duplicate"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !trackGroup.Locked, () => { RemoveTrackOrGroup(trackGroup); });
+            trackOptionsMenu.AddSeparator("");
+            trackOptionsMenu.AddItem(new GUIContent($"{(trackGroup.Locked ? "Unl" : "L")}ock _L"), false, () => { trackGroup.Locked = !trackGroup.Locked; });
+            trackOptionsMenu.AddItem(new GUIContent($"{(trackGroup.Muted ? "Unm" : "M")}ute _M"), false, () => { trackGroup.Muted = !trackGroup.Muted; });
+            trackOptionsMenu.AddSeparator("");
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Add Track"), !trackGroup.Locked, () => { trackGroup.AddTrack(); });
+
+            trackOptionsMenu.ShowAsContext();
+        }
+
+        public void ShowTrackOptionsMenu(EASTrack track)
+        {
+            GenericMenu trackOptionsMenu = new GenericMenu();
+
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Copy"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Paste"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Duplicate"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !track.Locked && !track.ParentTrackGroupLocked, () => { RemoveTrackOrGroup(track); });
+            trackOptionsMenu.AddSeparator("");
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Locked ? "Unl" : "L")}ock _L"), !track.ParentTrackGroupLocked, () => { track.Locked = !track.Locked; });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Muted ? "Unm" : "M")}ute _M"), !track.ParentTrackGroupMuted, () => { track.Muted = !track.Muted; });
+            trackOptionsMenu.AddSeparator("");
+
+            if (track.ParentTrackGroup == null)
+            {
+                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Move to Track Group"), true, () => { EASTrackGroup trackGroup = AddTrackGroup(); trackGroup.AddTrack(track); RemoveTrackOrGroup(track); });
+            }
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Add Event"), false, () => { });
+
+            trackOptionsMenu.ShowAsContext();
+        }
+
+        public void ShowOptionsMenu()
+        {
+            GenericMenu optionsMenu = new GenericMenu();
+
+            optionsMenu.AddItem(new GUIContent("Add Track"), false, () => { AddTrack(); });
+            optionsMenu.AddItem(new GUIContent("Add Track Group"), false, () => { AddTrackGroup(); });
+
+            optionsMenu.ShowAsContext();
+        }
     }
 }

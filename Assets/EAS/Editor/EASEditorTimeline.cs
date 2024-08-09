@@ -123,21 +123,57 @@ namespace EAS
                 {
                     OnLeftClickUpRestricted();
                 }
+                else if (Event.current.button == 1)
+                {
+                    OnRightClickUpRestricted();
+                }
             }
         }
 
         protected void OnLeftClickUpRestricted()
         {
+            EASSerializable timelineTrack = TimelineTrackAtRestrictedMousePosition();
+            if (timelineTrack != null)
+            {
+                EASEditor.Instance.SelectObject(timelineTrack, Event.current.modifiers != EventModifiers.Shift);
+            }
+            else
+            {
+                EASEditor.Instance.SelectObject(null, true);
+            }
+        }
+
+        protected void OnRightClickUpRestricted()
+        {
+            EASSerializable rightClickedTimelineTrack = TimelineTrackAtRestrictedMousePosition() as EASSerializable;
+            if (rightClickedTimelineTrack != null)
+            {
+                if (rightClickedTimelineTrack is EASTrackGroup)
+                {
+                    EASEditor.Instance.ShowTrackGroupOptionsMenu(rightClickedTimelineTrack as EASTrackGroup);
+                }
+                else if (rightClickedTimelineTrack is EASTrack)
+                {
+                    EASEditor.Instance.ShowTrackOptionsMenu(rightClickedTimelineTrack as EASTrack);
+                }
+            }
+            else
+            {
+                EASEditor.Instance.ShowOptionsMenu();
+            }
+        }
+
+        protected EASSerializable TimelineTrackAtRestrictedMousePosition()
+        {
             for (int i = 0; i < m_TimelineTracksAndGroups.Count; ++i)
             {
                 if (m_TimelineTracksAndGroups[i].Rect.Contains(Event.current.mousePosition))
                 {
-                    EASEditor.Instance.SelectObject(m_TimelineTracksAndGroups[i].EASSerializable, Event.current.modifiers != EventModifiers.Shift);
-                    return;
+                    return m_TimelineTracksAndGroups[i].EASSerializable;
                 }
             }
 
-            EASEditor.Instance.SelectObject(null, true);
+            return null;
         }
 
         public void OnAnimationChanged()
