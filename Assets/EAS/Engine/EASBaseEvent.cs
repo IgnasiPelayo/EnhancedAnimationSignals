@@ -9,6 +9,9 @@ namespace EAS
     public abstract class EASBaseEvent : EASID
     {
         [SerializeField, HideInInspector]
+        protected EASBaseController m_Controller;
+
+        [SerializeField, HideInInspector]
         protected uint m_StartFrame = 0;
         public uint StartFrame
         {
@@ -35,6 +38,17 @@ namespace EAS
 
         // ------------------------------------------------------------------------------------------------------------------
 
+        public EASBaseEvent()
+        {
+#if UNITY_EDITOR
+            if (m_ID == INVALID_ID)
+            {
+                m_ID = GenerateID();
+                m_Name = EASUtils.GetReadableEventName(GetType(), addExtension: false);
+            }
+#endif // UNITY_EDITOR
+        }
+
         public virtual void OnStart(float currentFrame) { }
         public virtual void OnUpdate(float progress) { }
         public virtual void OnAnimationEnd() { }
@@ -47,6 +61,70 @@ namespace EAS
         }
 
         protected virtual void OnDurationChanged() { }
+
+#if UNITY_EDITOR
+        public virtual bool HasOwnerType(EASBaseController owner) => true;
+        public virtual bool IsObjectCompatible(GameObject root) => true;
+
+        public abstract bool HasError(EASBaseController owner);
+        public abstract string GetErrorMessage();
+
+        public static EASBaseEvent Create(System.Type type)
+        {
+            EASBaseEvent newEvent = System.Activator.CreateInstance(type) as EASBaseEvent;
+
+
+            return newEvent;
+        }
+#endif // UNITY_EDITOR
+    }
+
+    [System.Serializable]
+    public abstract class EASCustomOwnerEvent<T> : EASBaseEvent where T : Behaviour
+    {
+        [SerializeField, HideInInspector]
+        protected T m_Owner;
+        public T Owner { get => m_Owner; }
+
+#if UNITY_EDITOR
+        public override bool HasOwnerType(EASBaseController owner)
+        {
+            if (typeof(T) == typeof(Animator))
+            {
+                return owner.gameObject.GetComponent<Animator>() != null;
+            }
+
+            if (owner.DataRoot != null)
+            {
+                T[] componentsInChildren = owner.DataRoot.GetComponentsInChildren<T>(includeInactive: true);
+                return componentsInChildren.Length > 0;
+            }
+
+            return false;
+        }
+
+        public virtual T GetOwner(EASBaseController owner)
+        {
+            if (typeof(T) == typeof(Animator))
+            {
+                return owner.gameObject.GetComponent<T>();
+            }
+
+            if (owner.DataRoot != null)
+            {
+                T[] componentsInChildren = owner.DataRoot.GetComponentsInChildren<T>(includeInactive: true);
+                return componentsInChildren.Length > 0 ? componentsInChildren[0] : null;
+            }
+
+            return null;
+        }
+#endif // UNITY_EDITOR
+    }
+
+    [System.Serializable]
+    public abstract class EASEvent : EASCustomOwnerEvent<EASBaseController>
+    {
+
     }
 }
 

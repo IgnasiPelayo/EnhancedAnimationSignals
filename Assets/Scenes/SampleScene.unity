@@ -253,6 +253,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Data: {fileID: 11400000, guid: a936344587582384ca414925533c844c, type: 2}
+  m_DataRoot: {fileID: 1755927595}
 --- !u!95 &1755927597
 Animator:
   serializedVersion: 5

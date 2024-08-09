@@ -8,6 +8,10 @@ namespace EAS
     [System.Serializable]
     public class EASAnimationData : EASID
     {
+        [SerializeField, HideInInspector]
+        protected int m_NameHash;
+        public int NameHash { get => m_NameHash; }
+
         [SerializeReference, ArrayElementTitle("m_Name")]
         protected List<EASSerializable> m_TracksAndGroups;
         public List<EASSerializable> TracksAndGroups { get => m_TracksAndGroups; }
@@ -15,7 +19,11 @@ namespace EAS
         public EASAnimationData(string name)
         {
             m_Name = name;
+#if UNITY_EDITOR
             ID = GenerateID();
+#endif // UNITY_EDITOR
+
+            m_NameHash = Animator.StringToHash(m_Name);
 
             m_TracksAndGroups = new List<EASSerializable>();
         }
@@ -78,6 +86,7 @@ namespace EAS
 
         public EASTrack()
         {
+#if UNITY_EDITOR
             if (ID == INVALID_ID)
             {
                 ID = GenerateID();
@@ -85,6 +94,7 @@ namespace EAS
 
                 m_Events = new List<EASSerializable>();
             }
+#endif // UNITY_EDITOR
         }
 
         public EASTrack(EASTrackGroup parentTrackGroup) : this()
@@ -92,9 +102,12 @@ namespace EAS
             m_ParentTrackGroup = parentTrackGroup;
         }
 
-        public void AddEvent()
+        public EASBaseEvent AddEvent(System.Type type)
         {
-            m_Events.Add(new EASTrack());
+            EASBaseEvent newEvent = EASBaseEvent.Create(type);
+            m_Events.Add(newEvent);
+
+            return newEvent;
         }
     }
 
@@ -113,6 +126,7 @@ namespace EAS
 
         public EASTrackGroup()
         {
+#if UNITY_EDITOR
             if (ID == INVALID_ID)
             {
                 ID = GenerateID();
@@ -120,6 +134,7 @@ namespace EAS
 
                 m_Tracks = new List<EASTrack>();
             }
+#endif // UNITY_EDITOR
         }
 
         public EASTrack AddTrack()

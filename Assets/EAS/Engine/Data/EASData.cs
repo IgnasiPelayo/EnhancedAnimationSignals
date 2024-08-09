@@ -52,9 +52,10 @@ namespace EAS
 
         protected EASAnimationData GetAnimationData(string animationName)
         {
+            int animationNameHash = Animator.StringToHash(animationName);
             for (int i = 0; i < m_AnimationsData.Count; ++i)
             {
-                if (m_AnimationsData[i].Name == animationName)
+                if (m_AnimationsData[i].NameHash == animationNameHash)
                 {
                     return m_AnimationsData[i];
                 }

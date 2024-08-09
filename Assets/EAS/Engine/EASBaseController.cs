@@ -6,8 +6,12 @@ namespace EAS
     {
         [SerializeField]
         protected EASData m_Data;
-
         public EASData Data { get => m_Data; }
+
+        [SerializeField]
+        protected Transform m_DataRoot;
+        public Transform DataRoot { get => m_DataRoot; }
+        public GameObject DataRootGameObject { get => m_DataRoot.gameObject; }
 
         public abstract string[] GetAnimationNames();
 

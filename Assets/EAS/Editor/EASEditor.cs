@@ -328,7 +328,15 @@ namespace EAS
             {
                 ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Move to Track Group"), true, () => { EASTrackGroup trackGroup = AddTrackGroup(); trackGroup.AddTrack(track); RemoveTrackOrGroup(track); });
             }
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Add Event"), false, () => { });
+
+            bool canAddEvents = !track.Locked && !track.ParentTrackGroupLocked;
+            List<System.Type> eventTypes = EASUtils.GetValidEventsForTrack(Controller.DataRootGameObject, Controller);
+            for (int i = 0; i < eventTypes.Count; ++i)
+            {
+                System.Type type = eventTypes[i];
+                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"Add Event/{EASUtils.GetReadableEventName(type)}"),
+                    canAddEvents, () => { track.AddEvent(type); });
+            }
 
             trackOptionsMenu.ShowAsContext();
         }
