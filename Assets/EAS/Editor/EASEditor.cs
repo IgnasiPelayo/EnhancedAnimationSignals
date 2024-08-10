@@ -51,6 +51,9 @@ namespace EAS
         [SerializeField]
         protected EASEditorTimeline m_Timeline = new EASEditorTimeline();
 
+        [SerializeField]
+        protected Vector2 m_MousePosition;
+
         internal T GetComponent<T>() where T : Component
         {
             Object obj = EditorUtility.InstanceIDToObject(m_InstanceId);
@@ -120,6 +123,8 @@ namespace EAS
 
         protected void OnGUI()
         {
+            m_MousePosition = Event.current.mousePosition;
+
             if (Controller == null)
             {
                 NoControllerGUI();
@@ -259,6 +264,30 @@ namespace EAS
             return Controller.Data.RemoveTrackOrGroup(SelectedAnimationName, trackOrGroup);
         }
 
+        public bool RemoveEvent(EASBaseEvent baseEvent)
+        {
+            return baseEvent.ParentTrack.Events.Remove(baseEvent);
+        }
+
+        public EASBaseEvent AddEvent(System.Type eventType, EASBaseTrack baseTrack)
+        {
+            EASTrack track = null;
+            if (baseTrack == null)
+            {
+                track = AddTrack();
+            }
+            else if (baseTrack is EASTrackGroup)
+            {
+                track = (baseTrack as EASTrackGroup).AddTrack();
+            }
+            else if (baseTrack is EASTrack)
+            {
+                track = baseTrack as EASTrack;
+            }
+
+            return m_Timeline.IsMouseOnTimeline(m_MousePosition) ? track.AddEvent(eventType, Mathf.RoundToInt(m_Timeline.GetFrameAtPosition(m_MousePosition.x))) : track.AddEvent(eventType);
+        }
+
         public bool IsSelected(EASSerializable selectedObject)
         {
             return m_SelectedObjects.Contains(selectedObject);
@@ -307,6 +336,7 @@ namespace EAS
             trackOptionsMenu.AddItem(new GUIContent($"{(trackGroup.Muted ? "Unm" : "M")}ute _M"), false, () => { trackGroup.Muted = !trackGroup.Muted; });
             trackOptionsMenu.AddSeparator("");
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Add Track"), !trackGroup.Locked, () => { trackGroup.AddTrack(); });
+            AddEventMenuOption(trackOptionsMenu, trackGroup);
 
             trackOptionsMenu.ShowAsContext();
         }
@@ -328,15 +358,7 @@ namespace EAS
             {
                 ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Move to Track Group"), true, () => { EASTrackGroup trackGroup = AddTrackGroup(); trackGroup.AddTrack(track); RemoveTrackOrGroup(track); });
             }
-
-            bool canAddEvents = !track.Locked && !track.ParentTrackGroupLocked;
-            List<System.Type> eventTypes = EASUtils.GetValidEventsForTrack(Controller.DataRootGameObject, Controller);
-            for (int i = 0; i < eventTypes.Count; ++i)
-            {
-                System.Type type = eventTypes[i];
-                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"Add Event/{EASUtils.GetReadableEventName(type)}"),
-                    canAddEvents, () => { track.AddEvent(type); });
-            }
+            AddEventMenuOption(trackOptionsMenu, track);
 
             trackOptionsMenu.ShowAsContext();
         }
@@ -347,8 +369,39 @@ namespace EAS
 
             optionsMenu.AddItem(new GUIContent("Add Track"), false, () => { AddTrack(); });
             optionsMenu.AddItem(new GUIContent("Add Track Group"), false, () => { AddTrackGroup(); });
+            optionsMenu.AddSeparator("");
+            AddEventMenuOption(optionsMenu, null);
 
             optionsMenu.ShowAsContext();
+        }
+
+        public void AddEventMenuOption(GenericMenu menu, EASBaseTrack baseTrack)
+        {
+            bool canAddEvents = true;
+            if (baseTrack != null)
+            {
+                canAddEvents = baseTrack is EASTrack ? !baseTrack.Locked && !(baseTrack as EASTrack).ParentTrackGroupLocked : !baseTrack.Locked;
+            }
+
+            List<System.Type> eventTypes = EASUtils.GetValidEventsForTrack(Controller.DataRootGameObject, Controller);
+            for (int i = 0; i < eventTypes.Count; ++i)
+            {
+                System.Type type = eventTypes[i];
+                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent($"Add Event/{EASUtils.GetReadableEventName(type)}"),
+                    canAddEvents, () => { AddEvent(type, baseTrack); });
+            }
+        }
+
+        public void ShowEventOptionsMenu(EASBaseEvent baseEvent)
+        {
+            GenericMenu eventOptionsMenu = new GenericMenu();
+
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Copy"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Paste"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Duplicate"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Delete"), true, () => { RemoveEvent(baseEvent); });
+
+            eventOptionsMenu.ShowAsContext();
         }
     }
 }

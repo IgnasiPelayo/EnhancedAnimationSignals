@@ -8,6 +8,7 @@ namespace EAS
     public class EASEditorTimeline
     {
         protected List<EASBaseGUIItem> m_TimelineTracksAndGroups = new List<EASBaseGUIItem>();
+        protected List<EASEventGUIItem> m_TimelineEvents = new List<EASEventGUIItem>();
 
         [SerializeField]
         protected EASAnimationInformation m_AnimationInformation;
@@ -35,8 +36,9 @@ namespace EAS
             Rect timelineWorkAreaRect = Rect.MinMaxRect(0, m_FramesAreaRect.yMax + 1, rect.width, rect.yMax - rect.y);
             OnGUITrackBackgrounds(timelineWorkAreaRect);
             OnGUIFrameLines(timelineWorkAreaRect);
+            OnGUIEvents();
 
-            HandleRestrictedInput();
+            HandleClippedInput();
 
             GUI.EndClip();
         }
@@ -51,7 +53,7 @@ namespace EAS
             for (int i = 0; i < m_AnimationInformation.Frames; ++i)
             {
                 EASTimelineFrameType frameType = GetFrameType(i, m_AnimationInformation.Frames - 1);
-                EASTimelineFrame timelineFrame = new EASTimelineFrame(frame: i, GetHorizontalPositionAtFrame(i), frameType, GetFrameColor(frameType));
+                EASTimelineFrame timelineFrame = new EASTimelineFrame(frame: i, GetClippedHorizontalPositionAtFrame(i), frameType, GetFrameColor(frameType));
                 m_Frames.Add(timelineFrame);
 
                 DrawFrame(lineRect, timelineFrame, isFrameLine: false);
@@ -115,27 +117,52 @@ namespace EAS
             }
         }
 
-        protected void HandleRestrictedInput()
+        protected void OnGUIEvents()
+        {
+            m_TimelineEvents.Clear();
+
+            for (int i = 0; i < m_TimelineTracksAndGroups.Count; ++i)
+            {
+                EASTrack track = m_TimelineTracksAndGroups[i].EASSerializable as EASTrack;
+                if (track != null)
+                {
+                    for (int j = 0; j < track.Events.Count; ++j)
+                    {
+                        OnGUIEvent(m_TimelineTracksAndGroups[i], track.Events[j] as EASBaseEvent);
+                    }
+                }
+            }
+        }
+
+        protected void OnGUIEvent(EASBaseGUIItem trackGUIItem, EASBaseEvent baseEvent)
+        {
+            Rect eventRect = Rect.MinMaxRect(GetClippedHorizontalPositionAtFrame(baseEvent.StartFrame), trackGUIItem.Rect.y, GetClippedHorizontalPositionAtFrame(baseEvent.LastFrame), trackGUIItem.Rect.yMax);
+            EditorGUI.DrawRect(eventRect, EASUtils.GetEASEventColorAttribute(baseEvent.GetType()));
+
+            m_TimelineEvents.Add(new EASEventGUIItem(eventRect, baseEvent));
+        }
+
+        protected void HandleClippedInput()
         {
             if (Event.current.type == EventType.MouseUp)
             {
                 if (Event.current.button == 0)
                 {
-                    OnLeftClickUpRestricted();
+                    OnLeftClickUpClipped();
                 }
                 else if (Event.current.button == 1)
                 {
-                    OnRightClickUpRestricted();
+                    OnRightClickUpClipped();
                 }
             }
         }
 
-        protected void OnLeftClickUpRestricted()
+        protected void OnLeftClickUpClipped()
         {
-            EASSerializable timelineTrack = TimelineTrackAtRestrictedMousePosition();
-            if (timelineTrack != null)
+            EASSerializable leftClickedGUIItem = TimelineGUIItemAtClippedMousePosition();
+            if (leftClickedGUIItem != null)
             {
-                EASEditor.Instance.SelectObject(timelineTrack, Event.current.modifiers != EventModifiers.Shift);
+                EASEditor.Instance.SelectObject(leftClickedGUIItem, Event.current.modifiers != EventModifiers.Shift);
             }
             else
             {
@@ -143,18 +170,22 @@ namespace EAS
             }
         }
 
-        protected void OnRightClickUpRestricted()
+        protected void OnRightClickUpClipped()
         {
-            EASSerializable rightClickedTimelineTrack = TimelineTrackAtRestrictedMousePosition() as EASSerializable;
-            if (rightClickedTimelineTrack != null)
+            EASSerializable rightClickedGUIItem = TimelineGUIItemAtClippedMousePosition();
+            if (rightClickedGUIItem != null)
             {
-                if (rightClickedTimelineTrack is EASTrackGroup)
+                if (rightClickedGUIItem is EASBaseEvent)
                 {
-                    EASEditor.Instance.ShowTrackGroupOptionsMenu(rightClickedTimelineTrack as EASTrackGroup);
+                    EASEditor.Instance.ShowEventOptionsMenu(rightClickedGUIItem as EASBaseEvent);
                 }
-                else if (rightClickedTimelineTrack is EASTrack)
+                else if (rightClickedGUIItem is EASTrackGroup)
                 {
-                    EASEditor.Instance.ShowTrackOptionsMenu(rightClickedTimelineTrack as EASTrack);
+                    EASEditor.Instance.ShowTrackGroupOptionsMenu(rightClickedGUIItem as EASTrackGroup);
+                }
+                else if (rightClickedGUIItem is EASTrack)
+                {
+                    EASEditor.Instance.ShowTrackOptionsMenu(rightClickedGUIItem as EASTrack);
                 }
             }
             else
@@ -163,7 +194,7 @@ namespace EAS
             }
         }
 
-        protected EASSerializable TimelineTrackAtRestrictedMousePosition()
+        protected EASSerializable TimelineTrackAtClippedMousePosition()
         {
             for (int i = 0; i < m_TimelineTracksAndGroups.Count; ++i)
             {
@@ -176,6 +207,31 @@ namespace EAS
             return null;
         }
 
+        protected EASSerializable TimelineEventAtClippedMousePosition()
+        {
+            for (int i = 0; i < m_TimelineEvents.Count; ++i)
+            {
+                if (m_TimelineEvents[i].Rect.Contains(Event.current.mousePosition))
+                {
+                    EASBaseEvent baseEvent = m_TimelineEvents[i].EASSerializable as EASBaseEvent;
+                    return !baseEvent.ParentTrack.Locked && !baseEvent.ParentTrack.ParentTrackGroupLocked ? baseEvent : null;
+                }
+            }
+
+            return null;
+        }
+
+        protected EASSerializable TimelineGUIItemAtClippedMousePosition()
+        {
+            EASSerializable eventAtClippedMousePosition = TimelineEventAtClippedMousePosition();
+            if (eventAtClippedMousePosition != null)
+            {
+                return eventAtClippedMousePosition;
+            }
+
+            return TimelineTrackAtClippedMousePosition();
+        }
+
         public void OnAnimationChanged()
         {
             m_AnimationInformation = EASEditor.Instance.GetAnimationInformation();
@@ -186,12 +242,32 @@ namespace EAS
 
         protected float GetInitialFramePosition()
         {
-            return EASSkin.TimelineLeftMargin - m_ScrollPositionOffsets.x;
+            return m_WholeTimelineRect.x + EASSkin.TimelineLeftMargin - m_ScrollPositionOffsets.x;
         }
 
         protected float GetHorizontalPositionAtFrame(float frame)
         {
             return GetInitialFramePosition() + frame * m_PixelsPerFrame;
+        }
+
+        public float GetFrameAtPosition(float horizontalPosition)
+        {
+            return (horizontalPosition - GetInitialFramePosition()) / m_PixelsPerFrame;
+        }
+
+        protected float GetClippedInitialFramePosition()
+        {
+            return EASSkin.TimelineLeftMargin - m_ScrollPositionOffsets.x;
+        }
+
+        protected float GetClippedHorizontalPositionAtFrame(float frame)
+        {
+            return GetClippedInitialFramePosition() + frame * m_PixelsPerFrame;
+        }
+
+        protected float GetFrameAtClippedPosition(float horizontalPosition)
+        {
+            return (horizontalPosition - GetClippedInitialFramePosition()) / m_PixelsPerFrame;
         }
 
         protected EASTimelineFrameType GetFrameType(float frame, float lastFrame)
@@ -264,6 +340,11 @@ namespace EAS
                     EditorGUI.DrawRect(rect, EASSkin.TimelineFrameColor);
                 }
             }
+        }
+
+        public bool IsMouseOnTimeline(Vector2 mousePosition)
+        {
+            return m_WholeTimelineRect.Contains(mousePosition);
         }
     }
 }

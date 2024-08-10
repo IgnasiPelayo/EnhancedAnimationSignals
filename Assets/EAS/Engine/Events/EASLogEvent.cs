@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace EAS
 {
-    [System.Serializable, EASEventCategory("Debug")]
+    [System.Serializable]
+    [EASEventColor("#FFD700"), EASEventCategory("Debug"), EASTooltip("Log a message using Unity's Debug system")]
     public class EASLogEvent : EASEvent
     {
         [SerializeField]

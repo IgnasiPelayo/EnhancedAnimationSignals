@@ -45,6 +45,14 @@ namespace EAS
         }
     }
 
+    public class EASEventGUIItem : EASBaseGUIItem
+    {
+        public EASEventGUIItem(Rect rect, EASBaseEvent baseEvent) : base(rect, baseEvent)
+        {
+
+        }
+    }
+
     public enum EASTimelineFrameType
     {
         MainFrame,

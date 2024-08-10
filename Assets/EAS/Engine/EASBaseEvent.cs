@@ -11,9 +11,13 @@ namespace EAS
         [SerializeField, HideInInspector]
         protected EASBaseController m_Controller;
 
+        [SerializeReference, HideInInspector]
+        protected EASSerializable m_ParentTrack;
+        public EASTrack ParentTrack { get => m_ParentTrack as EASTrack; set => m_ParentTrack = value; }
+
         [SerializeField, HideInInspector]
-        protected uint m_StartFrame = 0;
-        public uint StartFrame
+        protected int m_StartFrame = 0;
+        public int StartFrame
         {
             get => m_StartFrame;
 #if UNITY_EDITOR
@@ -22,8 +26,8 @@ namespace EAS
         }
 
         [SerializeField, HideInInspector]
-        protected uint m_Duration = 1;
-        public uint Duration
+        protected int m_Duration = 1;
+        public int Duration
         {
             get => m_Duration;
 #if UNITY_EDITOR
@@ -31,7 +35,7 @@ namespace EAS
 #endif // UNITY_EDITOR
         }
 
-        public uint LastFrame => m_StartFrame + m_Duration;
+        public int LastFrame => m_StartFrame + m_Duration;
 
         protected bool m_IsTriggered;
         public bool IsTriggered { get => m_IsTriggered; set => m_IsTriggered = value; }

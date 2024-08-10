@@ -2,6 +2,7 @@ using UnityEngine;
 using CustomAttributes;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EAS
 {
@@ -83,6 +84,7 @@ namespace EAS
 
         [SerializeReference, ArrayElementTitle("m_Name")]
         protected List<EASSerializable> m_Events;
+        public List<EASSerializable> Events { get => m_Events; }
 
         public EASTrack()
         {
@@ -102,10 +104,29 @@ namespace EAS
             m_ParentTrackGroup = parentTrackGroup;
         }
 
+        public EASBaseEvent AddEvent(System.Type type, int desiredFrame)
+        {
+            EASBaseEvent newEvent = EASBaseEvent.Create(type);
+            newEvent.ParentTrack = this;
+
+#if UNITY_EDITOR
+            newEvent.StartFrame = desiredFrame;
+#endif // UNITY_EDITOR
+
+            m_Events.Add(newEvent);
+            m_Events = m_Events.OrderBy(e => (e as EASBaseEvent).StartFrame).ToList();
+
+            return newEvent;
+        }
+        
+
         public EASBaseEvent AddEvent(System.Type type)
         {
             EASBaseEvent newEvent = EASBaseEvent.Create(type);
+            newEvent.ParentTrack = this;
+
             m_Events.Add(newEvent);
+            m_Events = m_Events.OrderBy(e => (e as EASBaseEvent).StartFrame).ToList();
 
             return newEvent;
         }
