@@ -1,6 +1,5 @@
 using UnityEngine;
 using CustomAttributes;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -104,32 +103,113 @@ namespace EAS
             m_ParentTrackGroup = parentTrackGroup;
         }
 
-        public EASBaseEvent AddEvent(System.Type type, int desiredFrame, int trackLength)
+        protected EASBaseEvent Internal_AddEvent(System.Type type, int frame, int trackLength)
         {
             EASBaseEvent newEvent = EASBaseEvent.Create(type);
             newEvent.ParentTrack = this;
 
 #if UNITY_EDITOR
-            newEvent.StartFrame = desiredFrame;
+            if (HasSpaceForNewEvents(trackLength))
+            {
+                List<Vector2Int> freeSpaces = GetFreeSpaces(trackLength);
+                if (frame == -1)
+                {
+                    newEvent.StartFrame = freeSpaces[0].x;
+                    newEvent.Duration = Mathf.Min(freeSpaces[0].y - freeSpaces[0].x, newEvent.DefaultDuration);
+                }
+                else
+                {
+                    for (int i = 0; i < freeSpaces.Count; ++i)
+                    {
+                        if (freeSpaces[i].x <= frame && freeSpaces[i].y >= frame)
+                        {
+                            newEvent.StartFrame = frame;
+                            newEvent.Duration = Mathf.Min(freeSpaces[i].y - frame, newEvent.DefaultDuration);
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return null;
+            }
 #endif // UNITY_EDITOR
 
             m_Events.Add(newEvent);
-            m_Events = m_Events.OrderBy(e => (e as EASBaseEvent).StartFrame).ToList();
+            ReorderEvents();
 
             return newEvent;
+        }
+
+        public EASBaseEvent AddEvent(System.Type type, int desiredFrame, int trackLength)
+        {
+            return Internal_AddEvent(type, desiredFrame, trackLength);
         }
         
-
-        public EASBaseEvent AddEvent(System.Type type)
+        public EASBaseEvent AddEvent(System.Type type, int trackLength)
         {
-            EASBaseEvent newEvent = EASBaseEvent.Create(type);
-            newEvent.ParentTrack = this;
-
-            m_Events.Add(newEvent);
-            m_Events = m_Events.OrderBy(e => (e as EASBaseEvent).StartFrame).ToList();
-
-            return newEvent;
+            return Internal_AddEvent(type, -1, trackLength);
         }
+
+        public EASBaseEvent AddEvent(EASBaseEvent baseEvent)
+        {
+            baseEvent.ParentTrack = this;
+            m_Events.Add(baseEvent);
+
+            return baseEvent;
+        }
+
+        public void ReorderEvents()
+        {
+#if UNITY_EDITOR
+            m_Events = m_Events.OrderBy(e => (e as EASBaseEvent).StartFrame).ToList();
+#endif // UNITY_EDITOR
+        }
+
+#if UNITY_EDITOR
+        public bool HasSpaceForNewEvents(int trackLength)
+        {
+            int occupiedFrames = 0;
+            for (int i = 0; i < m_Events.Count; ++i)
+            {
+                EASBaseEvent baseEvent = m_Events[i] as EASBaseEvent;
+                occupiedFrames += baseEvent.Duration;
+            }
+
+            return (trackLength - 1) > occupiedFrames;
+        }
+
+        public List<Vector2Int> GetFreeSpaces(int trackLength)
+        {
+            List<Vector2Int> freeSpaces = new List<Vector2Int>();
+            Vector2Int latestFreeSpace = Vector2Int.zero;
+
+            for (int i = 0; i < m_Events.Count; ++i)
+            {
+                EASBaseEvent baseEvent = m_Events[i] as EASBaseEvent;
+                if (baseEvent.StartFrame == latestFreeSpace.y)
+                {
+                    latestFreeSpace = Vector2Int.one * baseEvent.LastFrame;
+                }
+                else if (baseEvent.StartFrame > latestFreeSpace.y)
+                {
+                    latestFreeSpace.y = baseEvent.StartFrame;
+                    freeSpaces.Add(latestFreeSpace);
+
+                    latestFreeSpace = Vector2Int.one * baseEvent.LastFrame;
+                }
+            }
+
+            if (latestFreeSpace.y < trackLength - 1)
+            {
+                latestFreeSpace.y = trackLength - 1;
+                freeSpaces.Add(latestFreeSpace);
+            }
+
+            return freeSpaces;
+        }
+#endif // UNITY_EDITOR
     }
 
     [System.Serializable]

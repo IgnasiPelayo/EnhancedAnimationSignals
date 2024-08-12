@@ -274,15 +274,15 @@ namespace EAS
 
                 if (leftClickedGUIItem.EASSerializable is EASBaseEvent)
                 {
-                    List<EASBaseGUIItem> selectedGUIItemEvents = new List<EASBaseGUIItem>();
+                    List<EASDragGUIItem> draggedGUIItems = new List<EASDragGUIItem>();
                     List<EASSerializable> selectedEvents = EASEditor.Instance.GetSelected<EASBaseEvent>();
 
                     for (int i = 0; i < selectedEvents.Count; ++i)
                     {
                         EASBaseGUIItem baseGUIItem = GetGUIItemOfEASSerializable(selectedEvents[i]);
-                        selectedGUIItemEvents.Add(new EASBaseGUIItem(TransformClippedRect(baseGUIItem.Rect), baseGUIItem.EASSerializable));
+                        draggedGUIItems.Add(new EASDragGUIItem(TransformClippedRect(baseGUIItem.Rect), baseGUIItem.EASSerializable));
                     }
-                    m_DragInformation = new EASDragInformation(Event.current.mousePosition + m_WholeTimelineRect.position, selectedGUIItemEvents);
+                    m_DragInformation = new EASDragInformation(Event.current.mousePosition + m_WholeTimelineRect.position, draggedGUIItems);
                 }
             }
             else
@@ -319,12 +319,26 @@ namespace EAS
         {
             if (m_DragInformation != null)
             {
+                EASTrack trackAtMousePosition = null;
+                EASBaseGUIItem trackGUIItemAtMousePosition = TimelineTrackAtMousePosition();
+                if (trackGUIItemAtMousePosition != null && trackGUIItemAtMousePosition.EASSerializable is EASTrack)
+                {
+                    trackAtMousePosition = trackGUIItemAtMousePosition.EASSerializable as EASTrack;
+                }
+
+                bool allowVerticalDrag = m_DragInformation.AllowVerticalDrag() && trackAtMousePosition != null && !trackAtMousePosition.Locked && !trackAtMousePosition.ParentTrackGroupLocked;
+
                 for (int i = 0; i < m_DragInformation.Items.Count; ++i)
                 {
                     EASBaseGUIItem draggingItem = m_DragInformation.Items[i];
                     if (draggingItem.EASSerializable is EASBaseEvent)
                     {
                         EASBaseEvent baseEvent = draggingItem.EASSerializable as EASBaseEvent;
+                        if (allowVerticalDrag)
+                        {
+                            EASEditor.Instance.MoveEvent(baseEvent, trackAtMousePosition);
+                        }
+
                         Vector2 distanceFromEventStart = draggingItem.Rect.position - m_DragInformation.InitialPosition;
 
                         float draggedEventStartHorizontalPosition = Event.current.mousePosition.x + distanceFromEventStart.x;
@@ -347,14 +361,42 @@ namespace EAS
                     EASBaseGUIItem leftClickedGUIItem = TimelineGUIItemAtMousePosition();
                     EASEditor.Instance.SelectObject(leftClickedGUIItem != null ? leftClickedGUIItem.EASSerializable : null, singleSelection: true);
                 }
-                else if (m_DragInformation.DragPerformed && !m_DragInformation.CanEndDrag)
+                else if (m_DragInformation.DragPerformed)
                 {
-                    CancelDrag();
+                    if (m_DragInformation.CanEndDrag)
+                    {
+                        PerformDrag();
+                    }
+                    else
+                    {
+                        CancelDrag();
+                    }
                 }
 
                 m_DragInformation = null;
 
                 EditorWindow.focusedWindow.Repaint();
+            }
+        }
+
+        protected void PerformDrag()
+        {
+            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
+            for (int i = 0; i < tracksAndGroups.Count; ++i)
+            {
+                if (tracksAndGroups[i] is EASTrackGroup)
+                {
+                    EASTrackGroup trackGroup = tracksAndGroups[i] as EASTrackGroup;
+                    for (int j = 0; j < trackGroup.Tracks.Count; ++j)
+                    {
+                        trackGroup.Tracks[j].ReorderEvents();
+                    }
+                }
+                else if (tracksAndGroups[i] is EASTrack)
+                {
+                    EASTrack track = tracksAndGroups[i] as EASTrack;
+                    track.ReorderEvents();
+                }
             }
         }
 
@@ -366,6 +408,12 @@ namespace EAS
                 {
                     EASBaseEvent baseEvent = m_DragInformation.Items[i].EASSerializable as EASBaseEvent;
                     baseEvent.StartFrame = GetSafeFrameAtPosition(m_DragInformation.Items[i].Rect.x);
+
+                    EASTrack eventTrack = m_DragInformation.Items[i].Context as EASTrack;
+                    if (baseEvent.ParentTrack != eventTrack)
+                    {
+                        EASEditor.Instance.MoveEvent(baseEvent, eventTrack);
+                    }
                 }
             }
         }

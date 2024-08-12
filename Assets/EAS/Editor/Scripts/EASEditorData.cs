@@ -84,13 +84,27 @@ namespace EAS
         }
     }
 
+    public class EASDragGUIItem : EASBaseGUIItem
+    {
+        protected object m_Context;
+        public object Context { get => m_Context; }
+
+        public EASDragGUIItem(Rect rect, EASSerializable serializable) : base(rect, serializable)
+        {
+            if (serializable is EASBaseEvent)
+            {
+                m_Context = (serializable as EASBaseEvent).ParentTrack;
+            }
+        }
+    }
+
     public class EASDragInformation
     {
         protected Vector2 m_InitialPosition;
         public Vector2 InitialPosition { get => m_InitialPosition; }
 
-        protected List<EASBaseGUIItem> m_Items = new List<EASBaseGUIItem>();
-        public List<EASBaseGUIItem> Items { get => m_Items; }
+        protected List<EASDragGUIItem> m_Items = new List<EASDragGUIItem>();
+        public List<EASDragGUIItem> Items { get => m_Items; }
 
         protected bool m_DragPerformed = false;
         public bool DragPerformed { get => m_DragPerformed; }
@@ -98,7 +112,7 @@ namespace EAS
         protected bool m_CanEndDrag = true;
         public bool CanEndDrag { get => m_CanEndDrag; }
 
-        public EASDragInformation(Vector2 initialPosition, List<EASBaseGUIItem> items)
+        public EASDragInformation(Vector2 initialPosition, List<EASDragGUIItem> items)
         {
             m_InitialPosition = initialPosition;
             m_Items = items;
@@ -120,18 +134,22 @@ namespace EAS
 
         public EventType GetEventType() => Event.current.GetTypeForControl(GetControlId());
 
-        public bool IsBeingDragged(EASSerializable serializable)
+        public bool AllowVerticalDrag()
         {
-            int serializableID = EASUtils.GetSerializableID(serializable);
-            for (int i = 0; i < m_Items.Count; ++i)
+            if (m_Items.Count == 1)
             {
-                if (EASUtils.GetSerializableID(m_Items[i].EASSerializable) == serializableID)
+                return true;
+            }
+
+            for (int i = 1; i < m_Items.Count; ++i)
+            {
+                if (m_Items[i - 1].Rect.y != m_Items[i].Rect.y)
                 {
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
     }
 }

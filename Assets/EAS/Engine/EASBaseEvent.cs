@@ -35,6 +35,8 @@ namespace EAS
 #endif // UNITY_EDITOR
         }
 
+        public virtual int DefaultDuration { get => 3; }
+
         public int LastFrame => m_StartFrame + m_Duration;
 
         protected bool m_IsTriggered;

@@ -249,6 +249,11 @@ namespace EAS
             return new EASAnimationInformation(animation, Controller.GetLength(animation), Controller.GetFrameRate(animation));
         }
 
+        public int GetCurrentAnimationFrames()
+        {
+            return Mathf.RoundToInt(GetAnimationInformation().Frames);
+        }
+
         public List<EASSerializable> GetTracksAndGroups()
         {
             return Controller.Data.GetTracksAndGroups(SelectedAnimationName);
@@ -274,6 +279,12 @@ namespace EAS
             return baseEvent.ParentTrack.Events.Remove(baseEvent);
         }
 
+        public void MoveEvent(EASBaseEvent baseEvent, EASTrack track)
+        {
+            RemoveEvent(baseEvent);
+            track.AddEvent(baseEvent);
+        }
+
         public EASBaseEvent AddEvent(System.Type eventType, EASBaseTrack baseTrack)
         {
             EASTrack track = null;
@@ -290,7 +301,8 @@ namespace EAS
                 track = baseTrack as EASTrack;
             }
 
-            return m_Timeline.IsMouseOnTimeline(m_MousePosition) ? track.AddEvent(eventType, m_Timeline.GetSafeFrameAtPosition(m_MousePosition.x), Mathf.RoundToInt(GetAnimationInformation().Frames)) : track.AddEvent(eventType);
+            int trackFrames = GetCurrentAnimationFrames();
+            return m_Timeline.IsMouseOnTimeline(m_MousePosition) ? track.AddEvent(eventType, m_Timeline.GetSafeFrameAtPosition(m_MousePosition.x), trackFrames) : track.AddEvent(eventType, trackFrames);
         }
 
         public bool IsSelected(EASSerializable selectedObject)
@@ -417,7 +429,7 @@ namespace EAS
             bool canAddEvents = true;
             if (baseTrack != null)
             {
-                canAddEvents = baseTrack is EASTrack ? !baseTrack.Locked && !(baseTrack as EASTrack).ParentTrackGroupLocked : !baseTrack.Locked;
+                canAddEvents = baseTrack is EASTrack ? !baseTrack.Locked && !(baseTrack as EASTrack).ParentTrackGroupLocked && (baseTrack as EASTrack).HasSpaceForNewEvents(GetCurrentAnimationFrames()) : !baseTrack.Locked;
             }
 
             List<System.Type> eventTypes = EASUtils.GetValidEventsForTrack(Controller.DataRootGameObject, Controller);

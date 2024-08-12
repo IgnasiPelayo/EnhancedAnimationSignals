@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CustomAttributes;
@@ -9,10 +7,6 @@ namespace EAS
     [CreateAssetMenu(fileName = "EAS Data", menuName = "EAS Data", order = 459)]
     public class EASData : ScriptableObject
     {
-        [SerializeField, ReadOnly]
-        protected long m_TimeStamp = DateTime.MinValue.Ticks;
-        public long TimeStamp { get => m_TimeStamp; set => m_TimeStamp = value; }
-
         [SerializeField, ArrayElementTitle("m_Name")]
         protected List<EASAnimationData> m_AnimationsData = new List<EASAnimationData>();
 
@@ -22,8 +16,6 @@ namespace EAS
 
             EASTrackGroup trackGroup = new EASTrackGroup();
             animationData.AddTrackOrGroup(trackGroup);
-
-            m_TimeStamp = DateTime.Now.Ticks;
 
             return trackGroup;
         }
@@ -35,8 +27,6 @@ namespace EAS
             EASTrack track = new EASTrack();
             animationData.AddTrackOrGroup(track);
 
-            m_TimeStamp = DateTime.Now.Ticks;
-
             return track;
         }
 
@@ -44,8 +34,6 @@ namespace EAS
         {
             EASAnimationData animationData = GetAnimationData(animationName);
             bool wasRemoved = animationData.RemoveTrackOrGroup(trackOrGroup);
-
-            m_TimeStamp = DateTime.Now.Ticks;
 
             return wasRemoved;
         }
@@ -63,8 +51,6 @@ namespace EAS
 
             EASAnimationData animationData = new EASAnimationData(animationName);
             m_AnimationsData.Add(animationData);
-
-            m_TimeStamp = DateTime.Now.Ticks;
 
             return animationData;
         }
