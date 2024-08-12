@@ -412,7 +412,7 @@ namespace ExtendedGUI
             lineRect = new Rect(rect.x, rect.y, outlineWidths.left, rect.height);
             EditorGUI.DrawRect(lineRect, outlineColor);
 
-            lineRect = new Rect(rect.xMax - outlineWidths.right, rect.y, outlineWidths.right, rect.height);
+            lineRect = new Rect(rect.xMax + 1 - outlineWidths.right, rect.y, outlineWidths.right, rect.height);
             EditorGUI.DrawRect(lineRect, outlineColor);
         }
 
@@ -472,6 +472,13 @@ namespace ExtendedGUI
                 menu.AddDisabledItem(content, false);
             }
         }
+
+        public static Color GetContrastingLabelColor(Color backgroundColor)
+        {
+            float luminance = 0.2126f * backgroundColor.r + 0.7152f * backgroundColor.g + 0.0722f * backgroundColor.b;
+            return luminance < 0.5f ? Color.white : Color.black;
+        }
+
 
         public class ZoomTextureRect
         {

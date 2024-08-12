@@ -54,6 +54,9 @@ namespace EAS
         [SerializeField]
         protected Vector2 m_MousePosition;
 
+        [SerializeField]
+        protected Dictionary<System.Type, EASEventDrawer> m_EventDrawers = new Dictionary<System.Type, EASEventDrawer>();
+
         internal T GetComponent<T>() where T : Component
         {
             Object obj = EditorUtility.InstanceIDToObject(m_InstanceId);
@@ -106,6 +109,8 @@ namespace EAS
             {
 
             }
+
+            m_EventDrawers = EASEditorUtils.GetAllEASCustomEventDrawers();
         }
 
         protected void Update()
@@ -285,12 +290,17 @@ namespace EAS
                 track = baseTrack as EASTrack;
             }
 
-            return m_Timeline.IsMouseOnTimeline(m_MousePosition) ? track.AddEvent(eventType, Mathf.RoundToInt(m_Timeline.GetFrameAtPosition(m_MousePosition.x))) : track.AddEvent(eventType);
+            return m_Timeline.IsMouseOnTimeline(m_MousePosition) ? track.AddEvent(eventType, m_Timeline.GetSafeFrameAtPosition(m_MousePosition.x), Mathf.RoundToInt(GetAnimationInformation().Frames)) : track.AddEvent(eventType);
         }
 
         public bool IsSelected(EASSerializable selectedObject)
         {
             return m_SelectedObjects.Contains(selectedObject);
+        }
+
+        public bool HasMultipleSelectionModifier()
+        {
+            return Event.current.modifiers == EventModifiers.Shift || Event.current.modifiers == EventModifiers.Control || Event.current.modifiers == EventModifiers.Command;
         }
 
         public void SelectObject(EASSerializable selectedObject, bool singleSelection)
@@ -321,6 +331,33 @@ namespace EAS
 
             GUI.FocusControl(null);
             Repaint();
+        }
+
+        public List<EASSerializable> GetSelected<T>()
+        {
+            List<EASSerializable> selectedObjects = new List<EASSerializable>();
+            for (int i = 0; i < m_SelectedObjects.Count; ++i)
+            {
+                if (m_SelectedObjects[i] is T)
+                {
+                    selectedObjects.Add(m_SelectedObjects[i]);
+                }
+            }
+
+            return selectedObjects;
+        }
+
+        public bool HasEventsSelected()
+        {
+            for (int i = 0; i < m_SelectedObjects.Count; ++i)
+            {
+                if (m_SelectedObjects[i] is EASBaseEvent)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void ShowTrackGroupOptionsMenu(EASTrackGroup trackGroup)
@@ -402,6 +439,16 @@ namespace EAS
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Delete"), true, () => { RemoveEvent(baseEvent); });
 
             eventOptionsMenu.ShowAsContext();
+        }
+
+        public EASEventDrawer GetEventDrawer(System.Type type)
+        {
+            if (m_EventDrawers.ContainsKey(type))
+            {
+                return m_EventDrawers[type];
+            }
+
+            return null;
         }
     }
 }

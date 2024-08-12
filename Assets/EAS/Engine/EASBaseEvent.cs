@@ -67,6 +67,8 @@ namespace EAS
         protected virtual void OnDurationChanged() { }
 
 #if UNITY_EDITOR
+        public virtual string GetLabel() => EASUtils.GetReadableEventName(GetType(), addExtension: false);
+
         public virtual bool HasOwnerType(EASBaseController owner) => true;
         public virtual bool IsObjectCompatible(GameObject root) => true;
 

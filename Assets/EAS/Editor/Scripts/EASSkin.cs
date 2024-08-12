@@ -10,11 +10,14 @@ namespace EAS
         // ------ GUIStyles ------
         public static GUIStyle LockStyle { get => "IN LockButton"; }
 
+        public static GUIStyle BlackLabelStyle { get { GUIStyle labelStyle = new GUIStyle(EditorStyles.label); labelStyle.normal.textColor = Color.black; return labelStyle; } }
+
         // ------ Colors ------
         public static Color SelectedWhiteColor { get => new Color(1, 1, 1, 0.35f); }
         public static Color SeparatorColor { get => Color.black; }
         public static Color BackgroundColor { get => new Color(41.0f / 255.0f, 41.0f / 255.0f, 41.0f / 255.0f); }
         public static Color ToolbarBackgroundColor { get => new Color(60.0f / 255.0f, 60.0f / 255.0f, 60.0f / 255.0f); }
+        public static Color DraggedItemErrorColor { get => new Color(36.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f, 0.95f); }
 
         public static Color HierarchyTrackGroupColor { get => new Color(38.0f / 255.0f, 138.0f / 255.0f, 111.0f / 255.0f, 0.5f); }
         public static Color HierarchyTrackColor { get => new Color(65.0f / 255.0f, 65.0f / 255.0f, 65.0f / 255.0f); }
@@ -29,6 +32,9 @@ namespace EAS
         public static Color TimelineTrackGroupColor { get => new Color(35.0f / 255.0f, 65.0f / 255.0f, 57.0f / 255.0f); }
         public static Color TimelineTrackColor { get => new Color(50.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f); }
         public static Color TimelineSelectedColor { get => new Color(54.0f / 255.0f, 64.0f / 255.0f, 83.0f / 255.0f); }
+        public static Color TimelineEventSeparatorColor { get => TimelineFrameLineColor; }
+        public static Color TimelineEventSelectedBorderColor { get => Color.white; }
+        public static Color TimelineEventSelectedColor { get => new Color(1.0f, 1.0f, 1.0f, 0.3f); }
         
         // ------ Appearance ------
         public static float ControlToolbarHeight = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
@@ -53,6 +59,8 @@ namespace EAS
         public static float TimelineMainFrameLabelUpperMargin = -2;
         public static float TimelineSecondaryFrameHeight = ControlToolbarHeight * 0.2f;
         public static float TimelineTertiaryFrameHeight = 2.0f;
+        public static float TimelineEventLabelLeftMargin = 3.0f;
+        public static float TimelineEventLabelRightMargin = 3.0f;
 
         // ------ Textures ------
         protected static Dictionary<string, Texture2D> m_Textures = new Dictionary<string, Texture2D>();

@@ -104,7 +104,7 @@ namespace EAS
             m_ParentTrackGroup = parentTrackGroup;
         }
 
-        public EASBaseEvent AddEvent(System.Type type, int desiredFrame)
+        public EASBaseEvent AddEvent(System.Type type, int desiredFrame, int trackLength)
         {
             EASBaseEvent newEvent = EASBaseEvent.Create(type);
             newEvent.ParentTrack = this;

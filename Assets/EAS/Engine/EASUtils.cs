@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using UnityEngine;
+using System.Reflection;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace EAS
 {
@@ -135,6 +135,11 @@ namespace EAS
             }
 
             return validEvents.OrderBy(e => e.Name).ToList();
+        }
+
+        public static int GetSerializableID(EASSerializable serializable)
+        {
+            return (serializable as EASID).ID;
         }
 #endif // UNITY_EDITOR
     }

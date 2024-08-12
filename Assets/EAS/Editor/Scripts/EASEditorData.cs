@@ -83,4 +83,55 @@ namespace EAS
             m_FrameColor = frameColor;
         }
     }
+
+    public class EASDragInformation
+    {
+        protected Vector2 m_InitialPosition;
+        public Vector2 InitialPosition { get => m_InitialPosition; }
+
+        protected List<EASBaseGUIItem> m_Items = new List<EASBaseGUIItem>();
+        public List<EASBaseGUIItem> Items { get => m_Items; }
+
+        protected bool m_DragPerformed = false;
+        public bool DragPerformed { get => m_DragPerformed; }
+
+        protected bool m_CanEndDrag = true;
+        public bool CanEndDrag { get => m_CanEndDrag; }
+
+        public EASDragInformation(Vector2 initialPosition, List<EASBaseGUIItem> items)
+        {
+            m_InitialPosition = initialPosition;
+            m_Items = items;
+
+            GUIUtility.hotControl = GetControlId();
+        }
+
+        public void OnDragPerformed(Vector2 position, bool canEndDrag)
+        {
+            if (!m_DragPerformed)
+            {
+                m_DragPerformed = position != m_InitialPosition;
+            }
+
+            m_CanEndDrag = canEndDrag;
+        }
+
+        protected static int GetControlId() => GUIUtility.GetControlID(FocusType.Passive);
+
+        public EventType GetEventType() => Event.current.GetTypeForControl(GetControlId());
+
+        public bool IsBeingDragged(EASSerializable serializable)
+        {
+            int serializableID = EASUtils.GetSerializableID(serializable);
+            for (int i = 0; i < m_Items.Count; ++i)
+            {
+                if (EASUtils.GetSerializableID(m_Items[i].EASSerializable) == serializableID)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
 }
