@@ -457,7 +457,7 @@ namespace ExtendedGUI
             while (dotLineRect.yMax < rect.yMax)
             {
                 EditorGUI.DrawRect(dotLineRect, color);
-                dotLineRect.y += spacing;
+                dotLineRect.y = dotLineRect.yMax + spacing;
             }
         }
 

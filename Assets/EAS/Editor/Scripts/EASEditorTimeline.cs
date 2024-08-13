@@ -52,6 +52,7 @@ namespace EAS
             GUI.EndClip();
 
             HandleInput();
+            OnGUIDrag();
         }
 
         protected void OnGUIFramesArea()
@@ -158,7 +159,7 @@ namespace EAS
         {
             Rect eventRect = Rect.MinMaxRect(GetHorizontalPositionAtFrame(baseEvent.StartFrame, clipped: true), trackGUIItem.Rect.y, Mathf.Ceil(GetHorizontalPositionAtFrame(baseEvent.LastFrame, clipped: true)), trackGUIItem.Rect.yMax);
 
-            if (EASEditor.Instance.IsSelected(baseEvent) && m_DragInformation != null && !m_DragInformation.CanEndDrag)
+            if (EASEditor.Instance.IsSelected(baseEvent) && m_DragInformation != null && !m_DragInformation.IsValidDrag)
             {
                 EditorGUI.DrawRect(eventRect, EASSkin.DraggedItemErrorColor);
             }
@@ -171,21 +172,33 @@ namespace EAS
                 }
                 else
                 {
-                    EditorGUI.DrawRect(eventRect, EASUtils.GetEASEventColorAttribute(baseEvent.GetType()));
+                    EditorGUI.DrawRect(eventRect, EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
                 }
             }
 
             Rect eventSeparatorRect = new Rect(eventRect.x, eventRect.y, 1, eventRect.height);
             EditorGUI.DrawRect(eventSeparatorRect, EASSkin.TimelineEventSeparatorColor);
 
-            m_TimelineEvents.Add(new EASEventGUIItem(eventRect, baseEvent));
+            if (eventRect.width >= 3.0f)
+            {
+                Rect leftResizeRect = new Rect(eventRect.x, eventRect.y, Mathf.Clamp(EASSkin.TimelineEventResizeRectsMaxWidth, 1.0f, eventRect.width / 3.0f), eventRect.height);
+                Rect rightResizeRect = new Rect(eventRect.xMax - leftResizeRect.width, eventRect.y, leftResizeRect.width, eventRect.height);
+
+                m_TimelineEvents.Add(new EASEventGUIItem(eventRect, leftResizeRect, rightResizeRect, baseEvent));
+                EditorGUIUtility.AddCursorRect(leftResizeRect, MouseCursor.ResizeHorizontal);
+                EditorGUIUtility.AddCursorRect(rightResizeRect, MouseCursor.ResizeHorizontal);
+            }
+            else
+            {
+                m_TimelineEvents.Add(new EASEventGUIItem(eventRect, baseEvent));
+            }
         }
 
         protected void OnGUISelectedEvent(EASEventGUIItem eventGUIItem)
         {
             if (EASEditor.Instance.IsSelected(eventGUIItem.EASSerializable))
             {
-                if (m_DragInformation != null && !m_DragInformation.CanEndDrag)
+                if (m_DragInformation != null && !m_DragInformation.IsValidDrag)
                 {
                     ExtendedGUI.ExtendedGUI.DrawOutlineRect(eventGUIItem.Rect, EASSkin.TimelineEventSelectedBorderColor, 1);
                 }
@@ -218,10 +231,55 @@ namespace EAS
                 eventGUIItem.Rect.width - (EASSkin.TimelineEventLabelLeftMargin + EASSkin.TimelineEventLabelRightMargin)), eventGUIItem.Rect.height);
 
             EASEventDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(baseEvent.GetType());
-            Color textColor = eventDrawer != null ? eventDrawer.LabelColor : ExtendedGUI.ExtendedGUI.GetContrastingLabelColor(EASUtils.GetEASEventColorAttribute(baseEvent.GetType()));
+            Color textColor = eventDrawer != null ? eventDrawer.LabelColor : ExtendedGUI.ExtendedGUI.GetContrastingLabelColor(EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
 
             labelGUIStyle.normal.textColor = labelGUIStyle.hover.textColor = labelGUIStyle.active.textColor = textColor;
             GUI.Label(eventLabelRect, eventLabelContent, labelGUIStyle);
+        }
+
+        protected void OnGUIDrag()
+        {
+            if (m_DragInformation != null && m_DragInformation.DragPerformed)
+            {
+                if (m_DragInformation.DragType == EASDragInformation.EASDragType.NormalDrag)
+                {
+                    Vector2Int startEndFrame = new Vector2Int(int.MaxValue, 0);
+                    for (int i = 0; i < m_DragInformation.Items.Count; ++i)
+                    {
+                        if (m_DragInformation.Items[i].EASSerializable is EASBaseEvent)
+                        {
+                            EASBaseEvent baseEvent = m_DragInformation.Items[i].EASSerializable as EASBaseEvent;
+                            startEndFrame.x = Mathf.Min(baseEvent.StartFrame, startEndFrame.x);
+                            startEndFrame.y = Mathf.Max(baseEvent.LastFrame, startEndFrame.y);
+                        }
+                    }
+
+                    Rect timelineFramesAreaHighlightRect = Rect.MinMaxRect(GetHorizontalPositionAtFrame(startEndFrame.x), m_WholeTimelineRect.y, GetHorizontalPositionAtFrame(startEndFrame.y), m_WholeTimelineRect.y + m_FramesAreaRect.height);
+                    EditorGUI.DrawRect(timelineFramesAreaHighlightRect, EASSkin.TimelineEventSelectedColor);
+
+                    OnGUIDragVerticalLine(startEndFrame.x);
+                    OnGUIDragVerticalLine(startEndFrame.y);
+                }
+                else
+                {
+                    Rect resizeRect = new Rect(Event.current.mousePosition - Vector2.one * 20, Vector2.one * 40);
+                    EditorGUIUtility.AddCursorRect(resizeRect, MouseCursor.ResizeHorizontal);
+
+                    EASBaseEvent resizingBaseEvent = m_DragInformation.Items[0].EASSerializable as EASBaseEvent;
+                    OnGUIDragVerticalLine(m_DragInformation.DragType == EASDragInformation.EASDragType.ResizeLeft ? resizingBaseEvent.StartFrame : resizingBaseEvent.LastFrame);
+                }
+            }
+        }
+
+        protected void OnGUIDragVerticalLine(int frame)
+        {
+            Rect verticalLineRect = new Rect(GetHorizontalPositionAtFrame(frame), m_WholeTimelineRect.y, 1, m_WholeTimelineRect.height);
+            ExtendedGUI.ExtendedGUI.DrawVerticalDottedLine(verticalLineRect, Color.black, 7, 3);
+
+            Vector2 frameLabelSize = EASSkin.WhiteMiniLabelStyle.CalcSize(new GUIContent(frame.ToString()));
+            Rect startFrameRect = new Rect(verticalLineRect.x - frameLabelSize.x / 2.0f, verticalLineRect.y, frameLabelSize.x, frameLabelSize.y);
+            EditorGUI.DrawRect(startFrameRect, Color.black);
+            GUI.Label(startFrameRect, frame.ToString(), EASSkin.WhiteMiniLabelStyle);
         }
 
         protected void HandleClippedInput()
@@ -274,21 +332,47 @@ namespace EAS
 
                 if (leftClickedGUIItem.EASSerializable is EASBaseEvent)
                 {
-                    List<EASDragGUIItem> draggedGUIItems = new List<EASDragGUIItem>();
-                    List<EASSerializable> selectedEvents = EASEditor.Instance.GetSelected<EASBaseEvent>();
-
-                    for (int i = 0; i < selectedEvents.Count; ++i)
-                    {
-                        EASBaseGUIItem baseGUIItem = GetGUIItemOfEASSerializable(selectedEvents[i]);
-                        draggedGUIItems.Add(new EASDragGUIItem(TransformClippedRect(baseGUIItem.Rect), baseGUIItem.EASSerializable));
-                    }
-                    m_DragInformation = new EASDragInformation(Event.current.mousePosition + m_WholeTimelineRect.position, draggedGUIItems);
+                    CreateDragInformation(leftClickedGUIItem);
                 }
             }
             else
             {
                 EASEditor.Instance.SelectObject(null, singleSelection: true);
             }
+        }
+
+        protected void CreateDragInformation(EASBaseGUIItem clickedGUIItem)
+        {
+            EASEventGUIItem eventGUIItem = clickedGUIItem as EASEventGUIItem;
+            EASDragInformation.EASDragType dragType = EASDragInformation.EASDragType.NormalDrag;
+            if (eventGUIItem.HasResizeRects)
+            {
+                if (eventGUIItem.ResizeLeftRect.Contains(Event.current.mousePosition)) dragType = EASDragInformation.EASDragType.ResizeLeft;
+                else if (eventGUIItem.ResizeRightRect.Contains(Event.current.mousePosition)) dragType = EASDragInformation.EASDragType.ResizeRight;
+            }
+
+            List<EASDragGUIItem> draggedGUIItems = new List<EASDragGUIItem>();
+            if (dragType == EASDragInformation.EASDragType.NormalDrag)
+            {
+                draggedGUIItems.Add(new EASDragGUIItem(TransformClippedRect(clickedGUIItem.Rect), clickedGUIItem.EASSerializable));
+            }
+            else
+            {
+                draggedGUIItems.Add(new EASDragGUIItem(TransformClippedRect(clickedGUIItem.Rect), clickedGUIItem.EASSerializable, eventGUIItem.EventStartPositionAndDuration));
+            }
+
+            List<EASSerializable> selectedEvents = EASEditor.Instance.GetSelected<EASBaseEvent>();
+
+            for (int i = 0; i < selectedEvents.Count; ++i)
+            {
+                if (EASEditorUtils.GetSerializableID(selectedEvents[i]) != EASEditorUtils.GetSerializableID(clickedGUIItem.EASSerializable))
+                {
+                    EASBaseGUIItem baseGUIItem = GetGUIItemOfEASSerializable(selectedEvents[i]);
+                    draggedGUIItems.Add(new EASDragGUIItem(TransformClippedRect(baseGUIItem.Rect), baseGUIItem.EASSerializable));
+                }
+            }
+
+            m_DragInformation = new EASDragInformation(Event.current.mousePosition + m_WholeTimelineRect.position, draggedGUIItems, dragType);
         }
 
         protected void OnRightClickDownClipped()
@@ -319,36 +403,87 @@ namespace EAS
         {
             if (m_DragInformation != null)
             {
-                EASTrack trackAtMousePosition = null;
-                EASBaseGUIItem trackGUIItemAtMousePosition = TimelineTrackAtMousePosition();
-                if (trackGUIItemAtMousePosition != null && trackGUIItemAtMousePosition.EASSerializable is EASTrack)
+                if (m_DragInformation.DragType == EASDragInformation.EASDragType.NormalDrag)
                 {
-                    trackAtMousePosition = trackGUIItemAtMousePosition.EASSerializable as EASTrack;
+                    PerformNormalDrag();
                 }
-
-                bool allowVerticalDrag = m_DragInformation.AllowVerticalDrag() && trackAtMousePosition != null && !trackAtMousePosition.Locked && !trackAtMousePosition.ParentTrackGroupLocked;
-
-                for (int i = 0; i < m_DragInformation.Items.Count; ++i)
+                else 
                 {
-                    EASBaseGUIItem draggingItem = m_DragInformation.Items[i];
-                    if (draggingItem.EASSerializable is EASBaseEvent)
+                    if (m_DragInformation.DragType == EASDragInformation.EASDragType.ResizeLeft)
                     {
-                        EASBaseEvent baseEvent = draggingItem.EASSerializable as EASBaseEvent;
-                        if (allowVerticalDrag)
-                        {
-                            EASEditor.Instance.MoveEvent(baseEvent, trackAtMousePosition);
-                        }
-
-                        Vector2 distanceFromEventStart = draggingItem.Rect.position - m_DragInformation.InitialPosition;
-
-                        float draggedEventStartHorizontalPosition = Event.current.mousePosition.x + distanceFromEventStart.x;
-                        baseEvent.StartFrame = GetSafeFrameAtPosition(draggedEventStartHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1 - baseEvent.Duration));
+                        PerformResizeLeftDrag();
                     }
+                    else
+                    {
+                        PerformResizeRightDrag();
+                    }
+                    Rect resizeRectAtMousePosition = new Rect(Event.current.mousePosition.x - 20, Event.current.mousePosition.y - 20, 40, 40);
+                    EditorGUIUtility.AddCursorRect(resizeRectAtMousePosition, MouseCursor.ResizeHorizontal);
                 }
 
-                m_DragInformation.OnDragPerformed(Event.current.mousePosition, AllEventsAreSafe());
-
+                m_DragInformation.OnDragPerformed(Event.current.mousePosition, isValidDrag: ValidateAllEventsPositions());
                 EditorWindow.focusedWindow.Repaint();
+            }
+        }
+
+        protected void PerformNormalDrag()
+        {
+            EASTrack trackAtMousePosition = null;
+            EASBaseGUIItem trackGUIItemAtMousePosition = TimelineTrackAtMousePosition();
+            if (trackGUIItemAtMousePosition != null && trackGUIItemAtMousePosition.EASSerializable is EASTrack)
+            {
+                trackAtMousePosition = trackGUIItemAtMousePosition.EASSerializable as EASTrack;
+            }
+
+            bool allowVerticalDrag = m_DragInformation.AllowVerticalDrag() && trackAtMousePosition != null && !trackAtMousePosition.Locked && !trackAtMousePosition.ParentTrackGroupLocked;
+
+            for (int i = 0; i < m_DragInformation.Items.Count; ++i)
+            {
+                EASBaseGUIItem draggingItem = m_DragInformation.Items[i];
+                if (draggingItem.EASSerializable is EASBaseEvent)
+                {
+                    EASBaseEvent baseEvent = draggingItem.EASSerializable as EASBaseEvent;
+                    if (allowVerticalDrag)
+                    {
+                        EASEditor.Instance.MoveEvent(baseEvent, trackAtMousePosition);
+                    }
+
+                    Vector2 distanceFromEventStart = draggingItem.Rect.position - m_DragInformation.InitialPosition;
+
+                    float draggedEventStartHorizontalPosition = Event.current.mousePosition.x + distanceFromEventStart.x;
+                    baseEvent.StartFrame = GetSafeFrameAtPosition(draggedEventStartHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1 - baseEvent.Duration));
+                }
+            }
+        }
+
+        protected void PerformResizeLeftDrag()
+        {
+            EASBaseGUIItem resizingGUIItem = m_DragInformation.Items[0];
+            if (resizingGUIItem.EASSerializable is EASBaseEvent)
+            {
+                EASBaseEvent baseEvent = resizingGUIItem.EASSerializable as EASBaseEvent;
+
+                Vector2 distanceFromEventStart = resizingGUIItem.Rect.position - m_DragInformation.InitialPosition;
+                float resizingEventStartHorizontalPosition = Event.current.mousePosition.x + distanceFromEventStart.x;
+
+                int previousLastFrame = baseEvent.LastFrame;
+                baseEvent.StartFrame = Mathf.Clamp(GetSafeFrameAtPosition(resizingEventStartHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1)), 0, baseEvent.LastFrame - 1);
+                baseEvent.Duration = previousLastFrame - baseEvent.StartFrame;
+            }
+        }
+
+        protected void PerformResizeRightDrag()
+        {
+            EASBaseGUIItem resizingGUIItem = m_DragInformation.Items[0];
+            if (resizingGUIItem.EASSerializable is EASBaseEvent)
+            {
+                EASBaseEvent baseEvent = resizingGUIItem.EASSerializable as EASBaseEvent;
+
+                Vector2 distanceFromEventEnd = new Vector2(resizingGUIItem.Rect.xMax, resizingGUIItem.Rect.y) - m_DragInformation.InitialPosition;
+                float resizingEventEndHorizontalPosition = Event.current.mousePosition.x + distanceFromEventEnd.x;
+
+                int frameAtMousePosition = GetSafeFrameAtPosition(resizingEventEndHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1));
+                baseEvent.Duration = Mathf.Clamp(frameAtMousePosition - baseEvent.StartFrame, 1, int.MaxValue);
             }
         }
 
@@ -363,9 +498,9 @@ namespace EAS
                 }
                 else if (m_DragInformation.DragPerformed)
                 {
-                    if (m_DragInformation.CanEndDrag)
+                    if (m_DragInformation.IsValidDrag)
                     {
-                        PerformDrag();
+                        FinishDrag();
                     }
                     else
                     {
@@ -379,7 +514,7 @@ namespace EAS
             }
         }
 
-        protected void PerformDrag()
+        protected void FinishDrag()
         {
             List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
             for (int i = 0; i < tracksAndGroups.Count; ++i)
@@ -402,18 +537,31 @@ namespace EAS
 
         protected void CancelDrag()
         {
-            for (int i = 0; i < m_DragInformation.Items.Count; ++i)
+            if (m_DragInformation.DragType == EASDragInformation.EASDragType.NormalDrag)
             {
-                if (m_DragInformation.Items[i].EASSerializable is EASBaseEvent)
+                for (int i = 0; i < m_DragInformation.Items.Count; ++i)
                 {
-                    EASBaseEvent baseEvent = m_DragInformation.Items[i].EASSerializable as EASBaseEvent;
-                    baseEvent.StartFrame = GetSafeFrameAtPosition(m_DragInformation.Items[i].Rect.x);
-
-                    EASTrack eventTrack = m_DragInformation.Items[i].Context as EASTrack;
-                    if (baseEvent.ParentTrack != eventTrack)
+                    if (m_DragInformation.Items[i].EASSerializable is EASBaseEvent)
                     {
-                        EASEditor.Instance.MoveEvent(baseEvent, eventTrack);
+                        EASBaseEvent baseEvent = m_DragInformation.Items[i].EASSerializable as EASBaseEvent;
+                        baseEvent.StartFrame = GetSafeFrameAtPosition(m_DragInformation.Items[i].Rect.x);
+
+                        EASTrack eventTrack = m_DragInformation.Items[i].Context as EASTrack;
+                        if (baseEvent.ParentTrack != eventTrack)
+                        {
+                            EASEditor.Instance.MoveEvent(baseEvent, eventTrack);
+                        }
                     }
+                }
+            }
+            else
+            {
+                if (m_DragInformation.Items[0].EASSerializable is EASBaseEvent)
+                {
+                    EASBaseEvent baseEvent = m_DragInformation.Items[0].EASSerializable as EASBaseEvent;
+                    Vector2Int eventStartPositionAndDuration = (Vector2Int)m_DragInformation.Items[0].Context;
+                    baseEvent.StartFrame = eventStartPositionAndDuration.x;
+                    baseEvent.Duration = eventStartPositionAndDuration.y;
                 }
             }
         }
@@ -600,27 +748,16 @@ namespace EAS
             return null;
         }
 
-        protected bool AllEventsAreSafe()
+        protected bool ValidateAllEventsPositions()
         {
-            for (int i = 0; i < m_TimelineTracksAndGroups.Count; ++i)
+            int trackLength = EASEditor.Instance.GetCurrentAnimationFrames();
+            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
+            for (int i = 0; i < tracksAndGroups.Count; ++i)
             {
-                EASTrack track = m_TimelineTracksAndGroups[i].EASSerializable as EASTrack;
-                if (track != null)
+                if ((tracksAndGroups[i] is EASTrackGroup && !EASEditorUtils.ValidateTrackGroupEventPositions(tracksAndGroups[i] as EASTrackGroup, trackLength)) ||
+                    (tracksAndGroups[i] is EASTrack && !EASEditorUtils.ValidateTrackEventPositions(tracksAndGroups[i] as EASTrack, trackLength)))
                 {
-                    bool[] availableFrames = new bool[Mathf.RoundToInt(m_AnimationInformation.Frames)];
-                    List<EASSerializable> trackEvents = track.Events;
-                    for (int j = 0; j < trackEvents.Count; ++j)
-                    {
-                        EASBaseEvent baseEvent = trackEvents[j] as EASBaseEvent;
-                        for (int k = 0; k < baseEvent.Duration; ++k)
-                        {
-                            if (availableFrames[baseEvent.StartFrame + k])
-                            {
-                                return false;
-                            }
-                            availableFrames[baseEvent.StartFrame + k] = true;
-                        }
-                    }
+                    return false;
                 }
             }
 

@@ -10,7 +10,7 @@ namespace EAS
         // ------ GUIStyles ------
         public static GUIStyle LockStyle { get => "IN LockButton"; }
 
-        public static GUIStyle BlackLabelStyle { get { GUIStyle labelStyle = new GUIStyle(EditorStyles.label); labelStyle.normal.textColor = Color.black; return labelStyle; } }
+        public static GUIStyle WhiteMiniLabelStyle { get { GUIStyle labelStyle = new GUIStyle(EditorStyles.centeredGreyMiniLabel); labelStyle.fontSize = 9; labelStyle.normal.textColor = Color.white; return labelStyle; } }
 
         // ------ Colors ------
         public static Color SelectedWhiteColor { get => new Color(1, 1, 1, 0.35f); }
@@ -59,8 +59,10 @@ namespace EAS
         public static float TimelineMainFrameLabelUpperMargin = -2;
         public static float TimelineSecondaryFrameHeight = ControlToolbarHeight * 0.2f;
         public static float TimelineTertiaryFrameHeight = 2.0f;
+
         public static float TimelineEventLabelLeftMargin = 3.0f;
         public static float TimelineEventLabelRightMargin = 3.0f;
+        public static float TimelineEventResizeRectsMaxWidth = 10.0f;
 
         // ------ Textures ------
         protected static Dictionary<string, Texture2D> m_Textures = new Dictionary<string, Texture2D>();

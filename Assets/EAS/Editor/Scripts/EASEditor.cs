@@ -301,8 +301,17 @@ namespace EAS
                 track = baseTrack as EASTrack;
             }
 
-            int trackFrames = GetCurrentAnimationFrames();
-            return m_Timeline.IsMouseOnTimeline(m_MousePosition) ? track.AddEvent(eventType, m_Timeline.GetSafeFrameAtPosition(m_MousePosition.x), trackFrames) : track.AddEvent(eventType, trackFrames);
+            int trackLength = GetCurrentAnimationFrames();
+
+            EASBaseEvent baseEvent = track.CreateEvent(eventType);
+            if (EASEditorUtils.HasSpaceForNewEvents(track, GetCurrentAnimationFrames()) && m_Timeline.IsMouseOnTimeline(m_MousePosition) ? 
+                    EASEditorUtils.SetStartFrameAndDurationForNewEvent(baseEvent, m_Timeline.GetSafeFrameAtPosition(m_MousePosition.x), trackLength) :
+                    EASEditorUtils.SetStartFrameAndDurationForNewEvent(baseEvent, trackLength))
+            {
+                return track.AddEvent(baseEvent);
+            }
+
+            return null;
         }
 
         public bool IsSelected(EASSerializable selectedObject)
@@ -429,14 +438,14 @@ namespace EAS
             bool canAddEvents = true;
             if (baseTrack != null)
             {
-                canAddEvents = baseTrack is EASTrack ? !baseTrack.Locked && !(baseTrack as EASTrack).ParentTrackGroupLocked && (baseTrack as EASTrack).HasSpaceForNewEvents(GetCurrentAnimationFrames()) : !baseTrack.Locked;
+                canAddEvents = baseTrack is EASTrack ? !baseTrack.Locked && !(baseTrack as EASTrack).ParentTrackGroupLocked && EASEditorUtils.HasSpaceForNewEvents(baseTrack as EASTrack, GetCurrentAnimationFrames()) : !baseTrack.Locked;
             }
 
-            List<System.Type> eventTypes = EASUtils.GetValidEventsForTrack(Controller.DataRootGameObject, Controller);
+            List<System.Type> eventTypes = EASEditorUtils.GetValidEventsForTrack(Controller.DataRootGameObject, Controller);
             for (int i = 0; i < eventTypes.Count; ++i)
             {
                 System.Type type = eventTypes[i];
-                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent($"Add Event/{EASUtils.GetReadableEventName(type)}"),
+                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent($"Add Event/{EASEditorUtils.GetReadableEventNameWithCategory(type)}"),
                     canAddEvents, () => { AddEvent(type, baseTrack); });
             }
         }

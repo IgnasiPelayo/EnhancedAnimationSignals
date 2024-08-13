@@ -47,9 +47,24 @@ namespace EAS
 
     public class EASEventGUIItem : EASBaseGUIItem
     {
+        protected Rect m_ResizeLeftRect;
+        public Rect ResizeLeftRect { get => m_ResizeLeftRect; }
+
+        protected Rect m_ResizeRightRect;
+        public Rect ResizeRightRect { get => m_ResizeRightRect; }
+
+        public bool HasResizeRects { get => m_ResizeLeftRect != null || m_ResizeRightRect != null; }
+        public Vector2Int EventStartPositionAndDuration { get { EASBaseEvent baseEvent = m_EASSerializable as EASBaseEvent; return new Vector2Int(baseEvent.StartFrame, baseEvent.Duration); } }
+
         public EASEventGUIItem(Rect rect, EASBaseEvent baseEvent) : base(rect, baseEvent)
         {
 
+        }
+
+        public EASEventGUIItem(Rect rect, Rect resizeLeftRect, Rect resizeRightRect, EASBaseEvent baseEvent) : base(rect, baseEvent)
+        {
+            m_ResizeLeftRect = resizeLeftRect;
+            m_ResizeRightRect = resizeRightRect;
         }
     }
 
@@ -96,6 +111,11 @@ namespace EAS
                 m_Context = (serializable as EASBaseEvent).ParentTrack;
             }
         }
+
+        public EASDragGUIItem(Rect rect, EASSerializable serializable, object context) : base(rect, serializable)
+        {
+            m_Context = context;
+        }
     }
 
     public class EASDragInformation
@@ -109,25 +129,35 @@ namespace EAS
         protected bool m_DragPerformed = false;
         public bool DragPerformed { get => m_DragPerformed; }
 
-        protected bool m_CanEndDrag = true;
-        public bool CanEndDrag { get => m_CanEndDrag; }
+        protected bool m_IsValidDrag = true;
+        public bool IsValidDrag { get => m_IsValidDrag; }
 
-        public EASDragInformation(Vector2 initialPosition, List<EASDragGUIItem> items)
+        public enum EASDragType
+        {
+            NormalDrag,
+            ResizeLeft,
+            ResizeRight
+        }
+        protected EASDragType m_DragType;
+        public EASDragType DragType { get => m_DragType; }
+
+        public EASDragInformation(Vector2 initialPosition, List<EASDragGUIItem> items, EASDragType dragType)
         {
             m_InitialPosition = initialPosition;
             m_Items = items;
+            m_DragType = dragType;
 
             GUIUtility.hotControl = GetControlId();
         }
 
-        public void OnDragPerformed(Vector2 position, bool canEndDrag)
+        public void OnDragPerformed(Vector2 position, bool isValidDrag)
         {
             if (!m_DragPerformed)
             {
                 m_DragPerformed = position != m_InitialPosition;
             }
 
-            m_CanEndDrag = canEndDrag;
+            m_IsValidDrag = isValidDrag;
         }
 
         protected static int GetControlId() => GUIUtility.GetControlID(FocusType.Passive);

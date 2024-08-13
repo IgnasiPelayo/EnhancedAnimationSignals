@@ -12,8 +12,245 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b821b977351e283478d7f75fd0718cb3, type: 3}
   m_Name: EAS Data
   m_EditorClassIdentifier: 
-  m_TimeStamp: 638590696821237490
-  m_AnimationsData: []
+  m_AnimationsData:
+  - m_ID: -1192672158
+    m_Name: New Animation
+    m_NameHash: -1996450064
+    m_TracksAndGroups:
+    - rid: 2068510404382556401
+  - m_ID: 1210398726
+    m_Name: Idle
+    m_NameHash: 2081823275
+    m_TracksAndGroups:
+    - rid: 2068510404382556476
+    - rid: 2068510404382556522
+  - m_ID: -1013973392
+    m_Name: 
+    m_NameHash: 0
+    m_TracksAndGroups: []
+  - m_ID: 1386319426
+    m_Name: New Animation2
+    m_NameHash: -1478407033
+    m_TracksAndGroups:
+    - rid: 2068510404382556407
+    - rid: 2068510404382556505
+  - m_ID: -1990114488
+    m_Name: Empty
+    m_NameHash: -1459219776
+    m_TracksAndGroups: []
   references:
     version: 2
-    RefIds: []
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2068510404382556401
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 736038713
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510404382556402
+        - rid: 2068510404382556403
+    - rid: 2068510404382556402
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 223543382
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556401
+        m_StartFrame: 6
+        m_Duration: 1
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510404382556403
+      type: {class: EASPlayParticlesEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -377957721
+        m_Name: Play Particles
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556401
+        m_StartFrame: 133
+        m_Duration: 1
+        m_Owner: {fileID: 0}
+    - rid: 2068510404382556407
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 660712516
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510404382556409
+        - rid: 2068510404382556504
+    - rid: 2068510404382556409
+      type: {class: EASPlayParticlesEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 374888042
+        m_Name: Play Particles
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556407
+        m_StartFrame: 19
+        m_Duration: 1
+        m_Owner: {fileID: 0}
+    - rid: 2068510404382556410
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -434549451
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556505
+        m_StartFrame: 0
+        m_Duration: 1
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510404382556475
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1392629565
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: 2068510404382556522
+        m_Events:
+        - rid: 2068510404382556498
+        - rid: 2068510404382556499
+        - rid: 2068510404382556519
+        - rid: 2068510404382556520
+        - rid: 2068510404382556521
+    - rid: 2068510404382556476
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1308854802
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events: []
+    - rid: 2068510404382556498
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -566558799
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556475
+        m_StartFrame: 0
+        m_Duration: 1
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510404382556499
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 328949102
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556475
+        m_StartFrame: 1
+        m_Duration: 1
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510404382556504
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1697355087
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556407
+        m_StartFrame: 20
+        m_Duration: 3
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510404382556505
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1225725323
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510404382556410
+        - rid: 2068510404382556523
+    - rid: 2068510404382556519
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1736143428
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556475
+        m_StartFrame: 2
+        m_Duration: 3
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510404382556520
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -484157539
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556475
+        m_StartFrame: 5
+        m_Duration: 3
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510404382556521
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 718390032
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556475
+        m_StartFrame: 8
+        m_Duration: 1
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510404382556522
+      type: {class: EASTrackGroup, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 468174163
+        m_Name: Track Group
+        m_Muted: 0
+        m_Locked: 0
+        m_Collapsed: 0
+        m_Tracks:
+        - m_ID: -1392629565
+          m_Name: Track
+          m_Muted: 0
+          m_Locked: 0
+          m_ParentTrackGroup:
+            rid: 2068510404382556522
+          m_Events:
+          - rid: 2068510404382556498
+          - rid: 2068510404382556499
+          - rid: 2068510404382556519
+          - rid: 2068510404382556520
+          - rid: 2068510404382556521
+    - rid: 2068510404382556523
+      type: {class: EASPlayParticlesEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 729149210
+        m_Name: Play Particles
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556505
+        m_StartFrame: 44
+        m_Duration: 3
+        m_Owner: {fileID: 0}

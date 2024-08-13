@@ -50,7 +50,7 @@ namespace EAS
             if (m_ID == INVALID_ID)
             {
                 m_ID = GenerateID();
-                m_Name = EASUtils.GetReadableEventName(GetType(), addExtension: false);
+                m_Name = EASUtils.GetReadableEventName(GetType());
             }
 #endif // UNITY_EDITOR
         }
@@ -69,7 +69,7 @@ namespace EAS
         protected virtual void OnDurationChanged() { }
 
 #if UNITY_EDITOR
-        public virtual string GetLabel() => EASUtils.GetReadableEventName(GetType(), addExtension: false);
+        public virtual string GetLabel() => EASUtils.GetReadableEventName(GetType());
 
         public virtual bool HasOwnerType(EASBaseController owner) => true;
         public virtual bool IsObjectCompatible(GameObject root) => true;
