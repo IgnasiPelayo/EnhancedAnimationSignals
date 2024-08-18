@@ -23,6 +23,22 @@ namespace EAS
             return null;
         }
 
+        public static T GetAttribute<T>(object[] attributes) where T : System.Attribute
+        {
+            if (attributes != null)
+            {
+                for (int i = 0; i < attributes.Length; ++i)
+                {
+                    if (attributes[i] is T)
+                    {
+                        return attributes[i] as T;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         public static string GetEASEventCategoryAttribute(System.Type type)
         {
             EASEventCategoryAttribute attribute = GetAttribute<EASEventCategoryAttribute>(type);
@@ -43,6 +59,17 @@ namespace EAS
             }
 
             return HexToColor("#C0C0C0");
+        }
+
+        public static string GetEASEventTooltipAttribute(System.Type type)
+        {
+            EASEventTooltipAttribute attribute = GetAttribute<EASEventTooltipAttribute>(type);
+            if (attribute != null)
+            {
+                return attribute.Tooltip;
+            }
+
+            return string.Empty;
         }
 
         public static System.Type GetEASCustomEventDrawerAttribute(System.Type type)
@@ -71,6 +98,62 @@ namespace EAS
             }
 
             return eventDrawers;
+        }
+
+        public static System.Type GetEASCustomEventInspectorDrawerAttribute(System.Type type)
+        {
+            EASCustomEventInspectorDrawerAttribute attribute = GetAttribute<EASCustomEventInspectorDrawerAttribute>(type);
+            if (attribute != null)
+            {
+                return attribute.Type;
+            }
+
+            return null;
+        }
+
+        public static Dictionary<System.Type, EASEventInspectorDrawer> GetAllEASCustomEventInspectorDrawers()
+        {
+            Dictionary<System.Type, EASEventInspectorDrawer> eventInspectorDrawers = new Dictionary<System.Type, EASEventInspectorDrawer>();
+
+            List<System.Type> allEventInspectorDrawers = GetAllDerivedTypesOf<EASEventInspectorDrawer>();
+            for (int i = 0; i < allEventInspectorDrawers.Count; ++i)
+            {
+                System.Type eventTypeOfEventInspectorDrawer = GetEASCustomEventInspectorDrawerAttribute(allEventInspectorDrawers[i]);
+                if (!eventInspectorDrawers.ContainsKey(eventTypeOfEventInspectorDrawer))
+                {
+                    eventInspectorDrawers.Add(eventTypeOfEventInspectorDrawer, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(allEventInspectorDrawers[i]) as EASEventInspectorDrawer);
+                }
+            }
+
+            return eventInspectorDrawers;
+        }
+
+        public static System.Type GetEASCustomPropertyInspectorDrawerAttribute(System.Type type)
+        {
+            EASCustomPropertyInspectorDrawerAttribute attribute = GetAttribute<EASCustomPropertyInspectorDrawerAttribute>(type);
+            if (attribute != null)
+            {
+                return attribute.Type;
+            }
+
+            return null;
+        }
+
+        public static Dictionary<System.Type, EASPropertyInspectorDrawer> GetAllEASCustomPropertyInspectorDrawers()
+        {
+            Dictionary<System.Type, EASPropertyInspectorDrawer> propertyInspectorDrawers = new Dictionary<System.Type, EASPropertyInspectorDrawer>();
+
+            List<System.Type> allPropertyInspectorDrawers = GetAllDerivedTypesOf<EASPropertyInspectorDrawer>();
+            for (int i = 0; i < allPropertyInspectorDrawers.Count; ++i)
+            {
+                System.Type fieldTypeOfPropertyInspectorDrawer = GetEASCustomPropertyInspectorDrawerAttribute(allPropertyInspectorDrawers[i]);
+                if (fieldTypeOfPropertyInspectorDrawer != null && !propertyInspectorDrawers.ContainsKey(fieldTypeOfPropertyInspectorDrawer))
+                {
+                    propertyInspectorDrawers.Add(fieldTypeOfPropertyInspectorDrawer, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(allPropertyInspectorDrawers[i]) as EASPropertyInspectorDrawer);
+                }
+            }
+
+            return propertyInspectorDrawers;
         }
 
         public static string GetReadableEventNameWithCategory(System.Type type)

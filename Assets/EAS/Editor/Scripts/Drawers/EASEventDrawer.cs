@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEditor;
 
 namespace EAS
 {
@@ -7,12 +6,12 @@ namespace EAS
     {
         public virtual void OnGUIBackground(Rect rect, EASBaseEvent baseEvent)
         {
-            EditorGUI.DrawRect(rect, Color.magenta);
+            EASEditor.Instance.Timeline.BaseOnGUIEventBackground(rect, baseEvent);
         }
 
         public virtual void OnGUISelected(Rect rect, EASBaseEvent baseEvent)
         {
-            ExtendedGUI.ExtendedGUI.DrawOutlineRect(rect, Color.green, 1);
+            EASEditor.Instance.Timeline.BaseOnGUIEventSelected(rect, baseEvent);
         }
 
         public abstract Color LabelColor { get; }

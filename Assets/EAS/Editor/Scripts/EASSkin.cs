@@ -12,6 +12,11 @@ namespace EAS
 
         public static GUIStyle WhiteMiniLabelStyle { get { GUIStyle labelStyle = new GUIStyle(EditorStyles.centeredGreyMiniLabel); labelStyle.fontSize = 9; labelStyle.normal.textColor = Color.white; return labelStyle; } }
 
+        public static GUIStyle InspectorTooltipStyle { get { GUIStyle tooltipStyle = new GUIStyle(GUI.skin.box); tooltipStyle.wordWrap = true; tooltipStyle.padding.left = Mathf.RoundToInt(InspectorHeaderLeftMargin + 1); 
+                tooltipStyle.alignment = TextAnchor.UpperLeft; tooltipStyle.fontSize = 11;
+                tooltipStyle.normal.textColor = tooltipStyle.hover.textColor = tooltipStyle.active.textColor = tooltipStyle.focused.textColor = Color.gray; return tooltipStyle; } }
+        public static GUIStyle InspectorFocusedLabelStyle { get { GUIStyle focusedLabelStyle = new GUIStyle(EditorStyles.label); focusedLabelStyle.normal.textColor = InspectorFocusedColor; return focusedLabelStyle; } }
+        
         // ------ Colors ------
         public static Color SelectedWhiteColor { get => new Color(1, 1, 1, 0.35f); }
         public static Color SeparatorColor { get => Color.black; }
@@ -35,6 +40,8 @@ namespace EAS
         public static Color TimelineEventSeparatorColor { get => TimelineFrameLineColor; }
         public static Color TimelineEventSelectedBorderColor { get => Color.white; }
         public static Color TimelineEventSelectedColor { get => new Color(1.0f, 1.0f, 1.0f, 0.3f); }
+
+        public static Color InspectorFocusedColor { get => new Color(124.0f / 255.0f, 171.0f / 255.0f, 240.0f / 255.0f, 1.0f); }
         
         // ------ Appearance ------
         public static float ControlToolbarHeight = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
@@ -63,6 +70,15 @@ namespace EAS
         public static float TimelineEventLabelLeftMargin = 3.0f;
         public static float TimelineEventLabelRightMargin = 3.0f;
         public static float TimelineEventResizeRectsMaxWidth = 10.0f;
+
+        public static float InspectorHeaderHeight = ControlToolbarHeight;
+        public static float InspectorHeaderLeftMargin = 10;
+        public static float InspectorRightMargin = 2;
+        public static float InspectorUpperMargin = 5;
+        public static float InspectorBottomMargin = 3;
+        public static float InspectorHeaderSpacing = EditorGUIUtility.singleLineHeight / 3.0f;
+        public static float InspectorFoldoutIndentLeftMargin = -12;
+        public static float InspectorListSizeWidth = 60;
 
         // ------ Textures ------
         protected static Dictionary<string, Texture2D> m_Textures = new Dictionary<string, Texture2D>();

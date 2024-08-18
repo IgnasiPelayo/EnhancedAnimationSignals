@@ -34,6 +34,7 @@ MonoBehaviour:
     m_TracksAndGroups:
     - rid: 2068510404382556407
     - rid: 2068510404382556505
+    - rid: 2068510432433537024
   - m_ID: -1990114488
     m_Name: Empty
     m_NameHash: -1459219776
@@ -88,19 +89,7 @@ MonoBehaviour:
         m_ParentTrackGroup:
           rid: -2
         m_Events:
-        - rid: 2068510404382556409
-        - rid: 2068510404382556504
-    - rid: 2068510404382556409
-      type: {class: EASPlayParticlesEvent, ns: EAS, asm: Assembly-CSharp}
-      data:
-        m_ID: 374888042
-        m_Name: Play Particles
-        m_Controller: {fileID: 0}
-        m_ParentTrack:
-          rid: 2068510404382556407
-        m_StartFrame: 19
-        m_Duration: 1
-        m_Owner: {fileID: 0}
+        - rid: 2068510448828547093
     - rid: 2068510404382556410
       type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -112,7 +101,7 @@ MonoBehaviour:
         m_StartFrame: 0
         m_Duration: 1
         m_Owner: {fileID: 0}
-        m_Message: 
+        m_Message: Churumbel
     - rid: 2068510404382556475
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -125,8 +114,6 @@ MonoBehaviour:
         m_Events:
         - rid: 2068510404382556498
         - rid: 2068510404382556499
-        - rid: 2068510404382556519
-        - rid: 2068510404382556520
         - rid: 2068510404382556521
     - rid: 2068510404382556476
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
@@ -160,18 +147,6 @@ MonoBehaviour:
           rid: 2068510404382556475
         m_StartFrame: 1
         m_Duration: 1
-        m_Owner: {fileID: 0}
-        m_Message: 
-    - rid: 2068510404382556504
-      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
-      data:
-        m_ID: -1697355087
-        m_Name: Log
-        m_Controller: {fileID: 0}
-        m_ParentTrack:
-          rid: 2068510404382556407
-        m_StartFrame: 20
-        m_Duration: 3
         m_Owner: {fileID: 0}
         m_Message: 
     - rid: 2068510404382556505
@@ -251,6 +226,51 @@ MonoBehaviour:
         m_Controller: {fileID: 0}
         m_ParentTrack:
           rid: 2068510404382556505
-        m_StartFrame: 44
+        m_StartFrame: 61
         m_Duration: 3
         m_Owner: {fileID: 0}
+    - rid: 2068510432433537024
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 984197730
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510432433537025
+    - rid: 2068510432433537025
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 586228367
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510432433537024
+        m_StartFrame: 11
+        m_Duration: 21
+        m_Owner: {fileID: 0}
+        m_Message: Example
+    - rid: 2068510448828547093
+      type: {class: EASTestEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1480938379
+        m_Name: Test
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556407
+        m_StartFrame: 16
+        m_Duration: 36
+        m_Owner: {fileID: 0}
+        m_StringValue: this a a example!!
+        m_IntValue: -42
+        m_BoolValue: 0
+        m_FloatValue: 6.46
+        DoubleValue: 7.199999809265137
+        m_ColorValue: {r: 1, g: 1, b: 1, a: 1}
+        m_Vector2Value: {x: 11.5, y: 2.61}
+        m_Vector3Value: {x: 0, y: 0, z: 0}
+        m_Vector4Value: {x: 2.09, y: -1.83, z: 2.2, w: 0}
+        m_Vector4Value2: {x: 2.13, y: 1.71, z: 7.23, w: -2.05}
+        m_Transform: {fileID: 0}

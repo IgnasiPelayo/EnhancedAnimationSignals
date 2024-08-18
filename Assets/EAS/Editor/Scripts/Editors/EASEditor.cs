@@ -50,6 +50,7 @@ namespace EAS
 
         [SerializeField]
         protected EASEditorTimeline m_Timeline = new EASEditorTimeline();
+        public EASEditorTimeline Timeline { get => m_Timeline; }
 
         [SerializeField]
         protected Vector2 m_MousePosition;
@@ -111,6 +112,7 @@ namespace EAS
             }
 
             m_EventDrawers = EASEditorUtils.GetAllEASCustomEventDrawers();
+            SelectObject(null, singleSelection: true);
         }
 
         protected void Update()
@@ -128,8 +130,6 @@ namespace EAS
 
         protected void OnGUI()
         {
-            m_MousePosition = Event.current.mousePosition;
-
             if (Controller == null)
             {
                 NoControllerGUI();
@@ -137,6 +137,12 @@ namespace EAS
             }
 
             RenderOnGUI();
+        }
+
+        protected void OnDestroy()
+        {
+            m_SelectedObjects.Clear();
+            EditorUtility.SetDirty(this);
         }
 
         protected void NoControllerGUI()
@@ -182,10 +188,12 @@ namespace EAS
 
         protected void RenderOnGUI()
         {
+            m_MousePosition = Event.current.mousePosition;
+
             Rect windowRect = position;
             windowRect.x = windowRect.y = 0;
 
-            Rect toolbarRect = new Rect(0, 0, windowRect.width, EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing);
+            Rect toolbarRect = new Rect(0, 0, windowRect.width, EASSkin.ControlToolbarHeight);
             Rect hierarchyRect = new Rect(0, toolbarRect.yMax, windowRect.width / 4.0f, windowRect.height - toolbarRect.height);
             Rect timelineRect = Rect.MinMaxRect(hierarchyRect.xMax, hierarchyRect.y, windowRect.xMax, hierarchyRect.yMax);
 
@@ -214,6 +222,8 @@ namespace EAS
                         {
                             Playing = false;
                         }
+
+                        SelectObject(null, singleSelection: true);
                     }
                 }
             }
@@ -261,28 +271,42 @@ namespace EAS
 
         public EASTrackGroup AddTrackGroup()
         {
-            return Controller.Data.AddTrackGroup(SelectedAnimationName);
+            EASTrackGroup trackGroup = Controller.Data.AddTrackGroup(SelectedAnimationName);
+            EditorUtility.SetDirty(Controller.Data);
+
+            return trackGroup;
         }
 
         public EASTrack AddTrack()
         {
-            return Controller.Data.AddTrack(SelectedAnimationName);
+            EASTrack track = Controller.Data.AddTrack(SelectedAnimationName);
+            EditorUtility.SetDirty(Controller.Data);
+
+            return track;
         }
 
         public bool RemoveTrackOrGroup(EASSerializable trackOrGroup)
         {
-            return Controller.Data.RemoveTrackOrGroup(SelectedAnimationName, trackOrGroup);
+            bool success = Controller.Data.RemoveTrackOrGroup(SelectedAnimationName, trackOrGroup);
+            EditorUtility.SetDirty(Controller.Data);
+
+            return success;
         }
 
         public bool RemoveEvent(EASBaseEvent baseEvent)
         {
-            return baseEvent.ParentTrack.Events.Remove(baseEvent);
+            bool success = baseEvent.ParentTrack.Events.Remove(baseEvent);
+            EditorUtility.SetDirty(Controller.Data);
+
+            return success;
         }
 
         public void MoveEvent(EASBaseEvent baseEvent, EASTrack track)
         {
             RemoveEvent(baseEvent);
             track.AddEvent(baseEvent);
+
+            EditorUtility.SetDirty(Controller.Data);
         }
 
         public EASBaseEvent AddEvent(System.Type eventType, EASBaseTrack baseTrack)
@@ -308,7 +332,10 @@ namespace EAS
                     EASEditorUtils.SetStartFrameAndDurationForNewEvent(baseEvent, m_Timeline.GetSafeFrameAtPosition(m_MousePosition.x), trackLength) :
                     EASEditorUtils.SetStartFrameAndDurationForNewEvent(baseEvent, trackLength))
             {
-                return track.AddEvent(baseEvent);
+                baseEvent = track.AddEvent(baseEvent);
+
+                EditorUtility.SetDirty(Controller.Data);
+                return baseEvent;
             }
 
             return null;
@@ -352,6 +379,11 @@ namespace EAS
 
             GUI.FocusControl(null);
             Repaint();
+
+            if (EASInspectorEditor.Instance != null)
+            {
+                EASInspectorEditor.Instance.Repaint();
+            }
         }
 
         public List<EASSerializable> GetSelected<T>()

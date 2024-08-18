@@ -172,7 +172,7 @@ namespace EAS
                 }
                 else
                 {
-                    EditorGUI.DrawRect(eventRect, EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
+                    BaseOnGUIEventBackground(eventRect, baseEvent);
                 }
             }
 
@@ -194,6 +194,11 @@ namespace EAS
             }
         }
 
+        public void BaseOnGUIEventBackground(Rect rect, EASBaseEvent baseEvent)
+        {
+            EditorGUI.DrawRect(rect, EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
+        }
+
         protected void OnGUISelectedEvent(EASEventGUIItem eventGUIItem)
         {
             if (EASEditor.Instance.IsSelected(eventGUIItem.EASSerializable))
@@ -211,11 +216,16 @@ namespace EAS
                     }
                     else
                     {
-                        EditorGUI.DrawRect(eventGUIItem.Rect, EASSkin.TimelineEventSelectedColor);
-                        ExtendedGUI.ExtendedGUI.DrawOutlineRect(eventGUIItem.Rect, EASSkin.TimelineEventSelectedBorderColor, 1);
+                        BaseOnGUIEventSelected(eventGUIItem.Rect, eventGUIItem.EASSerializable as EASBaseEvent);
                     }
                 }
             }
+        }
+
+        public void BaseOnGUIEventSelected(Rect rect, EASBaseEvent baseEvent)
+        {
+            EditorGUI.DrawRect(rect, EASSkin.TimelineEventSelectedColor);
+            ExtendedGUI.ExtendedGUI.DrawOutlineRect(rect, EASSkin.TimelineEventSelectedBorderColor, 1);
         }
 
         protected void OnGUIEventLabel(EASEventGUIItem eventGUIItem)
@@ -487,6 +497,22 @@ namespace EAS
             }
         }
 
+        protected bool ValidateAllEventsPositions()
+        {
+            int trackLength = EASEditor.Instance.GetCurrentAnimationFrames();
+            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
+            for (int i = 0; i < tracksAndGroups.Count; ++i)
+            {
+                if ((tracksAndGroups[i] is EASTrackGroup && !EASEditorUtils.ValidateTrackGroupEventPositions(tracksAndGroups[i] as EASTrackGroup, trackLength)) ||
+                    (tracksAndGroups[i] is EASTrack && !EASEditorUtils.ValidateTrackEventPositions(tracksAndGroups[i] as EASTrack, trackLength)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         protected void OnLeftClickUp()
         {
             if (m_DragInformation != null)
@@ -533,6 +559,8 @@ namespace EAS
                     track.ReorderEvents();
                 }
             }
+
+            EditorUtility.SetDirty(EASEditor.Instance.Controller.Data);
         }
 
         protected void CancelDrag()
@@ -723,12 +751,12 @@ namespace EAS
 
         protected EASBaseGUIItem GetGUIItemOfEASSerializable(EASSerializable serializable)
         {
-            int serializableID = (serializable as EASID).ID;
+            int serializableID = EASEditorUtils.GetSerializableID(serializable);
             if (serializable is EASBaseEvent)
             {
                 for (int i = 0; i < m_TimelineEvents.Count; ++i)
                 {
-                    if ((m_TimelineEvents[i].EASSerializable as EASID).ID == serializableID)
+                    if (EASEditorUtils.GetSerializableID(m_TimelineEvents[i].EASSerializable) == serializableID)
                     {
                         return m_TimelineEvents[i];
                     }
@@ -738,7 +766,7 @@ namespace EAS
             {
                 for (int i = 0; i < m_TimelineTracksAndGroups.Count; ++i)
                 {
-                    if ((m_TimelineTracksAndGroups[i].EASSerializable as EASID).ID == serializableID)
+                    if (EASEditorUtils.GetSerializableID(m_TimelineTracksAndGroups[i].EASSerializable) == serializableID)
                     {
                         return m_TimelineTracksAndGroups[i];
                     }
@@ -746,22 +774,6 @@ namespace EAS
             }
 
             return null;
-        }
-
-        protected bool ValidateAllEventsPositions()
-        {
-            int trackLength = EASEditor.Instance.GetCurrentAnimationFrames();
-            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
-            for (int i = 0; i < tracksAndGroups.Count; ++i)
-            {
-                if ((tracksAndGroups[i] is EASTrackGroup && !EASEditorUtils.ValidateTrackGroupEventPositions(tracksAndGroups[i] as EASTrackGroup, trackLength)) ||
-                    (tracksAndGroups[i] is EASTrack && !EASEditorUtils.ValidateTrackEventPositions(tracksAndGroups[i] as EASTrack, trackLength)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

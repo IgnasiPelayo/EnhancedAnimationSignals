@@ -69,7 +69,7 @@ namespace EAS
             buttonRect.x = controllerRect.x - buttonRect.width;
             if (ControlRect(ref buttonRect, EASSkin.Icon("d_UnityEditor.InspectorWindow"), 2, false, -1))
             {
-
+                EASInspectorEditor.OpenWindow();
             }
 
             if (ControlRect(ref buttonRect, EASSkin.CustomIcon("import_export"), 3, false, -1))

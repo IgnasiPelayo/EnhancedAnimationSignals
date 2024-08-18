@@ -2,7 +2,7 @@
 namespace EAS
 {
     [System.Serializable]
-    [EASEventColor("#FFA500"), EASEventCategory("Visual Effects"), EASTooltip("Play Particle Systems")]
+    [EASEventColor("#FFA500"), EASEventCategory("Visual Effects"), EASEventTooltip("Play Particle Systems")]
     public class EASPlayParticlesEvent : EASEvent
     {
 #if UNITY_EDITOR

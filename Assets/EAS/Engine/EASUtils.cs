@@ -53,9 +53,14 @@ namespace EAS
                 (HexToInt(hexColor[4]) * hex + HexToInt(hexColor[5])) / 255.0f);
         }
 
-        public static string GetReadableEventName(System.Type type)
+        public static string GetReadableEventName(System.Type type, bool replaceEvent = true)
         {
-            string eventName = type.Name.Replace("EAS", "").Replace("Event", "");
+            string eventName = type.Name.Replace("EAS", "");
+            if (replaceEvent)
+            {
+                eventName = eventName.Replace("Event", "");
+            }
+
             return FromCamelCase(eventName);
         }
 

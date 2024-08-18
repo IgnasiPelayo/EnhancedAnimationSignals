@@ -1,6 +1,5 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace EAS
 {
@@ -180,6 +179,29 @@ namespace EAS
             }
 
             return true;
+        }
+    }
+
+    [System.Serializable]
+    public class EASPropertyInspectorVariable
+    {
+        [SerializeField]
+        protected EASSerializable m_Serializable;
+        public EASSerializable Serializable { get => m_Serializable; }
+
+        [SerializeField]
+        protected string m_VariableName;
+        public string VariableName { get => m_VariableName; }
+
+        [SerializeField]
+        protected object m_Variable;
+        public object Variable { get => m_Variable; set => m_Variable = value; }
+
+        public EASPropertyInspectorVariable(EASSerializable serializable, string variableName, object variable)
+        {
+            m_Serializable = serializable;
+            m_VariableName = variableName;
+            m_Variable = variable;
         }
     }
 }
