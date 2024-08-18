@@ -16,10 +16,12 @@ namespace EAS
             return base.GetPropertyHeight(baseEvent, propertyName, propertyType, propertyValue, propertyAttributes);
         }
 
-        protected override void OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
+        protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
             DelayedAttribute delayedAttribute = EASEditorUtils.GetAttribute<DelayedAttribute>(propertyAttributes);
             TextAreaAttribute textAreaAttribute = EASEditorUtils.GetAttribute<TextAreaAttribute>(propertyAttributes);
+
+            EditorGUI.BeginChangeCheck();
 
             if (delayedAttribute != null)
             {
@@ -56,6 +58,8 @@ namespace EAS
                     propertyValue = EditorGUI.TextField(rect, label, (string)propertyValue);
                 }
             }
+
+            return EditorGUI.EndChangeCheck();
         }
     }
 }

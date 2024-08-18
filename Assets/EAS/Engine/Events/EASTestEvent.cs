@@ -4,47 +4,40 @@ using UnityEngine;
 namespace EAS
 {
     [System.Serializable]
+    public struct TestClass
+    {
+        [SerializeField]
+        public int m_Health;
+
+        [SerializeField]
+        public string m_Name;
+
+        public List<TestClass2> m_Stats;
+    }
+
+    [System.Serializable]
+    public struct TestClass2
+    {
+        [SerializeField]
+        public int m_Health;
+
+        [SerializeField]
+        public string m_Name;
+    }
+
+    [System.Serializable]
     [EASEventColor("#FFFFFF"), EASEventTooltip("This is a test event to show default property inspectors")]
     public class EASTestEvent : EASEvent
     {
-        [SerializeField]
-        protected bool[] m_Bools;
+        public List<Transform> List;
 
         [SerializeField]
-        protected Vector4[] m_VectorsArray;
+        public int m_Health;
 
-        //public List<bool> m_ListBool = new List<bool>();
+        public TestClass testClass;
 
-        //[SerializeField]
-        //protected string m_StringValue;
-
-        [SerializeField]
-        protected int m_IntValue;
-
-        //[SerializeField]
-        //protected bool m_BoolValue;
-
-        //[SerializeField, Min(2.0f)]
-        //protected float m_FloatValue;
-
-        //public double DoubleValue;
-
-        //[SerializeField, Header("Color")]
-        //public Color m_ColorValue;
-
-        ////[SerializeField]
-        //public Vector2 m_Vector2Value;
-        //public Vector3 m_Vector3Value;
-        //public Vector4 m_Vector4Value;
-        public Vector4 m_Vector4Value2;
-
-        //public Transform m_Transform;
-
-        //public GameObject m_GameObject;
-        //public Animator animator;
-
-        //[Space(10)]
-        //public AnimationCurve animationCurve;
+        [Space(10)]
+        public Transform m_Transform;
 
 #if UNITY_EDITOR
         public override string GetErrorMessage()

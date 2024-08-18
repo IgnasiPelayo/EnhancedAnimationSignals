@@ -139,7 +139,7 @@ namespace EAS
 
         public void BaseOnGUIInspector(Rect rect, EASBaseEvent baseEvent)
         {
-            List<FieldInfo> fields = GetFields(baseEvent);
+            List<FieldInfo> fields = GetFields(baseEvent.GetType());
 
             bool hasChanged = false;
             for (int i = 0; i < fields.Count; ++i)
@@ -156,7 +156,7 @@ namespace EAS
                 {
                     FieldInfo property = fields[i];
                     Rect controlRect = EditorGUILayout.GetControlRect(hasLabel: true, height: propertyInspectorDrawer.GetPropertyHeight(baseEvent, property.Name, property.FieldType, property.GetValue(baseEvent), fieldAttributes));
-                    hasChanged |= propertyInspectorDrawer.OnGUIProperty(controlRect, label, baseEvent, fields[i], fieldAttributes);
+                    hasChanged |= propertyInspectorDrawer.OnGUIProperty(controlRect, label, baseEvent, baseEvent, fields[i], fieldAttributes);
                 }
                 else
                 {
@@ -191,7 +191,7 @@ namespace EAS
                 GUIStyle headerGUISytle = new GUIStyle(EditorStyles.boldLabel);
                 headerGUISytle.alignment = TextAnchor.LowerLeft;
 
-                Rect headerRect = EditorGUILayout.GetControlRect(hasLabel: true, height: EditorStyles.boldLabel.CalcHeight(headerGUIContent, rect.width) + EASSkin.InspectorHeaderSpacing);
+                Rect headerRect = EditorGUILayout.GetControlRect(hasLabel: true, height: headerGUISytle.CalcHeight(headerGUIContent, rect.width) + EASSkin.InspectorHeaderSpacing);
                 headerRect = EditorGUI.IndentedRect(headerRect);
                 GUI.Label(headerRect, headerGUIContent, headerGUISytle);
 
@@ -199,7 +199,31 @@ namespace EAS
             }
         }
 
-        protected GUIContent GetPropertyLabel(FieldInfo property, object[] propertyAttributes)
+        public float GetHeaderAndSpacesHeight(object[] fieldAttributes)
+        {
+            float height = 0;
+
+            SpaceAttribute spaceAttribute = EASEditorUtils.GetAttribute<SpaceAttribute>(fieldAttributes);
+            if (spaceAttribute != null)
+            {
+                height += spaceAttribute.height;
+            }
+
+            HeaderAttribute headerAttribute = EASEditorUtils.GetAttribute<HeaderAttribute>(fieldAttributes);
+            if (headerAttribute != null)
+            {
+                GUIContent headerGUIContent = new GUIContent(headerAttribute.header);
+                GUIStyle headerGUISytle = new GUIStyle(EditorStyles.boldLabel);
+                headerGUISytle.alignment = TextAnchor.LowerLeft;
+
+                Vector2 size = headerGUISytle.CalcSize(headerGUIContent);
+                height += headerGUISytle.CalcHeight(headerGUIContent, size.x) + EASSkin.InspectorHeaderSpacing;
+            }
+
+            return height;
+        }
+
+        public GUIContent GetPropertyLabel(FieldInfo property, object[] propertyAttributes)
         {
             GUIContent label = new GUIContent();
 
@@ -269,12 +293,32 @@ namespace EAS
                     }
                 }
 
-                if (type.GetGenericTypeDefinition() == typeof(List<>))
+                if (type.IsGenericType)
                 {
-                    if (m_PropertyInspectorDrawers.ContainsKey(typeof(List<>)))
+                    System.Type genericTypeDefinition = type.GetGenericTypeDefinition();
+                    if (genericTypeDefinition == typeof(List<>))
                     {
-                        return m_PropertyInspectorDrawers[typeof(List<>)];
+                        if (m_PropertyInspectorDrawers.ContainsKey(typeof(List<>)))
+                        {
+                            return m_PropertyInspectorDrawers[typeof(List<>)];
+                        }
                     }
+                }
+            }
+
+            if (type.IsEnum)
+            {
+                if (m_PropertyInspectorDrawers.ContainsKey(typeof(System.Enum)))
+                {
+                    return m_PropertyInspectorDrawers[typeof(System.Enum)];
+                }
+            }
+
+            if ((type.BaseType == typeof(System.Object) || type.BaseType == typeof(System.ValueType)) && type.IsDefined(typeof(System.SerializableAttribute)))
+            {
+                if (m_PropertyInspectorDrawers.ContainsKey(typeof(System.Object)))
+                {
+                    return m_PropertyInspectorDrawers[typeof(System.Object)];
                 }
             }
 
@@ -286,9 +330,9 @@ namespace EAS
             return GetPropertyInspectorDrawer(property.FieldType);
         }
 
-        public List<FieldInfo> GetFields(EASBaseEvent baseEvent)
+        public List<FieldInfo> GetFields(System.Type type)
         {
-            FieldInfo[] fields = baseEvent.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             List<FieldInfo> inspectorFields = new List<FieldInfo>();
 
             for (int i = 0; i < fields.Length; ++i)

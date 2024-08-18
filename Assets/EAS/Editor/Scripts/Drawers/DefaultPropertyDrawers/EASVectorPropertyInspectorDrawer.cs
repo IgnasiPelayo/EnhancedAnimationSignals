@@ -5,7 +5,7 @@ namespace EAS
 {
     public abstract class EASVectorPropertyInspectorDrawer<T> : EASPropertyInspectorDrawer
     {
-        protected override void OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
+        protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
             float rectWidth = rect.width;
             rect = EditorGUI.IndentedRect(rect);
@@ -16,7 +16,11 @@ namespace EAS
             T propertyValueAsVector = (T)propertyValue;
             Rect vectorRect = Rect.MinMaxRect(labelFieldRect.xMax, rect.y, rect.xMax, rect.yMax);
 
+            EditorGUI.BeginChangeCheck();
+
             propertyValue = OnGUIVectorProperty(vectorRect, propertyValueAsVector);
+
+            return EditorGUI.EndChangeCheck();
         }
 
         protected abstract T OnGUIVectorProperty(Rect vectorRect, T vectorValue);
@@ -85,13 +89,15 @@ namespace EAS
             return base.GetPropertyHeight(baseEvent, propertyName, propertyType, propertyValue, propertyAttributes);
         }
 
-        protected override void OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
+        protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
             Rect foldoutRect = new Rect(rect.x + EASSkin.InspectorFoldoutIndentLeftMargin, rect.y, rect.width - EASSkin.InspectorFoldoutIndentLeftMargin, EditorGUIUtility.singleLineHeight);
             SetInspectorVariable(baseEvent, propertyName, EditorGUI.Foldout(foldoutRect, GetInspectorVariable<bool>(baseEvent, propertyName), label, toggleOnLabelClick: true));
 
             if (GetInspectorVariable<bool>(baseEvent, propertyName))
             {
+                EditorGUI.BeginChangeCheck();
+
                 Vector4 propertyValueAsVector4 = (Vector4)propertyValue;
 
                 Rect vectorFieldRect = EditorGUI.IndentedRect(new Rect(rect.x, foldoutRect.yMax + EditorGUIUtility.standardVerticalSpacing, rect.width, EditorGUIUtility.singleLineHeight));
@@ -107,7 +113,11 @@ namespace EAS
                 propertyValueAsVector4.w = EditorGUI.FloatField(vectorFieldRect, new GUIContent("W"), propertyValueAsVector4.w);
 
                 propertyValue = propertyValueAsVector4;
+
+                return EditorGUI.EndChangeCheck();
             }
+
+            return false;
         }
     }
 }

@@ -263,14 +263,3 @@ MonoBehaviour:
         m_StartFrame: 16
         m_Duration: 36
         m_Owner: {fileID: 0}
-        m_StringValue: this a a example!!
-        m_IntValue: -42
-        m_BoolValue: 0
-        m_FloatValue: 6.46
-        DoubleValue: 7.199999809265137
-        m_ColorValue: {r: 1, g: 1, b: 1, a: 1}
-        m_Vector2Value: {x: 11.5, y: 2.61}
-        m_Vector3Value: {x: 0, y: 0, z: 0}
-        m_Vector4Value: {x: 2.09, y: -1.83, z: 2.2, w: 0}
-        m_Vector4Value2: {x: 2.13, y: 1.71, z: 7.23, w: -2.05}
-        m_Transform: {fileID: 0}

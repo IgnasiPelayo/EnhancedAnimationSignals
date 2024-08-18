@@ -6,8 +6,10 @@ namespace EAS
     [EASCustomPropertyInspectorDrawer(typeof(int))]
     public class EASIntPropertyInspectorDrawer : EASPropertyInspectorDrawer
     {
-        protected override void OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
+        protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
+            EditorGUI.BeginChangeCheck();
+
             RangeAttribute rangeAttribute = EASEditorUtils.GetAttribute<RangeAttribute>(propertyAttributes);
             if (rangeAttribute != null)
             {
@@ -27,6 +29,8 @@ namespace EAS
                     propertyValue = Mathf.RoundToInt(Mathf.Clamp(EditorGUI.IntField(rect, label, (int)propertyValue), minAttribute != null ? minAttribute.min : int.MinValue, int.MaxValue));
                 }
             }
+
+            return EditorGUI.EndChangeCheck();
         }
     }
 }

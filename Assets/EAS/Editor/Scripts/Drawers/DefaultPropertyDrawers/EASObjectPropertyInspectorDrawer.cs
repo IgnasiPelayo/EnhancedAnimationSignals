@@ -6,9 +6,13 @@ namespace EAS
     [EASCustomPropertyInspectorDrawer(typeof(Object))]
     public class EASObjectPropertyInspectorDrawer : EASPropertyInspectorDrawer
     {
-        protected override void OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
+        protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
-            propertyValue = EditorGUI.ObjectField(rect, label, (Object)propertyValue, propertyType, allowSceneObjects: true);
+            EditorGUI.BeginChangeCheck();
+
+            propertyValue = EditorGUI.ObjectField(rect, label, (Object)propertyValue, propertyType, allowSceneObjects: false);
+
+            return EditorGUI.EndChangeCheck();
         }
     }
 }

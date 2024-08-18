@@ -11,17 +11,12 @@ namespace EAS
             return EASInspectorEditor.Instance.BaseGetPorpertyHeight();
         }
 
-        public bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, FieldInfo property, object[] propertyAttributes)
+        public bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, object propertyObject, FieldInfo property, object[] propertyAttributes)
         {
-            object propertyValue = property.GetValue(baseEvent);
-
-            EditorGUI.BeginChangeCheck();
-
-            OnGUIProperty(rect, label, baseEvent, property.Name, property.FieldType, ref propertyValue, propertyAttributes);
-
-            if (EditorGUI.EndChangeCheck())
+            object propertyValue = property.GetValue(propertyObject);
+            if (OnGUIProperty(rect, label, baseEvent, property.Name, property.FieldType, ref propertyValue, propertyAttributes))
             {
-                property.SetValue(baseEvent, propertyValue);
+                property.SetValue(propertyObject, propertyValue);
                 return true;
             }
 
@@ -30,14 +25,10 @@ namespace EAS
 
         public bool OnGUIElementProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
-            EditorGUI.BeginChangeCheck();
-
-            OnGUIProperty(rect, label, baseEvent, propertyName, propertyType, ref propertyValue, propertyAttributes);
-
-            return EditorGUI.EndChangeCheck();
+            return OnGUIProperty(rect, label, baseEvent, propertyName, propertyType, ref propertyValue, propertyAttributes);
         }
 
-        protected abstract void OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes);
+        protected abstract bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes);
 
         protected T GetInspectorVariable<T>(EASSerializable serializable, string propertyName)
         {

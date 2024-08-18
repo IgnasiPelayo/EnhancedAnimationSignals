@@ -1,13 +1,11 @@
 using UnityEngine;
-using UnityEditorInternal;
-using System.Reflection;
 using UnityEditor;
-using System.Linq;
+using System.Collections;
+using UnityEditorInternal;
 
 namespace EAS
 {
-    [EASCustomPropertyInspectorDrawer(typeof(System.Array))]
-    public class EASArrayPropertyInspectorDrawer : EASPropertyInspectorDrawer
+    public abstract class EASBaseArrayPropertyInspectorDrawer : EASPropertyInspectorDrawer
     {
         public override float GetPropertyHeight(EASBaseEvent baseEvent, string propertyName, System.Type propertyType, object propertyValue, object[] propertyAttributes)
         {
@@ -22,45 +20,55 @@ namespace EAS
             return base.GetPropertyHeight(baseEvent, propertyName, propertyType, propertyValue, propertyAttributes);
         }
 
-        protected override void OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
+        protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
+            IList propertyValueAsIList = propertyValue as IList;
+
+            if (propertyValueAsIList == null)
+            {
+                propertyValue = CreateInstance(GetElementType(propertyType));
+                propertyValueAsIList = propertyValue as IList;
+            }
+
             Rect foldoutRect = new Rect(rect.x + EASSkin.InspectorFoldoutIndentLeftMargin, rect.y, rect.width - EASSkin.InspectorFoldoutIndentLeftMargin - EASSkin.InspectorListSizeWidth, EditorGUIUtility.singleLineHeight);
             bool foldout = EditorGUI.Foldout(foldoutRect, GetInspectorVariable<bool>(baseEvent, GetExpandedVariableName(propertyName)), label, toggleOnLabelClick: true);
             SetInspectorVariable(baseEvent, GetExpandedVariableName(propertyName), foldout);
 
-            System.Array propertyValueAsArray = propertyValue as System.Array;
-            ReorderableList reorderableList = GetReorderableList(baseEvent, propertyName, propertyType, propertyValueAsArray);
+            ReorderableList reorderableList = GetReorderableList(baseEvent, propertyName, propertyType, propertyValueAsIList);
 
             Rect arrayLengthRect = new Rect(foldoutRect.xMax, foldoutRect.y, EASSkin.InspectorListSizeWidth, foldoutRect.height);
-            int arrayLength = propertyValueAsArray.Length;
-            arrayLength = Mathf.Clamp(EditorGUI.DelayedIntField(arrayLengthRect, propertyValueAsArray.Length), 0, int.MaxValue);
-            if (arrayLength != propertyValueAsArray.Length)
+            int arrayLength = Mathf.Clamp(EditorGUI.DelayedIntField(arrayLengthRect, propertyValueAsIList.Count), 0, int.MaxValue);
+            if (arrayLength != propertyValueAsIList.Count)
             {
-                ResizeArray(ref propertyValueAsArray, propertyType.GetElementType(), arrayLength);
-                reorderableList.list = propertyValueAsArray;
+                OnArrayResized(ref propertyValueAsIList, GetElementType(propertyType), arrayLength);
+                reorderableList.list = propertyValueAsIList;
             }
+
+            EditorGUI.BeginChangeCheck();
 
             if (foldout)
             {
                 Rect reorderableListRect = EditorGUI.IndentedRect(new Rect(rect.x, foldoutRect.yMax + EditorGUIUtility.standardVerticalSpacing, rect.width, reorderableList.GetHeight()));
                 reorderableList.DoList(reorderableListRect);
             }
-            propertyValue = ConvertArray(reorderableList, propertyType.GetElementType());
+            propertyValue = ConvertIList(reorderableList.list, GetElementType(propertyType));
+
+            return EditorGUI.EndChangeCheck();
         }
 
-        protected ReorderableList GetReorderableList(EASBaseEvent baseEvent, string propertyName, System.Type propertyType, System.Array propertyValue)
+        protected ReorderableList GetReorderableList(EASBaseEvent baseEvent, string propertyName, System.Type propertyType, IList propertyValue)
         {
             ReorderableList reorderableList = GetInspectorVariable<ReorderableList>(baseEvent, GetReorderableListVariableName(propertyName));
             if (reorderableList == null || reorderableList.list == null)
             {
-                reorderableList = new ReorderableList(propertyValue, propertyType, draggable: true, displayHeader: false, displayAddButton: true, displayRemoveButton: true);
+                System.Type elementType = GetElementType(propertyType);
+                reorderableList = new ReorderableList(propertyValue, elementType, draggable: true, displayHeader: false, displayAddButton: true, displayRemoveButton: true);
                 reorderableList.multiSelect = true;
 
-                System.Type elementType = propertyType.GetElementType();
                 EASPropertyInspectorDrawer arrayElementPropertyInspectorDrawer = EASInspectorEditor.Instance.GetPropertyInspectorDrawer(elementType, getArrayAndListDrawers: false);
                 reorderableList.drawNoneElementCallback = (Rect rect) =>
                 {
-                    GUI.Label(rect, "Array is Empty");
+                    OnGUINoneElements(rect);
                 };
 
                 reorderableList.drawElementCallback = (Rect rect, int index, bool isActive, bool isFocused) =>
@@ -72,11 +80,13 @@ namespace EAS
                         EditorGUI.indentLevel++;
 
                         object element = reorderableList.list[index];
-                        if (arrayElementPropertyInspectorDrawer.OnGUIElementProperty(rect, label, baseEvent, label.text, elementType, ref element, new object[] { }))
+                        if (arrayElementPropertyInspectorDrawer.OnGUIElementProperty(rect, label, baseEvent, propertyName + "." + label.text, elementType, ref element, new object[] { }))
                         {
-                            System.Array array = ConvertArray(reorderableList, elementType) as System.Array;
-                            array.SetValue(element, index);
-                            reorderableList.list = array;
+                            IList iList = reorderableList.list;
+                            iList[index] = element;
+
+                            reorderableList.list = iList;
+                            EASInspectorEditor.Instance.Repaint();
                         }
 
                         EditorGUI.indentLevel--;
@@ -92,16 +102,15 @@ namespace EAS
                     GUIContent label = new GUIContent($"Element {index}");
                     object element = reorderableList.list[index];
 
-                    return arrayElementPropertyInspectorDrawer != null ? arrayElementPropertyInspectorDrawer.GetPropertyHeight(baseEvent, label.text, elementType, element, new object[] { }) : EditorGUIUtility.singleLineHeight;
+                    return arrayElementPropertyInspectorDrawer != null ? arrayElementPropertyInspectorDrawer.GetPropertyHeight(baseEvent, propertyName + "." + label.text, elementType, element, new object[] { }) : EditorGUIUtility.singleLineHeight;
                 };
 
                 reorderableList.onAddCallback = (ReorderableList list) =>
                 {
-                    object newItem = elementType.IsValueType ? System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(elementType) : System.Activator.CreateInstance(elementType);
+                    IList iList = list.list;
+                    OnAddElement(ref iList, elementType);
 
-                    System.Array array = ConvertArray(reorderableList, elementType) as System.Array;
-                    ResizeArray(ref array, elementType, array.Length + 1);
-                    reorderableList.list = array;
+                    list.list = iList;
                 };
 
                 reorderableList.onCanRemoveCallback = (ReorderableList list) =>
@@ -111,20 +120,20 @@ namespace EAS
 
                 reorderableList.onRemoveCallback = (ReorderableList list) =>
                 {
-                    System.Array array = ConvertArray(reorderableList, elementType) as System.Array;
+                    IList iList = list.list;
                     if (list.selectedIndices.Count == 0)
                     {
-                        RemoveAt(ref array, elementType, list.list.Count - 1);
+                        OnRemoveElement(ref iList, elementType, iList.Count - 1);
                     }
                     else
                     {
                         for (int i = list.selectedIndices.Count - 1; i >= 0; --i)
                         {
-                            RemoveAt(ref array, elementType, list.selectedIndices[i]);
+                            OnRemoveElement(ref iList, elementType, list.selectedIndices[i]);
                         }
                     }
 
-                    list.list = array;
+                    list.list = iList;
                 };
 
                 SetInspectorVariable(baseEvent, GetReorderableListVariableName(propertyName), reorderableList);
@@ -133,20 +142,66 @@ namespace EAS
             return reorderableList;
         }
 
-        protected void ResizeArray(ref System.Array array, System.Type elementType, int newSize)
-        {
-            System.Array newArray = System.Array.CreateInstance(elementType, newSize);
-            System.Array.Copy(array, newArray, Mathf.Min(array.Length, newArray.Length));
+        protected abstract System.Type GetElementType(System.Type type);
 
-            if (array.Length < newArray.Length)
+        protected abstract object CreateInstance(System.Type elementType);
+
+        protected abstract void OnGUINoneElements(Rect rect);
+        protected abstract void OnAddElement(ref IList iList, System.Type elementType);
+        protected abstract void OnRemoveElement(ref IList iList, System.Type elementType, int index);
+        protected abstract void OnArrayResized(ref IList iList, System.Type elementType, int newSize);
+
+        protected abstract object ConvertIList(IList iList, System.Type elementType);
+
+        protected object GetDefaultValue(System.Type elementType)
+        {
+            return elementType.IsValueType ? System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(elementType) : null;
+        }
+
+        protected string GetExpandedVariableName(string propertyName) => propertyName + "Expanded";
+        protected string GetReorderableListVariableName(string propertyName) => propertyName + "ReorderableList";
+    }
+
+    [EASCustomPropertyInspectorDrawer(typeof(System.Array))]
+    public class EASArrayPropertyInspectorDrawer : EASBaseArrayPropertyInspectorDrawer
+    {
+        protected override System.Type GetElementType(System.Type type)
+        {
+            return type.GetElementType();
+        }
+
+        protected override object CreateInstance(System.Type elementType)
+        {
+            return System.Array.CreateInstance(elementType, 0);
+        }
+
+        protected override void OnGUINoneElements(Rect rect)
+        {
+            GUI.Label(rect, "Array is Empty");
+        }
+
+        protected override void OnAddElement(ref IList iList, System.Type elementType)
+        {
+            System.Array array = ConvertIList(iList, elementType) as System.Array;
+            ResizeArray(ref array, elementType, array.Length + 1);
+
+            iList = array;
+        }
+
+        protected override void OnRemoveElement(ref IList iList, System.Type elementType, int index)
+        {
+            System.Array newArray = System.Array.CreateInstance(elementType, iList.Count - 1);
+            int insertionIndex = 0;
+            for (int i = 0; i < iList.Count; ++i)
             {
-                for (int i = array.Length; i < newArray.Length; ++i)
+                if (index != i)
                 {
-                    newArray.SetValue(elementType.IsValueType ? System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(elementType) : System.Activator.CreateInstance(elementType), i);
+                    newArray.SetValue(iList[i], insertionIndex);
+                    ++insertionIndex;
                 }
             }
 
-            array = newArray;
+            iList = newArray;
         }
 
         protected void RemoveAt(ref System.Array array, System.Type elementType, int index)
@@ -165,18 +220,91 @@ namespace EAS
             array = newArray;
         }
 
-        protected object ConvertArray(ReorderableList list, System.Type elementType)
+        protected override void OnArrayResized(ref IList iList, System.Type elementType, int newSize)
         {
-            System.Array newArray = System.Array.CreateInstance(elementType, list.list.Count);
+            System.Array array = ConvertIList(iList, elementType) as System.Array;
+            ResizeArray(ref array, elementType, newSize);
+
+            iList = array;
+        }
+
+        protected override object ConvertIList(IList iList, System.Type elementType)
+        {
+            System.Array newArray = System.Array.CreateInstance(elementType, iList.Count);
             for (int i = 0; i < newArray.Length; ++i)
             {
-                newArray.SetValue(list.list[i], i); 
+                newArray.SetValue(iList[i], i);
             }
 
             return newArray;
         }
 
-        protected string GetExpandedVariableName(string propertyName) => propertyName + "Expanded";
-        protected string GetReorderableListVariableName(string propertyName) => propertyName + "ReorderableList";
+        protected void ResizeArray(ref System.Array array, System.Type elementType, int newSize)
+        {
+            System.Array newArray = System.Array.CreateInstance(elementType, newSize);
+            System.Array.Copy(array, newArray, Mathf.Min(array.Length, newArray.Length));
+
+            if (array.Length < newArray.Length)
+            {
+                for (int i = array.Length; i < newArray.Length; ++i)
+                {
+                    newArray.SetValue(GetDefaultValue(elementType), i);
+                }
+            }
+
+            array = newArray;
+        }
+    }
+
+    [EASCustomPropertyInspectorDrawer(typeof(System.Collections.Generic.List<>))]
+    public class EASListPropertyInspectorDrawer : EASBaseArrayPropertyInspectorDrawer
+    {
+        protected override System.Type GetElementType(System.Type type)
+        {
+            return type.GetGenericArguments()[0];
+        }
+
+        protected override object CreateInstance(System.Type elementType)
+        {
+            return System.Activator.CreateInstance(typeof(System.Collections.Generic.List<>).MakeGenericType(elementType));
+        }
+
+        protected override void OnGUINoneElements(Rect rect)
+        {
+            GUI.Label(rect, "List is Empty");
+        }
+
+        protected override void OnAddElement(ref IList iList, System.Type elementType)
+        {
+            iList.Add(GetDefaultValue(elementType));
+        }
+
+        protected override void OnRemoveElement(ref IList iList, System.Type elementType, int index)
+        {
+            iList.RemoveAt(index);
+        }
+
+        protected override object ConvertIList(IList iList, System.Type elementType)
+        {
+            return iList;
+        }
+
+        protected override void OnArrayResized(ref IList iList, System.Type elementType, int newSize)
+        {
+            if (newSize > iList.Count)
+            {
+                for (int i = iList.Count; i < newSize; ++i)
+                {
+                    OnAddElement(ref iList, elementType);
+                }
+            }
+            else if (newSize < iList.Count)
+            {
+                while (iList.Count != newSize)
+                {
+                    OnRemoveElement(ref iList, elementType, iList.Count - 1);
+                }
+            }
+        }
     }
 }
