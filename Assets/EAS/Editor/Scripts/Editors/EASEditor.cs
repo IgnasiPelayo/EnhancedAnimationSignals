@@ -380,7 +380,7 @@ namespace EAS
             GUI.FocusControl(null);
             Repaint();
 
-            if (EASInspectorEditor.Instance != null)
+            if (EASInspectorEditor.HasInstance)
             {
                 EASInspectorEditor.Instance.Repaint();
             }

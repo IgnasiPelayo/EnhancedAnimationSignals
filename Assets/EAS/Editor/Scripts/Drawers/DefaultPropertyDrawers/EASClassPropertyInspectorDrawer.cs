@@ -24,7 +24,9 @@ namespace EAS
                     if (propertyInspectorDrawer != null)
                     {
                         FieldInfo property = fields[i];
-                        height += propertyInspectorDrawer.GetPropertyHeight(baseEvent, property.Name, property.FieldType, property.GetValue(propertyValue), fieldAttributes) + EditorGUIUtility.standardVerticalSpacing;
+                        string propertyPath = propertyName + "." + property.Name;
+
+                        height += propertyInspectorDrawer.GetPropertyHeight(baseEvent, propertyPath, property.FieldType, property.GetValue(propertyValue), fieldAttributes) + EditorGUIUtility.standardVerticalSpacing;
                     }
                     else
                     {
@@ -42,6 +44,8 @@ namespace EAS
         {
             Rect foldoutRect = new Rect(rect.x + EASSkin.InspectorFoldoutIndentLeftMargin, rect.y, rect.width - EASSkin.InspectorFoldoutIndentLeftMargin, EditorGUIUtility.singleLineHeight);
             SetInspectorVariable(baseEvent, propertyName, EditorGUI.Foldout(foldoutRect, GetInspectorVariable<bool>(baseEvent, propertyName), label, toggleOnLabelClick: true));
+
+            ShowEventOptionsMenuOnRightClick(foldoutRect, propertyValue, propertyName, propertyType);
 
             if (GetInspectorVariable<bool>(baseEvent, propertyName))
             {
@@ -65,8 +69,11 @@ namespace EAS
                     if (propertyInspectorDrawer != null)
                     {
                         FieldInfo property = fields[i];
-                        propertyRect = new Rect(propertyRect.x, propertyRect.yMax + EditorGUIUtility.standardVerticalSpacing, propertyRect.width, propertyInspectorDrawer.GetPropertyHeight(baseEvent, property.Name, property.FieldType, property.GetValue(propertyValue), fieldAttributes));
-                        hasChanged |= propertyInspectorDrawer.OnGUIProperty(propertyRect, propertyLabel, baseEvent, propertyValue, fields[i], fieldAttributes);
+                        string propertyPath = propertyName + "." + property.Name;
+
+                        propertyRect = new Rect(propertyRect.x, propertyRect.yMax + EditorGUIUtility.standardVerticalSpacing, propertyRect.width,
+                            propertyInspectorDrawer.GetPropertyHeight(baseEvent, propertyPath, property.FieldType, property.GetValue(propertyValue), fieldAttributes));
+                        hasChanged |= propertyInspectorDrawer.OnGUIProperty(propertyRect, propertyLabel, baseEvent, propertyValue, fields[i], fieldAttributes, propertyPath);
                     }
                     else
                     {

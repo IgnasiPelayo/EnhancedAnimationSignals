@@ -8,6 +8,8 @@ namespace EAS
     [System.Serializable]
     public abstract class EASBaseEvent : EASID
     {
+        public override string DefaultName => EASUtils.GetReadableEventName(GetType(), replaceEvent: true);
+
         [SerializeField, HideInInspector]
         protected EASBaseController m_Controller;
 
@@ -69,7 +71,7 @@ namespace EAS
         protected virtual void OnDurationChanged() { }
 
 #if UNITY_EDITOR
-        public virtual string GetLabel() => EASUtils.GetReadableEventName(GetType());
+        public virtual string GetLabel() => m_Name;
 
         public virtual bool HasOwnerType(EASBaseController owner) => true;
         public virtual bool IsObjectCompatible(GameObject root) => true;

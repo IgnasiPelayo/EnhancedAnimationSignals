@@ -111,23 +111,6 @@ namespace EAS
             return null;
         }
 
-        public static Dictionary<System.Type, EASEventInspectorDrawer> GetAllEASCustomEventInspectorDrawers()
-        {
-            Dictionary<System.Type, EASEventInspectorDrawer> eventInspectorDrawers = new Dictionary<System.Type, EASEventInspectorDrawer>();
-
-            List<System.Type> allEventInspectorDrawers = GetAllDerivedTypesOf<EASEventInspectorDrawer>();
-            for (int i = 0; i < allEventInspectorDrawers.Count; ++i)
-            {
-                System.Type eventTypeOfEventInspectorDrawer = GetEASCustomEventInspectorDrawerAttribute(allEventInspectorDrawers[i]);
-                if (!eventInspectorDrawers.ContainsKey(eventTypeOfEventInspectorDrawer))
-                {
-                    eventInspectorDrawers.Add(eventTypeOfEventInspectorDrawer, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(allEventInspectorDrawers[i]) as EASEventInspectorDrawer);
-                }
-            }
-
-            return eventInspectorDrawers;
-        }
-
         public static System.Type GetEASCustomPropertyInspectorDrawerAttribute(System.Type type)
         {
             EASCustomPropertyInspectorDrawerAttribute attribute = GetAttribute<EASCustomPropertyInspectorDrawerAttribute>(type);

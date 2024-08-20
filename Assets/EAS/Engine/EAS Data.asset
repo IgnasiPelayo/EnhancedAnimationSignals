@@ -99,7 +99,7 @@ MonoBehaviour:
         m_ParentTrack:
           rid: 2068510404382556505
         m_StartFrame: 0
-        m_Duration: 1
+        m_Duration: 17
         m_Owner: {fileID: 0}
         m_Message: Churumbel
     - rid: 2068510404382556475
@@ -240,6 +240,8 @@ MonoBehaviour:
           rid: -2
         m_Events:
         - rid: 2068510432433537025
+        - rid: 2068510562972336146
+        - rid: 2068510562972336147
     - rid: 2068510432433537025
       type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -261,5 +263,70 @@ MonoBehaviour:
         m_ParentTrack:
           rid: 2068510404382556407
         m_StartFrame: 16
-        m_Duration: 36
+        m_Duration: 22
         m_Owner: {fileID: 0}
+        m_AnimationCurve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 2
+            outSlope: 2
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Array:
+        - elele
+        m_List: []
+        m_Bool: 0
+        m_Class:
+          m_Name: 
+          m_Health: 0
+        m_Color: {r: 0.21764861, g: 0.6886792, b: 0.23991369, a: 0.68235296}
+        m_Double: 5.590000152587891
+        m_Enum: 14
+        m_Float: 2.62
+        m_Int: 179
+        m_Object: {fileID: 0}
+        m_String: coco es mi segundo gatito
+        m_Vector2: {x: 2.01, y: 1.59}
+        m_Vector3: {x: 2.73, y: 3.03, z: 3.36}
+        m_Vector4: {x: -1.8, y: -2.79, z: 2.22, w: 1.47}
+    - rid: 2068510562972336146
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 302033510
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510432433537024
+        m_StartFrame: 39
+        m_Duration: 10
+        m_Owner: {fileID: 0}
+        m_Message: 
+    - rid: 2068510562972336147
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 361316457
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510432433537024
+        m_StartFrame: 49
+        m_Duration: 10
+        m_Owner: {fileID: 0}
+        m_Message: 

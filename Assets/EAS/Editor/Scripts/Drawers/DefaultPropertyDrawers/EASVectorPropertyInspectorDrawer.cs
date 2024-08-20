@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using System;
 
 namespace EAS
 {
@@ -12,6 +13,7 @@ namespace EAS
 
             Rect labelFieldRect = new Rect(rect.x, rect.y, EditorGUIUtility.labelWidth - (rectWidth - rect.width), rect.height);
             GUI.Label(labelFieldRect, label);
+            ShowEventOptionsMenuOnRightClick(labelFieldRect, propertyValue, propertyName, propertyType);
 
             T propertyValueAsVector = (T)propertyValue;
             Rect vectorRect = Rect.MinMaxRect(labelFieldRect.xMax, rect.y, rect.xMax, rect.yMax);
@@ -24,6 +26,17 @@ namespace EAS
         }
 
         protected abstract T OnGUIVectorProperty(Rect vectorRect, T vectorValue);
+
+        protected override bool CanCopy()
+        {
+            return true;
+        }
+
+        protected override void OnCopy(object property, string propertyPath, Type propertyType)
+        {
+            base.OnCopy(property, propertyPath, propertyType);
+            GUIUtility.systemCopyBuffer = $"{propertyType.Name}{GUIUtility.systemCopyBuffer}";
+        }
     }
 
     [EASCustomPropertyInspectorDrawer(typeof(Vector2))]
@@ -94,6 +107,8 @@ namespace EAS
             Rect foldoutRect = new Rect(rect.x + EASSkin.InspectorFoldoutIndentLeftMargin, rect.y, rect.width - EASSkin.InspectorFoldoutIndentLeftMargin, EditorGUIUtility.singleLineHeight);
             SetInspectorVariable(baseEvent, propertyName, EditorGUI.Foldout(foldoutRect, GetInspectorVariable<bool>(baseEvent, propertyName), label, toggleOnLabelClick: true));
 
+            ShowEventOptionsMenuOnRightClick(foldoutRect, propertyValue, propertyName, propertyType);
+
             if (GetInspectorVariable<bool>(baseEvent, propertyName))
             {
                 EditorGUI.BeginChangeCheck();
@@ -102,15 +117,19 @@ namespace EAS
 
                 Rect vectorFieldRect = EditorGUI.IndentedRect(new Rect(rect.x, foldoutRect.yMax + EditorGUIUtility.standardVerticalSpacing, rect.width, EditorGUIUtility.singleLineHeight));
                 propertyValueAsVector4.x = EditorGUI.FloatField(vectorFieldRect, new GUIContent("X"), propertyValueAsVector4.x);
+                ShowEventOptionsMenuOnRightClick(vectorFieldRect, propertyValueAsVector4.x, propertyName + ".x", typeof(float));
 
                 vectorFieldRect.y = vectorFieldRect.yMax + EditorGUIUtility.standardVerticalSpacing; 
                 propertyValueAsVector4.y = EditorGUI.FloatField(vectorFieldRect, new GUIContent("Y"), propertyValueAsVector4.y);
+                ShowEventOptionsMenuOnRightClick(vectorFieldRect, propertyValueAsVector4.y, propertyName + ".y", typeof(float));
 
                 vectorFieldRect.y = vectorFieldRect.yMax + EditorGUIUtility.standardVerticalSpacing;
                 propertyValueAsVector4.z = EditorGUI.FloatField(vectorFieldRect, new GUIContent("Z"), propertyValueAsVector4.z);
+                ShowEventOptionsMenuOnRightClick(vectorFieldRect, propertyValueAsVector4.z, propertyName + ".z", typeof(float));
 
                 vectorFieldRect.y = vectorFieldRect.yMax + EditorGUIUtility.standardVerticalSpacing;
                 propertyValueAsVector4.w = EditorGUI.FloatField(vectorFieldRect, new GUIContent("W"), propertyValueAsVector4.w);
+                ShowEventOptionsMenuOnRightClick(vectorFieldRect, propertyValueAsVector4.w, propertyName + ".w", typeof(float));
 
                 propertyValue = propertyValueAsVector4;
 
@@ -118,6 +137,24 @@ namespace EAS
             }
 
             return false;
+        }
+
+        protected override bool CanCopy()
+        {
+            return true;
+        }
+
+        protected override void OnCopy(object property, string propertyPath, Type propertyType)
+        {
+            base.OnCopy(property, propertyPath, propertyType);
+            if (propertyType.Equals(typeof(Vector4)))
+            {
+                GUIUtility.systemCopyBuffer = $"{propertyType.Name}{GUIUtility.systemCopyBuffer}";
+            }
+            else
+            {
+                GUIUtility.systemCopyBuffer = GUIUtility.systemCopyBuffer.Replace(",", ".");
+            }
         }
     }
 }

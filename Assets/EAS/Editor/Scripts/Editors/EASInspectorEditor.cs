@@ -1,18 +1,15 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace EAS
 {
     public class EASInspectorEditor : EditorWindow
     {
         protected static EASInspectorEditor m_Instance;
-        public static EASInspectorEditor Instance { get { if (m_Instance == null) { m_Instance = GetWindow<EASInspectorEditor>(); } return m_Instance; } }
-
-        [SerializeField]
-        protected Dictionary<System.Type, EASEventInspectorDrawer> m_EventInspectorDrawers = new Dictionary<System.Type, EASEventInspectorDrawer>();
+        public static EASInspectorEditor Instance { get { if (m_Instance == null) { OpenWindow(); } return m_Instance; } }
+        public static bool HasInstance { get => m_Instance != null; }
 
         [SerializeField]
         protected Dictionary<System.Type, EASPropertyInspectorDrawer> m_PropertyInspectorDrawers = new Dictionary<System.Type, EASPropertyInspectorDrawer>();
@@ -34,8 +31,9 @@ namespace EAS
 
         protected void OnEnable()
         {
-            m_EventInspectorDrawers = EASEditorUtils.GetAllEASCustomEventInspectorDrawers();
             m_PropertyInspectorDrawers = EASEditorUtils.GetAllEASCustomPropertyInspectorDrawers();
+
+            OpenWindow();
         }
 
         protected void OnGUI()
@@ -56,44 +54,23 @@ namespace EAS
             List<EASSerializable> selectedEvents = EASEditor.Instance.GetSelected<EASBaseEvent>();
             if (selectedEvents.Count == 0)
             {
-                return;
-            }
-
-            if (selectedEvents.Count == 1)
-            {
-                EASBaseEvent baseEvent = selectedEvents[0] as EASBaseEvent;
-
-                Rect headerRect = new Rect(windowRect.x, windowRect.y, windowRect.width, EASSkin.InspectorHeaderHeight);
-                OnGUIInspectorHeader(headerRect, baseEvent);
-
-                Rect inspectorRect = Rect.MinMaxRect(headerRect.x, headerRect.yMax + EASSkin.InspectorUpperMargin,
-                    headerRect.xMax - EASSkin.InspectorRightMargin, windowRect.yMax - EASSkin.InspectorBottomMargin);
-                OnGUIInspectorTooltip(headerRect, baseEvent, ref inspectorRect);
-
-                EditorGUI.indentLevel++;
-
-                GUILayout.BeginArea(inspectorRect);
-
-                m_Scroll = GUILayout.BeginScrollView(m_Scroll);
-
-                inspectorRect = new Rect(0, 0, inspectorRect.width, inspectorRect.height);
-
-                EASEventInspectorDrawer eventInspectorDrawer = GetEventInspectorDrawer(baseEvent.GetType());
-                if (eventInspectorDrawer != null)
+                List<EASSerializable> selectedBaseTracks = EASEditor.Instance.GetSelected<EASBaseTrack>();
+                if (selectedBaseTracks.Count == 0)
                 {
-                    eventInspectorDrawer.OnGUIInspector(inspectorRect, baseEvent);
+                    return;
                 }
                 else
                 {
-                    BaseOnGUIInspector(inspectorRect, baseEvent);
+                    OnGUIMultipleTracks(windowRect, selectedBaseTracks);
                 }
-
-                GUILayout.EndScrollView();
-                GUILayout.EndArea();
+            }
+            else if (selectedEvents.Count == 1)
+            {
+                OnGUIEvent(windowRect, selectedEvents[0] as EASBaseEvent);
             }
             else
             {
-
+                OnGUIMultipleEvents(windowRect, selectedEvents);
             }
 
             if (Event.current.type == EventType.MouseDown)
@@ -103,22 +80,112 @@ namespace EAS
             }
         }
 
-        protected void OnGUIInspectorHeader(Rect rect, EASBaseEvent baseEvent)
+        protected void OnGUIMultipleTracks(Rect windowRect, List<EASSerializable> tracks)
         {
-            Color eventColor = EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType());
-            EditorGUI.DrawRect(rect, eventColor);
+            Rect inspectorRect = new Rect(windowRect.x, windowRect.y, windowRect.width, tracks.Count * (EASSkin.InspectorHeaderHeight + EditorGUIUtility.standardVerticalSpacing));
+            if (inspectorRect.height >= windowRect.height)
+            {
+                inspectorRect.width -= 15;
+            }
+
+            m_Scroll = GUI.BeginScrollView(windowRect, m_Scroll, inspectorRect);
+
+            Rect headerRect = new Rect(inspectorRect.x, inspectorRect.y, inspectorRect.width, EASSkin.InspectorHeaderHeight);
+            for (int i = 0; i < tracks.Count; ++i)
+            {
+                OnGUIInspectorHeader(headerRect, tracks[i] as EASBaseTrack);
+                headerRect.y = headerRect.yMax + EditorGUIUtility.standardVerticalSpacing;
+            }
+
+            GUI.EndScrollView();
+        }
+
+        protected void OnGUIEvent(Rect windowRect, EASBaseEvent baseEvent)
+        {
+            Rect headerRect = new Rect(windowRect.x, windowRect.y, windowRect.width, EASSkin.InspectorHeaderHeight);
+            OnGUIInspectorHeader(headerRect, baseEvent);
+
+            Rect inspectorRect = Rect.MinMaxRect(headerRect.x, headerRect.yMax + EASSkin.InspectorUpperMargin,
+                headerRect.xMax - EASSkin.InspectorRightMargin, windowRect.yMax - EASSkin.InspectorBottomMargin);
+            OnGUIInspectorTooltip(headerRect, baseEvent, ref inspectorRect);
+
+            EditorGUI.indentLevel++;
+
+            GUILayout.BeginArea(inspectorRect);
+
+            m_Scroll = GUILayout.BeginScrollView(m_Scroll);
+
+            inspectorRect = new Rect(0, 0, inspectorRect.width, inspectorRect.height);
+            BaseOnGUIInspector(inspectorRect, baseEvent);
+
+            GUILayout.EndScrollView();
+            GUILayout.EndArea();
+        }
+
+        protected void OnGUIMultipleEvents(Rect windowRect, List<EASSerializable> events)
+        {
+            Rect inspectorRect = new Rect(windowRect.x, windowRect.y, windowRect.width, (events.Count + 1) * (EASSkin.InspectorHeaderHeight + EditorGUIUtility.standardVerticalSpacing));
+            if (inspectorRect.height >= windowRect.height)
+            {
+                inspectorRect.width -= 15;
+            }
+
+            m_Scroll = GUI.BeginScrollView(windowRect, m_Scroll, inspectorRect);
+
+            Rect headerRect = new Rect(inspectorRect.x, inspectorRect.y, inspectorRect.width, EASSkin.InspectorHeaderHeight);
+            for (int i = 0; i < events.Count; ++i)
+            {
+                EASBaseEvent baseEvent = events[i] as EASBaseEvent;
+
+                OnGUIInspectorHeader(headerRect, baseEvent);
+                headerRect.y = headerRect.yMax + EditorGUIUtility.standardVerticalSpacing;
+            }
+
+            headerRect = Rect.MinMaxRect(headerRect.x + EASSkin.InspectorHeaderLeftMargin, headerRect.y + EditorGUIUtility.standardVerticalSpacing, headerRect.xMax, headerRect.yMax + EditorGUIUtility.standardVerticalSpacing);
+            GUI.Label(headerRect, new GUIContent("EASEvents can't be multi-edited"));
+
+            GUI.EndScrollView();
+        }
+
+        protected void OnGUIInspectorHeader(Rect rect, EASID baseID, Color color, string name)
+        {
+            EditorGUI.DrawRect(rect, color);
 
             GUIStyle labelGUIStyle = new GUIStyle(EditorStyles.label);
             labelGUIStyle.alignment = TextAnchor.MiddleLeft;
 
-            labelGUIStyle.normal.textColor = labelGUIStyle.hover.textColor = labelGUIStyle.active.textColor = ExtendedGUI.ExtendedGUI.GetContrastingLabelColor(EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
-            Rect eventLabelRect = Rect.MinMaxRect(rect.x + EASSkin.InspectorHeaderLeftMargin, rect.y, rect.xMax - EASSkin.InspectorRightMargin, rect.yMax);
-            GUI.Label(eventLabelRect, new GUIContent(EASUtils.GetReadableEventName(baseEvent.GetType(), replaceEvent: false)), labelGUIStyle);
+            labelGUIStyle.normal.textColor = labelGUIStyle.hover.textColor = labelGUIStyle.active.textColor = ExtendedGUI.ExtendedGUI.GetContrastingLabelColor(color);
+            Rect labelRect = Rect.MinMaxRect(rect.x + EASSkin.InspectorHeaderLeftMargin, rect.y, rect.xMax, rect.yMax);
+
+            labelRect.width = Mathf.Min(EditorStyles.label.CalcSize(new GUIContent(name)).x, labelRect.width);
+
+            EditorGUI.BeginChangeCheck();
+            name = EditorGUI.DelayedTextField(labelRect, name, labelGUIStyle);
+            if (EditorGUI.EndChangeCheck())
+            {
+                baseID.Name = string.IsNullOrEmpty(name) || string.IsNullOrWhiteSpace(name) ? baseID.DefaultName : name;
+
+                GUI.FocusControl(null);
+                EASEditor.Instance.Repaint();
+            }
 
             labelGUIStyle.fontSize = 10;
             labelGUIStyle.alignment = TextAnchor.LowerRight;
-            Rect idRect = Rect.MinMaxRect(eventLabelRect.x, eventLabelRect.y, eventLabelRect.xMax, eventLabelRect.yMax - 2);
-            GUI.Label(idRect, new GUIContent($"ID {EASEditorUtils.GetSerializableID(baseEvent)}"), labelGUIStyle);
+            Rect idRect = Rect.MinMaxRect(labelRect.x, labelRect.y, rect.xMax - EASSkin.InspectorRightMargin, labelRect.yMax - 2);
+            GUI.Label(idRect, new GUIContent($"ID {baseID.ID}"), labelGUIStyle);
+        }
+
+        protected void OnGUIInspectorHeader(Rect rect, EASBaseEvent baseEvent)
+        {
+            Color eventColor = EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType());
+            string eventName = baseEvent.Name == baseEvent.DefaultName ? EASUtils.GetReadableEventName(baseEvent.GetType(), replaceEvent: false) : baseEvent.Name;
+            OnGUIInspectorHeader(rect, baseEvent, eventColor, eventName);
+        }
+
+        protected void OnGUIInspectorHeader(Rect rect, EASBaseTrack baseTrack)
+        {
+            Color trackColor = (baseTrack is EASTrackGroup) ? EASSkin.HierarchyTrackGroupColor : EASSkin.HierarchyTrackColor;
+            OnGUIInspectorHeader(rect, baseTrack, trackColor, baseTrack.Name);
         }
 
         protected void OnGUIInspectorTooltip(Rect headerRect, EASBaseEvent baseEvent, ref Rect inspectorRect)
@@ -169,7 +236,7 @@ namespace EAS
 
             if (hasChanged)
             {
-                Debug.Log("Has changed");
+                EditorUtility.SetDirty(EASEditor.Instance.Controller.Data);
             }
         }
 
@@ -257,16 +324,6 @@ namespace EAS
             return false;
         }
 
-        public EASEventInspectorDrawer GetEventInspectorDrawer(System.Type type)
-        {
-            if (m_EventInspectorDrawers.ContainsKey(type))
-            {
-                return m_EventInspectorDrawers[type];
-            }
-
-            return null;
-        }
-
         public EASPropertyInspectorDrawer GetPropertyInspectorDrawer(System.Type type, bool getArrayAndListDrawers = true)
         {
             if (m_PropertyInspectorDrawers.ContainsKey(type))
@@ -314,7 +371,13 @@ namespace EAS
                 }
             }
 
-            if ((type.BaseType == typeof(System.Object) || type.BaseType == typeof(System.ValueType)) && type.IsDefined(typeof(System.SerializableAttribute)))
+            System.Type rootType = type.BaseType;
+            while (rootType.BaseType != null)
+            {
+                rootType = rootType.BaseType;
+            }
+
+            if (rootType == typeof(System.Object) && type.IsDefined(typeof(System.SerializableAttribute)))
             {
                 if (m_PropertyInspectorDrawers.ContainsKey(typeof(System.Object)))
                 {
@@ -395,7 +458,27 @@ namespace EAS
 
             m_PropertyInspectorVariables.Add(new EASPropertyInspectorVariable(serializable, variableName, variable));
         }
+
+        public bool CanShowEventOptionsMenu(Rect rect)
+        {
+            return Event.current.type == EventType.MouseDown && Event.current.button == 1 && rect.Contains(Event.current.mousePosition);
+        }
+
+        public void ShowEventOptionsMenu(object property, string propertyPath, System.Type propertyType, GenericMenu.MenuFunction2 copyFunction, object copyData)
+        {
+            GenericMenu propertyOptionsMenu = new GenericMenu();
+
+            propertyOptionsMenu.AddItem(new GUIContent("Copy Property Path"), false, () => { Debug.Log(propertyPath); });
+
+            propertyOptionsMenu.AddSeparator("");
+
+            if (copyFunction != null)
+            {
+                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(propertyOptionsMenu, new GUIContent("Copy"), true, copyFunction, copyData);
+            }
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(propertyOptionsMenu, new GUIContent("Paste"), false, null);
+
+            propertyOptionsMenu.ShowAsContext();
+        }
     }
 }
-
-

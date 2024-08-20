@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,6 +9,8 @@ namespace EAS
     {
         protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
+            ShowEventOptionsMenuOnRightClick(rect, propertyValue, propertyName, propertyType);
+
             EditorGUI.BeginChangeCheck();
 
             RangeAttribute rangeAttribute = EASEditorUtils.GetAttribute<RangeAttribute>(propertyAttributes);
@@ -31,6 +34,17 @@ namespace EAS
             }
 
             return EditorGUI.EndChangeCheck();
+        }
+
+        protected override bool CanCopy()
+        {
+            return true;
+        }
+
+        protected override void OnCopy(object property, string propertyPath, Type propertyType)
+        {
+            base.OnCopy(property, propertyPath, propertyType);
+            GUIUtility.systemCopyBuffer = GUIUtility.systemCopyBuffer.Replace(",", ".");
         }
     }
 }

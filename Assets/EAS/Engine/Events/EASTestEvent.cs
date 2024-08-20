@@ -4,40 +4,39 @@ using UnityEngine;
 namespace EAS
 {
     [System.Serializable]
-    public struct TestClass
-    {
-        [SerializeField]
-        public int m_Health;
-
-        [SerializeField]
-        public string m_Name;
-
-        public List<TestClass2> m_Stats;
-    }
-
-    [System.Serializable]
-    public struct TestClass2
-    {
-        [SerializeField]
-        public int m_Health;
-
-        [SerializeField]
-        public string m_Name;
-    }
-
-    [System.Serializable]
     [EASEventColor("#FFFFFF"), EASEventTooltip("This is a test event to show default property inspectors")]
     public class EASTestEvent : EASEvent
     {
-        public List<Transform> List;
+        public AnimationCurve m_AnimationCurve;
 
-        [SerializeField]
-        public int m_Health;
+        public string[] m_Array;
 
-        public TestClass testClass;
+        public List<string> m_List;
 
-        [Space(10)]
-        public Transform m_Transform;
+        public bool m_Bool;
+
+        public TestClass m_Class;
+
+        public Color m_Color;
+
+        public double m_Double;
+
+        public Directions m_Enum;
+
+        public float m_Float;
+
+        public int m_Int;
+
+        public Transform m_Object;
+
+        [TextArea]
+        public string m_String;
+
+        public Vector2 m_Vector2;
+
+        public Vector3 m_Vector3;
+
+        public Vector4 m_Vector4;
 
 #if UNITY_EDITOR
         public override string GetErrorMessage()

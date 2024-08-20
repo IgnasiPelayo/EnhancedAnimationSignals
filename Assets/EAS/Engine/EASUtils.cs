@@ -19,6 +19,11 @@ namespace EAS
 
         protected static string IntToHex(int value)
         {
+            if (value == 0)
+            {
+                return "00";
+            }
+
             string hexValue = string.Empty;
             while (value > 0)
             {
@@ -38,9 +43,9 @@ namespace EAS
             return hexValue;
         }
 
-        public static string ColorToHex(Color color)
+        public static string ColorToHex(Color color, bool addAlpha = false)
         {
-            return IntToHex(Mathf.RoundToInt(color.r * 255)) + IntToHex(Mathf.RoundToInt(color.g * 255)) + IntToHex(Mathf.RoundToInt(color.b * 255));
+            return IntToHex(Mathf.RoundToInt(color.r * 255)) + IntToHex(Mathf.RoundToInt(color.g * 255)) + IntToHex(Mathf.RoundToInt(color.b * 255)) + (addAlpha ? IntToHex(Mathf.RoundToInt(color.a * 255)) : "");
         }
 
         public static Color HexToColor(string hexColor)

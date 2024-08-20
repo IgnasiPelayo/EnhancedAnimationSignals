@@ -215,6 +215,11 @@ namespace EAS
                 baseTrack.Name = string.IsNullOrEmpty(baseTrackName) || string.IsNullOrWhiteSpace(baseTrackName) ? baseTrack.DefaultName : baseTrackName;
 
                 GUI.FocusControl(null);
+
+                if (EASInspectorEditor.HasInstance)
+                {
+                    EASInspectorEditor.Instance.Repaint();
+                }
             }
 
             return optionsButtonClicked;

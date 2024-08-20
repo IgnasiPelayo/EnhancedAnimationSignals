@@ -288,13 +288,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93d428e284d17234092a38a9398fe2e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  curve:
+  m_AnimationCurve:
     serializedVersion: 2
-    m_Curve: []
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  vec4Array:
-  - {x: 0, y: 0, z: 0, w: 0}
-  - {x: 0, y: 0, z: 0, w: 0}
-  boolList: 01
+  m_Array:
+  - elele
+  m_List:
+  - aa
+  m_Bool: 0
+  m_Class:
+    m_Name: 
+    m_Health: 0
+  m_Color: {r: 0.21960784, g: 0.6901961, b: 0.23921569, a: 0.68235296}
+  m_Double: 5.590000152587891
+  m_Enum: -1
+  m_Float: 2.62
+  m_Int: 179
+  m_Object: {fileID: 1755927595}
+  m_String: coco es mi segundo gatito
+  m_Vector2: {x: 2.01, y: 1.59}
+  m_Vector3: {x: 2.73, y: 3.03, z: 3.36}
+  m_Vector4: {x: -1.8, y: -2.79, z: 2.22, w: 1.47}

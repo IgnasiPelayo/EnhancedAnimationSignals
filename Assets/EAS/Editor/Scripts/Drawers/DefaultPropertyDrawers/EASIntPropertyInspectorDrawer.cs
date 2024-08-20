@@ -30,7 +30,14 @@ namespace EAS
                 }
             }
 
+            ShowEventOptionsMenuOnRightClick(GetLabelRect(rect), propertyValue, propertyName, propertyType);
+
             return EditorGUI.EndChangeCheck();
+        }
+
+        protected override bool CanCopy()
+        {
+            return true;
         }
     }
 }

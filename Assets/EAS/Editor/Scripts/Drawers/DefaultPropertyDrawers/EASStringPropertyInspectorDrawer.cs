@@ -25,13 +25,15 @@ namespace EAS
 
             if (delayedAttribute != null)
             {
+                ShowEventOptionsMenuOnRightClick(rect, propertyValue, propertyName, propertyType);
                 propertyValue = EditorGUI.DelayedTextField(rect, label, (string)propertyValue);
             }
             else
             {
                 if (textAreaAttribute != null)
                 {
-                    Rect labelRect = new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight);
+                    Rect labelRect = EditorGUI.IndentedRect(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight));
+                    ShowEventOptionsMenuOnRightClick(labelRect, propertyValue, propertyName, propertyType);
 
                     Rect textAreaRect = new Rect(rect.x, labelRect.yMax + EditorGUIUtility.standardVerticalSpacing, rect.width, 2.5f * EditorGUIUtility.singleLineHeight);
 
@@ -55,11 +57,17 @@ namespace EAS
                 }
                 else
                 {
+                    ShowEventOptionsMenuOnRightClick(rect, propertyValue, propertyName, propertyType);
                     propertyValue = EditorGUI.TextField(rect, label, (string)propertyValue);
                 }
             }
 
             return EditorGUI.EndChangeCheck();
+        }
+
+        protected override bool CanCopy()
+        {
+            return true;
         }
     }
 }

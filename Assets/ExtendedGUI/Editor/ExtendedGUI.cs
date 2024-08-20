@@ -473,6 +473,18 @@ namespace ExtendedGUI
             }
         }
 
+        public static void GenericMenuAddItem(GenericMenu menu, GUIContent content, bool enabled, GenericMenu.MenuFunction2 func, object data)
+        {
+            if (enabled)
+            {
+                menu.AddItem(content, false, func, data);
+            }
+            else
+            {
+                menu.AddDisabledItem(content, false);
+            }
+        }
+
         public static Color GetContrastingLabelColor(Color backgroundColor)
         {
             float luminance = 0.2126f * backgroundColor.r + 0.7152f * backgroundColor.g + 0.0722f * backgroundColor.b;

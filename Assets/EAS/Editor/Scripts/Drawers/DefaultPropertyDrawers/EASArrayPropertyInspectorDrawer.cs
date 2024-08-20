@@ -33,6 +33,7 @@ namespace EAS
             Rect foldoutRect = new Rect(rect.x + EASSkin.InspectorFoldoutIndentLeftMargin, rect.y, rect.width - EASSkin.InspectorFoldoutIndentLeftMargin - EASSkin.InspectorListSizeWidth, EditorGUIUtility.singleLineHeight);
             bool foldout = EditorGUI.Foldout(foldoutRect, GetInspectorVariable<bool>(baseEvent, GetExpandedVariableName(propertyName)), label, toggleOnLabelClick: true);
             SetInspectorVariable(baseEvent, GetExpandedVariableName(propertyName), foldout);
+            ShowEventOptionsMenuOnRightClick(foldoutRect, propertyValue, propertyName, propertyType);
 
             ReorderableList reorderableList = GetReorderableList(baseEvent, propertyName, propertyType, propertyValueAsIList);
 
@@ -80,7 +81,7 @@ namespace EAS
                         EditorGUI.indentLevel++;
 
                         object element = reorderableList.list[index];
-                        if (arrayElementPropertyInspectorDrawer.OnGUIElementProperty(rect, label, baseEvent, propertyName + "." + label.text, elementType, ref element, new object[] { }))
+                        if (arrayElementPropertyInspectorDrawer.OnGUIElementProperty(rect, label, baseEvent, propertyName + $".Array.data[{index}]", elementType, ref element, new object[] { }))
                         {
                             IList iList = reorderableList.list;
                             iList[index] = element;
