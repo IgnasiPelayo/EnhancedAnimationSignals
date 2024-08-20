@@ -9,7 +9,7 @@ namespace EAS
     {
         protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
-            ShowEventOptionsMenuOnRightClick(GetLabelRect(rect), propertyValue, propertyName, propertyType);
+            ShowEventOptionsMenuOnRightClick(GetLabelRect(rect), baseEvent, propertyValue, propertyName, propertyType);
 
             EditorGUI.BeginChangeCheck();
 
@@ -26,6 +26,16 @@ namespace EAS
         protected override void OnCopy(object property, string propertyPath, Type propertyType)
         {
             GUIUtility.systemCopyBuffer = $"#{EASUtils.ColorToHex((Color)property, addAlpha: true)}";
+        }
+
+        public override object GetPasteValueFromClipboard()
+        {
+            if (GUIUtility.systemCopyBuffer.StartsWith("#") && GUIUtility.systemCopyBuffer.Length == 9)
+            {
+                return EASUtils.HexToColor(GUIUtility.systemCopyBuffer);
+            }
+
+            return null;
         }
     }
 }

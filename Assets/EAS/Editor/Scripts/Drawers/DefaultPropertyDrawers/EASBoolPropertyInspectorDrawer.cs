@@ -8,7 +8,7 @@ namespace EAS
     {
         protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
-            ShowEventOptionsMenuOnRightClick(rect, propertyValue, propertyName, propertyType);
+            ShowEventOptionsMenuOnRightClick(rect, baseEvent, propertyValue, propertyName, propertyType);
 
             EditorGUI.BeginChangeCheck();
 
@@ -20,6 +20,21 @@ namespace EAS
         protected override bool CanCopy()
         {
             return true;
+        }
+
+        public override object GetPasteValueFromClipboard()
+        {
+            if (GUIUtility.systemCopyBuffer == "True")
+            {
+                return true;
+            }
+
+            if (GUIUtility.systemCopyBuffer == "False")
+            {
+                return false;
+            }
+
+            return null;
         }
     }
 }

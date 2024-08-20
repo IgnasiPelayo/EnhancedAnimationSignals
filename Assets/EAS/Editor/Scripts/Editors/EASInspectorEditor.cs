@@ -464,7 +464,7 @@ namespace EAS
             return Event.current.type == EventType.MouseDown && Event.current.button == 1 && rect.Contains(Event.current.mousePosition);
         }
 
-        public void ShowEventOptionsMenu(object property, string propertyPath, System.Type propertyType, GenericMenu.MenuFunction2 copyFunction, object copyData)
+        public void ShowEventOptionsMenu(EASBaseEvent baseEvent, object property, string propertyPath, System.Type propertyType, GenericMenu.MenuFunction2 copyFunction, object copyData)
         {
             GenericMenu propertyOptionsMenu = new GenericMenu();
 
@@ -475,10 +475,59 @@ namespace EAS
             if (copyFunction != null)
             {
                 ExtendedGUI.ExtendedGUI.GenericMenuAddItem(propertyOptionsMenu, new GUIContent("Copy"), true, copyFunction, copyData);
+                ExtendedGUI.ExtendedGUI.GenericMenuAddItem(propertyOptionsMenu, new GUIContent("Paste"), ShowPasteOption(propertyType), () => { OnPasteProperty(baseEvent, baseEvent, propertyPath); });
             }
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(propertyOptionsMenu, new GUIContent("Paste"), false, null);
 
             propertyOptionsMenu.ShowAsContext();
+        }
+
+        public bool ShowPasteOption(System.Type propertyType)
+        {
+            EASPropertyInspectorDrawer propertyInspectorDrawer = GetPropertyInspectorDrawer(propertyType);
+            if (propertyInspectorDrawer != null)
+            {
+                return propertyInspectorDrawer.PasteValueFromClipboardIsValid();
+            }
+
+            return false;
+        }
+
+        public void OnPasteProperty(EASBaseEvent baseEvent, object property, string propertyPath)
+        {
+            FieldInfo field = null;
+            object finalInstance = null;
+
+            if (CanPasteProperty(baseEvent, property, propertyPath, ref field, ref finalInstance))
+            {
+                EASPropertyInspectorDrawer propertyInspectorDrawer = GetPropertyInspectorDrawer(field);
+                field.SetValue(finalInstance, propertyInspectorDrawer.GetPasteValueFromClipboard());
+
+                EditorUtility.SetDirty(EASEditor.Instance.Controller.Data);
+            }
+        }
+
+        public bool CanPasteProperty(EASBaseEvent baseEvent, object property, string propertyPath, ref FieldInfo refField, ref object refFinalInstance)
+        {
+            List<FieldInfo> fields = GetFields(property.GetType());
+            for (int i = 0; i < fields.Count; ++i)
+            {
+                EASPropertyInspectorDrawer propertyInspectorDrawer = GetPropertyInspectorDrawer(fields[i]);
+                if (propertyInspectorDrawer != null)
+                {
+                    if (propertyInspectorDrawer.CanPaste(baseEvent, fields[i].GetValue(property), fields[i].Name, propertyPath, ref refField, ref refFinalInstance))
+                    {
+                        if (refField == null || refFinalInstance == null)
+                        {
+                            refField = fields[i];
+                            refFinalInstance = property;
+                        }
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

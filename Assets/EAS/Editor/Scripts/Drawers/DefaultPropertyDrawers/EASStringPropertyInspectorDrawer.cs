@@ -25,7 +25,7 @@ namespace EAS
 
             if (delayedAttribute != null)
             {
-                ShowEventOptionsMenuOnRightClick(rect, propertyValue, propertyName, propertyType);
+                ShowEventOptionsMenuOnRightClick(rect, baseEvent, propertyValue, propertyName, propertyType);
                 propertyValue = EditorGUI.DelayedTextField(rect, label, (string)propertyValue);
             }
             else
@@ -33,7 +33,7 @@ namespace EAS
                 if (textAreaAttribute != null)
                 {
                     Rect labelRect = EditorGUI.IndentedRect(new Rect(rect.x, rect.y, rect.width, EditorGUIUtility.singleLineHeight));
-                    ShowEventOptionsMenuOnRightClick(labelRect, propertyValue, propertyName, propertyType);
+                    ShowEventOptionsMenuOnRightClick(labelRect, baseEvent, propertyValue, propertyName, propertyType);
 
                     Rect textAreaRect = new Rect(rect.x, labelRect.yMax + EditorGUIUtility.standardVerticalSpacing, rect.width, 2.5f * EditorGUIUtility.singleLineHeight);
 
@@ -57,7 +57,7 @@ namespace EAS
                 }
                 else
                 {
-                    ShowEventOptionsMenuOnRightClick(rect, propertyValue, propertyName, propertyType);
+                    ShowEventOptionsMenuOnRightClick(rect, baseEvent, propertyValue, propertyName, propertyType);
                     propertyValue = EditorGUI.TextField(rect, label, (string)propertyValue);
                 }
             }
@@ -68,6 +68,11 @@ namespace EAS
         protected override bool CanCopy()
         {
             return true;
+        }
+
+        public override object GetPasteValueFromClipboard()
+        {
+            return GUIUtility.systemCopyBuffer;
         }
     }
 }

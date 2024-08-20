@@ -9,7 +9,7 @@ namespace EAS
     {
         protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
-            ShowEventOptionsMenuOnRightClick(rect, propertyValue, propertyName, propertyType);
+            ShowEventOptionsMenuOnRightClick(rect, baseEvent, propertyValue, propertyName, propertyType);
 
             EditorGUI.BeginChangeCheck();
 
@@ -45,6 +45,16 @@ namespace EAS
         {
             base.OnCopy(property, propertyPath, propertyType);
             GUIUtility.systemCopyBuffer = GUIUtility.systemCopyBuffer.Replace(",", ".");
+        }
+
+        public override object GetPasteValueFromClipboard()
+        {
+            if (float.TryParse(GUIUtility.systemCopyBuffer, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out float result))
+            {
+                return result;
+            }
+
+            return null;
         }
     }
 }

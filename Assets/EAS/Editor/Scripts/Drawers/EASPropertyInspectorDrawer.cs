@@ -62,11 +62,26 @@ namespace EAS
             GUIUtility.systemCopyBuffer = System.Convert.ChangeType(property, propertyType).ToString();
         }
 
-        protected void ShowEventOptionsMenuOnRightClick(Rect propertyRect, object property, string propertyPath, System.Type propertyType)
+        public virtual bool CanPaste(EASBaseEvent baseEvent, object property, string propertyName, string copiedPropertyPath, ref FieldInfo field, ref object finalInstance)
+        {
+            return propertyName == copiedPropertyPath;
+        }
+
+        public bool PasteValueFromClipboardIsValid()
+        {
+            return GetPasteValueFromClipboard() != null;
+        }
+
+        public virtual object GetPasteValueFromClipboard()
+        {
+            return null;
+        }
+
+        protected void ShowEventOptionsMenuOnRightClick(Rect propertyRect, EASBaseEvent baseEvent, object propertyValue, string propertyPath, System.Type propertyType)
         {
             if (EASInspectorEditor.Instance.CanShowEventOptionsMenu(propertyRect))
             {
-                EASInspectorEditor.Instance.ShowEventOptionsMenu(property, propertyPath, propertyType, CanCopy() ? OnCopy : null, (property, propertyPath, propertyType));
+                EASInspectorEditor.Instance.ShowEventOptionsMenu(baseEvent, propertyValue, propertyPath, propertyType, CanCopy() ? OnCopy : null, (propertyValue, propertyPath, propertyType));
             }
         }
     }

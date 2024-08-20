@@ -33,7 +33,7 @@ namespace EAS
             Rect foldoutRect = new Rect(rect.x + EASSkin.InspectorFoldoutIndentLeftMargin, rect.y, rect.width - EASSkin.InspectorFoldoutIndentLeftMargin - EASSkin.InspectorListSizeWidth, EditorGUIUtility.singleLineHeight);
             bool foldout = EditorGUI.Foldout(foldoutRect, GetInspectorVariable<bool>(baseEvent, GetExpandedVariableName(propertyName)), label, toggleOnLabelClick: true);
             SetInspectorVariable(baseEvent, GetExpandedVariableName(propertyName), foldout);
-            ShowEventOptionsMenuOnRightClick(foldoutRect, propertyValue, propertyName, propertyType);
+            ShowEventOptionsMenuOnRightClick(foldoutRect, baseEvent, propertyValue, propertyName, propertyType);
 
             ReorderableList reorderableList = GetReorderableList(baseEvent, propertyName, propertyType, propertyValueAsIList);
 

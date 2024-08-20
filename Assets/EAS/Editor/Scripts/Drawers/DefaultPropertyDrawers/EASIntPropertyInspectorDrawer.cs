@@ -30,7 +30,7 @@ namespace EAS
                 }
             }
 
-            ShowEventOptionsMenuOnRightClick(GetLabelRect(rect), propertyValue, propertyName, propertyType);
+            ShowEventOptionsMenuOnRightClick(GetLabelRect(rect), baseEvent, propertyValue, propertyName, propertyType);
 
             return EditorGUI.EndChangeCheck();
         }
@@ -38,6 +38,16 @@ namespace EAS
         protected override bool CanCopy()
         {
             return true;
+        }
+
+        public override object GetPasteValueFromClipboard()
+        {
+            if (int.TryParse(GUIUtility.systemCopyBuffer, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out int result))
+            {
+                return result;
+            }
+
+            return null;
         }
     }
 }

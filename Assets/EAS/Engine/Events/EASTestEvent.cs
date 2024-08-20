@@ -7,11 +7,11 @@ namespace EAS
     [EASEventColor("#FFFFFF"), EASEventTooltip("This is a test event to show default property inspectors")]
     public class EASTestEvent : EASEvent
     {
-        public AnimationCurve m_AnimationCurve;
+        //public AnimationCurve m_AnimationCurve;
 
-        public string[] m_Array;
+        //public string[] m_Array;
 
-        public List<string> m_List;
+        //public List<string> m_List;
 
         public bool m_Bool;
 
@@ -21,7 +21,7 @@ namespace EAS
 
         public double m_Double;
 
-        public Directions m_Enum;
+        //public Directions m_Enum;
 
         public float m_Float;
 

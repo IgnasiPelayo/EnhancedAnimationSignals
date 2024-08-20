@@ -9,7 +9,7 @@ namespace EAS
     {
         protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
-            ShowEventOptionsMenuOnRightClick(rect, propertyValue, propertyName, propertyType);
+            ShowEventOptionsMenuOnRightClick(rect, baseEvent, propertyValue, propertyName, propertyType);
 
             EditorGUI.BeginChangeCheck();
 

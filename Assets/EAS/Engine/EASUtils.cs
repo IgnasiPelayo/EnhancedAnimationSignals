@@ -53,9 +53,24 @@ namespace EAS
             const int hex = 16;
 
             hexColor = hexColor.Replace("#", "");
+            if (hexColor.Length == 8)
+            {
+                return HexToColorWithAlpha(hexColor);
+            }
+
             return new Color((HexToInt(hexColor[0]) * hex + HexToInt(hexColor[1])) / 255.0f,
                 (HexToInt(hexColor[2]) * hex + HexToInt(hexColor[3])) / 255.0f,
                 (HexToInt(hexColor[4]) * hex + HexToInt(hexColor[5])) / 255.0f);
+        }
+
+        public static Color HexToColorWithAlpha(string hexColor)
+        {
+            const int hex = 16;
+
+            return new Color((HexToInt(hexColor[0]) * hex + HexToInt(hexColor[1])) / 255.0f,
+                (HexToInt(hexColor[2]) * hex + HexToInt(hexColor[3])) / 255.0f,
+                (HexToInt(hexColor[4]) * hex + HexToInt(hexColor[5])) / 255.0f,
+                (HexToInt(hexColor[6]) * hex + HexToInt(hexColor[7])) / 255.0f);
         }
 
         public static string GetReadableEventName(System.Type type, bool replaceEvent = true)

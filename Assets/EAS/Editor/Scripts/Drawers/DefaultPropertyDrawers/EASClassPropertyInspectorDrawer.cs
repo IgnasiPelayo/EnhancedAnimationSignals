@@ -45,7 +45,7 @@ namespace EAS
             Rect foldoutRect = new Rect(rect.x + EASSkin.InspectorFoldoutIndentLeftMargin, rect.y, rect.width - EASSkin.InspectorFoldoutIndentLeftMargin, EditorGUIUtility.singleLineHeight);
             SetInspectorVariable(baseEvent, propertyName, EditorGUI.Foldout(foldoutRect, GetInspectorVariable<bool>(baseEvent, propertyName), label, toggleOnLabelClick: true));
 
-            ShowEventOptionsMenuOnRightClick(foldoutRect, propertyValue, propertyName, propertyType);
+            ShowEventOptionsMenuOnRightClick(foldoutRect, baseEvent, propertyValue, propertyName, propertyType);
 
             if (GetInspectorVariable<bool>(baseEvent, propertyName))
             {
@@ -87,6 +87,22 @@ namespace EAS
                 EditorGUI.indentLevel--;
 
                 return hasChanged;
+            }
+
+            return false;
+        }
+
+        public override bool CanPaste(EASBaseEvent baseEvent, object property, string propertyName, string copiedPropertyPath, ref FieldInfo field, ref object finalInstance)
+        {
+            int indexOfPoint = copiedPropertyPath.IndexOf(".");
+            if (indexOfPoint != -1)
+            {
+                string className = copiedPropertyPath.Substring(0, indexOfPoint);
+                if (className == propertyName)
+                {
+                    propertyName = copiedPropertyPath.Substring(copiedPropertyPath.IndexOf(className + ".") + (className + ".").Length);
+                    return EASInspectorEditor.Instance.CanPasteProperty(baseEvent, property, propertyName, ref field, ref finalInstance);
+                }
             }
 
             return false;
