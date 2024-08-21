@@ -20,12 +20,18 @@ namespace EAS
 
         public float Frames { get => Mathf.Clamp(m_Length * m_FrameRate, 1.0f, float.MaxValue); }
 
-        public EASAnimationInformation(object animation, float length, float frameRate)
+        [SerializeField]
+        protected List<int> m_KeyFrames;
+        public List<int> KeyFrames { get => m_KeyFrames; }
+
+        public EASAnimationInformation(object animation, float length, float frameRate, List<int> keyFrames)
         {
             m_Animation = animation;
 
             m_Length = length;
             m_FrameRate = frameRate;
+
+            m_KeyFrames = new List<int>(keyFrames);
         }
     }
 
@@ -34,10 +40,10 @@ namespace EAS
         protected Rect m_Rect;
         public Rect Rect { get => m_Rect; }
 
-        protected EASSerializable m_EASSerializable;
-        public EASSerializable EASSerializable { get => m_EASSerializable; }
+        protected IEASSerializable m_EASSerializable;
+        public IEASSerializable EASSerializable { get => m_EASSerializable; }
 
-        public EASBaseGUIItem(Rect rect, EASSerializable serializable)
+        public EASBaseGUIItem(Rect rect, IEASSerializable serializable)
         {
             m_Rect = rect;
             m_EASSerializable = serializable;
@@ -103,7 +109,7 @@ namespace EAS
         protected object m_Context;
         public object Context { get => m_Context; }
 
-        public EASDragGUIItem(Rect rect, EASSerializable serializable) : base(rect, serializable)
+        public EASDragGUIItem(Rect rect, IEASSerializable serializable) : base(rect, serializable)
         {
             if (serializable is EASBaseEvent)
             {
@@ -111,7 +117,7 @@ namespace EAS
             }
         }
 
-        public EASDragGUIItem(Rect rect, EASSerializable serializable, object context) : base(rect, serializable)
+        public EASDragGUIItem(Rect rect, IEASSerializable serializable, object context) : base(rect, serializable)
         {
             m_Context = context;
         }
@@ -186,8 +192,8 @@ namespace EAS
     public class EASPropertyInspectorVariable
     {
         [SerializeField]
-        protected EASSerializable m_Serializable;
-        public EASSerializable Serializable { get => m_Serializable; }
+        protected IEASSerializable m_Serializable;
+        public IEASSerializable Serializable { get => m_Serializable; }
 
         [SerializeField]
         protected string m_VariableName;
@@ -197,7 +203,7 @@ namespace EAS
         protected object m_Variable;
         public object Variable { get => m_Variable; set => m_Variable = value; }
 
-        public EASPropertyInspectorVariable(EASSerializable serializable, string variableName, object variable)
+        public EASPropertyInspectorVariable(IEASSerializable serializable, string variableName, object variable)
         {
             m_Serializable = serializable;
             m_VariableName = variableName;

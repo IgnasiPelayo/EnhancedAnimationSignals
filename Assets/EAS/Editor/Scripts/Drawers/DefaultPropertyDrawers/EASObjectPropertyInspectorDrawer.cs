@@ -8,13 +8,8 @@ namespace EAS
     {
         protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
-            ShowEventOptionsMenuOnRightClick(rect, baseEvent, propertyValue, propertyName, propertyType);
-
-            EditorGUI.BeginChangeCheck();
-
-            propertyValue = EditorGUI.ObjectField(rect, label, (Object)propertyValue, propertyType, allowSceneObjects: false);
-
-            return EditorGUI.EndChangeCheck();
+            GUI.Label(EditorGUI.IndentedRect(rect), new GUIContent($"Use EASReference<{propertyType}> to display and use Object properties"));
+            return false;
         }
     }
 }

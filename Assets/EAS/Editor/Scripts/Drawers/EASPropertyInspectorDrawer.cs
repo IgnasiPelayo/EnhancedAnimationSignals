@@ -31,12 +31,12 @@ namespace EAS
 
         protected abstract bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes);
 
-        protected T GetInspectorVariable<T>(EASSerializable serializable, string propertyName)
+        protected T GetInspectorVariable<T>(IEASSerializable serializable, string propertyName)
         {
             return EASInspectorEditor.Instance.GetVariable<T>(serializable, propertyName);
         }
 
-        protected void SetInspectorVariable<T>(EASSerializable serializable, string propertyName, T value)
+        protected void SetInspectorVariable<T>(IEASSerializable serializable, string propertyName, T value)
         {
             EASInspectorEditor.Instance.SetVariable<T>(serializable, propertyName, value);
         }

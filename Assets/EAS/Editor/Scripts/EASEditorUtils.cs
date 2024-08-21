@@ -83,17 +83,17 @@ namespace EAS
             return null;
         }
 
-        public static Dictionary<System.Type, EASEventDrawer> GetAllEASCustomEventDrawers()
+        public static Dictionary<System.Type, EASEventTimelineDrawer> GetAllEASCustomEventDrawers()
         {
-            Dictionary<System.Type, EASEventDrawer> eventDrawers = new Dictionary<System.Type, EASEventDrawer>();
+            Dictionary<System.Type, EASEventTimelineDrawer> eventDrawers = new Dictionary<System.Type, EASEventTimelineDrawer>();
 
-            List<System.Type> allEventDrawers = GetAllDerivedTypesOf<EASEventDrawer>();
+            List<System.Type> allEventDrawers = GetAllDerivedTypesOf<EASEventTimelineDrawer>();
             for (int i = 0; i < allEventDrawers.Count; ++i)
             {
                 System.Type eventTypeOfEventDrawer = GetEASCustomEventDrawerAttribute(allEventDrawers[i]);
                 if (!eventDrawers.ContainsKey(eventTypeOfEventDrawer))
                 {
-                    eventDrawers.Add(eventTypeOfEventDrawer, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(allEventDrawers[i]) as EASEventDrawer);
+                    eventDrawers.Add(eventTypeOfEventDrawer, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(allEventDrawers[i]) as EASEventTimelineDrawer);
                 }
             }
 
@@ -169,7 +169,7 @@ namespace EAS
             return validEvents.OrderBy(e => e.Name).ToList();
         }
 
-        public static int GetSerializableID(EASSerializable serializable)
+        public static int GetSerializableID(IEASSerializable serializable)
         {
             return (serializable as EASID).ID;
         }

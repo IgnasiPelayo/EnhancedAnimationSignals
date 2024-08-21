@@ -82,7 +82,7 @@ namespace EAS
             m_HierarchyGUIItems.Clear();
             Rect hierarchyTrackRect = Rect.MinMaxRect(hierarchyRect.x + EASSkin.HierarchyLeftMargin, hierarchyRect.y + EASSkin.HierarchyUpperMargin, hierarchyRect.xMax, hierarchyRect.y + EASSkin.HierarchyTrackHeight);
 
-            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
+            List<IEASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
             for (int i = 0; i < tracksAndGroups.Count; ++i)
             {
                 OnGUITrackAndGroup(ref hierarchyTrackRect, tracksAndGroups[i]);
@@ -91,7 +91,7 @@ namespace EAS
             HandleInput(hierarchyRect);
         }
 
-        protected void OnGUITrackAndGroup(ref Rect hierarchyTrackRect, EASSerializable trackOrGroup)
+        protected void OnGUITrackAndGroup(ref Rect hierarchyTrackRect, IEASSerializable trackOrGroup)
         {
             if (trackOrGroup is EASTrackGroup)
             {
@@ -245,7 +245,7 @@ namespace EAS
 
         protected void OnHierarchyLeftClick()
         {
-            EASSerializable hierarchyTrack = HierarchyTrackAtMousePosition();
+            IEASSerializable hierarchyTrack = HierarchyTrackAtMousePosition();
             if (hierarchyTrack != null)
             {
                 EASEditor.Instance.SelectObject(hierarchyTrack, Event.current.modifiers != EventModifiers.Shift);
@@ -258,7 +258,7 @@ namespace EAS
 
         protected void OnHierarchyRightClick()
         {
-            EASSerializable rightClickedHierarchyTrack = HierarchyTrackAtMousePosition();
+            IEASSerializable rightClickedHierarchyTrack = HierarchyTrackAtMousePosition();
             if (rightClickedHierarchyTrack != null)
             {
                 if (rightClickedHierarchyTrack is EASTrackGroup)
@@ -276,7 +276,7 @@ namespace EAS
             }
         }
 
-        protected EASSerializable HierarchyTrackAtMousePosition()
+        protected IEASSerializable HierarchyTrackAtMousePosition()
         {
             for (int i = 0; i < m_HierarchyGUIItems.Count; ++i)
             {

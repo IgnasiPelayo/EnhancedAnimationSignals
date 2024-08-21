@@ -14,7 +14,7 @@ namespace EAS
         protected EASBaseController m_Controller;
 
         [SerializeReference, HideInInspector]
-        protected EASSerializable m_ParentTrack;
+        protected IEASSerializable m_ParentTrack;
         public EASTrack ParentTrack { get => m_ParentTrack as EASTrack; set => m_ParentTrack = value; }
 
         [SerializeField, HideInInspector]

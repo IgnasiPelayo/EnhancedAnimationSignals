@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace EAS
 {
@@ -7,11 +7,11 @@ namespace EAS
     [EASEventColor("#FFFFFF"), EASEventTooltip("This is a test event to show default property inspectors")]
     public class EASTestEvent : EASEvent
     {
-        //public AnimationCurve m_AnimationCurve;
+        public AnimationCurve m_AnimationCurve;
 
-        //public string[] m_Array;
+        public string[] m_Array;
 
-        //public List<string> m_List;
+        public List<string> m_List;
 
         public bool m_Bool;
 
@@ -41,12 +41,12 @@ namespace EAS
 #if UNITY_EDITOR
         public override string GetErrorMessage()
         {
-            return string.Empty;
+            return "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
         }
 
         public override bool HasError(EASBaseController owner)
         {
-            return false;
+            return true;
         }
 #endif // UNITY_EDITOR
     }

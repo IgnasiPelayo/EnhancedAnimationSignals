@@ -33,8 +33,8 @@ MonoBehaviour:
     m_NameHash: -1478407033
     m_TracksAndGroups:
     - rid: 2068510404382556407
-    - rid: 2068510404382556505
     - rid: 2068510432433537024
+    - rid: 2068510608577789991
   - m_ID: -1990114488
     m_Name: Empty
     m_NameHash: -1459219776
@@ -65,7 +65,7 @@ MonoBehaviour:
         m_ParentTrack:
           rid: 2068510404382556401
         m_StartFrame: 6
-        m_Duration: 1
+        m_Duration: 106
         m_Owner: {fileID: 0}
         m_Message: 
     - rid: 2068510404382556403
@@ -76,14 +76,14 @@ MonoBehaviour:
         m_Controller: {fileID: 0}
         m_ParentTrack:
           rid: 2068510404382556401
-        m_StartFrame: 133
-        m_Duration: 1
+        m_StartFrame: 112
+        m_Duration: 15
         m_Owner: {fileID: 0}
     - rid: 2068510404382556407
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
         m_ID: 660712516
-        m_Name: oid
+        m_Name: Track
         m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
@@ -99,7 +99,7 @@ MonoBehaviour:
         m_ParentTrack:
           rid: 2068510404382556505
         m_StartFrame: 0
-        m_Duration: 17
+        m_Duration: 11
         m_Owner: {fileID: 0}
         m_Message: Churumbel
     - rid: 2068510404382556475
@@ -157,9 +157,10 @@ MonoBehaviour:
         m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
-          rid: -2
+          rid: 2068510608577789991
         m_Events:
         - rid: 2068510404382556410
+        - rid: 2068510608577789992
         - rid: 2068510404382556523
     - rid: 2068510404382556519
       type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
@@ -262,13 +263,30 @@ MonoBehaviour:
         m_Controller: {fileID: 0}
         m_ParentTrack:
           rid: 2068510404382556407
-        m_StartFrame: 16
-        m_Duration: 22
+        m_StartFrame: 0
+        m_Duration: 33
         m_Owner: {fileID: 0}
+        m_AnimationCurve:
+          serializedVersion: 2
+          m_Curve: []
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Array: []
+        m_List: []
         m_Bool: 0
         m_Class:
-          m_Name: False
+          m_Name: 
           m_Health: 0
+        m_Color: {r: 0, g: 0, b: 0, a: 0}
+        m_Double: 0
+        m_Float: 0
+        m_Int: 0
+        m_Object: {fileID: 0}
+        m_String: 
+        m_Vector2: {x: 0, y: 0}
+        m_Vector3: {x: 0, y: 0, z: 0}
+        m_Vector4: {x: 0, y: 0, z: 0, w: 0}
     - rid: 2068510562972336146
       type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -280,7 +298,7 @@ MonoBehaviour:
         m_StartFrame: 39
         m_Duration: 10
         m_Owner: {fileID: 0}
-        m_Message: 
+        m_Message: Example
     - rid: 2068510562972336147
       type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -293,3 +311,34 @@ MonoBehaviour:
         m_Duration: 10
         m_Owner: {fileID: 0}
         m_Message: Coco & Simba els millors gatets
+    - rid: 2068510608577789991
+      type: {class: EASTrackGroup, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -2068076518
+        m_Name: Track Group
+        m_Muted: 0
+        m_Locked: 0
+        m_Collapsed: 0
+        m_Tracks:
+        - m_ID: -1225725323
+          m_Name: Track
+          m_Muted: 0
+          m_Locked: 0
+          m_ParentTrackGroup:
+            rid: 2068510608577789991
+          m_Events:
+          - rid: 2068510404382556410
+          - rid: 2068510608577789992
+          - rid: 2068510404382556523
+    - rid: 2068510608577789992
+      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 45596732
+        m_Name: Log
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510404382556505
+        m_StartFrame: 18
+        m_Duration: 1
+        m_Owner: {fileID: 0}
+        m_Message: 

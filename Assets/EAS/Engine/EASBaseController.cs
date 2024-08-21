@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace EAS
 {
@@ -20,5 +21,9 @@ namespace EAS
         public abstract float GetLength(object animation);
 
         public abstract float GetFrameRate(object animation);
+
+#if UNITY_EDITOR
+        public abstract List<int> GetKeyFrames(object animation);
+#endif // UNITY_EDITOR
     }
 }

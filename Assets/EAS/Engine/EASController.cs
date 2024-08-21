@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace EAS
 {
@@ -61,6 +62,36 @@ namespace EAS
 
             return 0;
         }
+
+#if UNITY_EDITOR
+        public override List<int> GetKeyFrames(object animation)
+        {
+            AnimationClip animationClip = animation as AnimationClip;
+            if (animationClip != null)
+            {
+                int lastFrame = Mathf.RoundToInt(animationClip.length * animationClip.frameRate);
+                List<int> keyFrames = new List<int>();
+
+                UnityEditor.EditorCurveBinding[] curveBindings = UnityEditor.AnimationUtility.GetCurveBindings(animationClip);
+                for (int i = 0; i < curveBindings.Length; ++i)
+                {
+                    AnimationCurve animationCurve = UnityEditor.AnimationUtility.GetEditorCurve(animationClip, curveBindings[i]);
+                    for (int j = 0; j < animationCurve.keys.Length; ++j)
+                    {
+                        int frame = Mathf.RoundToInt(Mathf.Clamp(animationCurve.keys[j].time * animationClip.frameRate, 0, lastFrame - 1));
+                        if (!keyFrames.Contains(frame))
+                        {
+                            keyFrames.Add(frame);
+                        }
+                    }
+                }
+
+                return keyFrames;
+            }
+
+            return null;
+        }
+#endif // UNITY_EDITOR
     }
 }
 

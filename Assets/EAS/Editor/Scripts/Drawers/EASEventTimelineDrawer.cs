@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace EAS
 {
-    public abstract class EASEventDrawer
+    public abstract class EASEventTimelineDrawer
     {
         public virtual void OnGUIBackground(Rect rect, EASBaseEvent baseEvent)
         {

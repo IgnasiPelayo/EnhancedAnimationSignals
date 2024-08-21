@@ -40,7 +40,7 @@ namespace EAS
         public string SelectedAnimationName { get => m_Hierarchy.SelectedAnimationName; }
 
         [SerializeReference]
-        protected List<EASSerializable> m_SelectedObjects = new List<EASSerializable>();
+        protected List<IEASSerializable> m_SelectedObjects = new List<IEASSerializable>();
 
         [SerializeField]
         protected EASEditorControls m_Controls = new EASEditorControls();
@@ -56,7 +56,7 @@ namespace EAS
         protected Vector2 m_MousePosition;
 
         [SerializeField]
-        protected Dictionary<System.Type, EASEventDrawer> m_EventDrawers = new Dictionary<System.Type, EASEventDrawer>();
+        protected Dictionary<System.Type, EASEventTimelineDrawer> m_EventDrawers = new Dictionary<System.Type, EASEventTimelineDrawer>();
 
         internal T GetComponent<T>() where T : Component
         {
@@ -256,7 +256,7 @@ namespace EAS
         {
             object animation = Controller.GetAnimation(SelectedAnimationName);
 
-            return new EASAnimationInformation(animation, Controller.GetLength(animation), Controller.GetFrameRate(animation));
+            return new EASAnimationInformation(animation, Controller.GetLength(animation), Controller.GetFrameRate(animation), Controller.GetKeyFrames(animation));
         }
 
         public int GetCurrentAnimationFrames()
@@ -264,7 +264,7 @@ namespace EAS
             return Mathf.RoundToInt(GetAnimationInformation().Frames);
         }
 
-        public List<EASSerializable> GetTracksAndGroups()
+        public List<IEASSerializable> GetTracksAndGroups()
         {
             return Controller.Data.GetTracksAndGroups(SelectedAnimationName);
         }
@@ -285,7 +285,7 @@ namespace EAS
             return track;
         }
 
-        public bool RemoveTrackOrGroup(EASSerializable trackOrGroup)
+        public bool RemoveTrackOrGroup(IEASSerializable trackOrGroup)
         {
             bool success = Controller.Data.RemoveTrackOrGroup(SelectedAnimationName, trackOrGroup);
             EditorUtility.SetDirty(Controller.Data);
@@ -341,7 +341,7 @@ namespace EAS
             return null;
         }
 
-        public bool IsSelected(EASSerializable selectedObject)
+        public bool IsSelected(IEASSerializable selectedObject)
         {
             return m_SelectedObjects.Contains(selectedObject);
         }
@@ -351,7 +351,7 @@ namespace EAS
             return Event.current.modifiers == EventModifiers.Shift || Event.current.modifiers == EventModifiers.Control || Event.current.modifiers == EventModifiers.Command;
         }
 
-        public void SelectObject(EASSerializable selectedObject, bool singleSelection)
+        public void SelectObject(IEASSerializable selectedObject, bool singleSelection)
         {
             if (selectedObject == null)
             {
@@ -386,9 +386,9 @@ namespace EAS
             }
         }
 
-        public List<EASSerializable> GetSelected<T>()
+        public List<IEASSerializable> GetSelected<T>()
         {
-            List<EASSerializable> selectedObjects = new List<EASSerializable>();
+            List<IEASSerializable> selectedObjects = new List<IEASSerializable>();
             for (int i = 0; i < m_SelectedObjects.Count; ++i)
             {
                 if (m_SelectedObjects[i] is T)
@@ -494,7 +494,7 @@ namespace EAS
             eventOptionsMenu.ShowAsContext();
         }
 
-        public EASEventDrawer GetEventDrawer(System.Type type)
+        public EASEventTimelineDrawer GetEventDrawer(System.Type type)
         {
             if (m_EventDrawers.ContainsKey(type))
             {

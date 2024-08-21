@@ -47,6 +47,8 @@ namespace EAS
             OnGUIFrameLines(timelineWorkAreaRect);
             OnGUIEvents();
 
+            OnGUIKeyFrames();
+
             HandleClippedInput();
 
             GUI.EndClip();
@@ -78,7 +80,7 @@ namespace EAS
 
             Rect timelineTrackRect = Rect.MinMaxRect(timelineWorkAreaRect.x, timelineWorkAreaRect.y + EASSkin.HierarchyUpperMargin, timelineWorkAreaRect.xMax, timelineWorkAreaRect.y + EASSkin.HierarchyTrackHeight);
 
-            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
+            List<IEASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
             for (int i = 0; i < tracksAndGroups.Count; ++i)
             {
                 if (tracksAndGroups[i] is EASTrackGroup)
@@ -138,7 +140,7 @@ namespace EAS
                 EASTrack track = m_TimelineTracksAndGroups[i].EASSerializable as EASTrack;
                 if (track != null)
                 {
-                    List<EASSerializable> events = new List<EASSerializable>(track.Events);
+                    List<IEASSerializable> events = new List<IEASSerializable>(track.Events);
                     events = events.OrderBy(e => EASEditor.Instance.IsSelected(e)).ToList();
 
                     for (int j = 0; j < events.Count; ++j)
@@ -165,7 +167,7 @@ namespace EAS
             }
             else
             {
-                EASEventDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(baseEvent.GetType());
+                EASEventTimelineDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(baseEvent.GetType());
                 if (eventDrawer != null)
                 {
                     eventDrawer.OnGUIBackground(eventRect, baseEvent);
@@ -197,6 +199,11 @@ namespace EAS
         public void BaseOnGUIEventBackground(Rect rect, EASBaseEvent baseEvent)
         {
             EditorGUI.DrawRect(rect, EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
+
+            if (baseEvent.HasError(EASEditor.Instance.Controller))
+            {
+                ExtendedGUI.ExtendedGUI.DrawOutlineRect(rect, Color.red, Mathf.FloorToInt(Mathf.Min(rect.width / 2.0f, 4)));
+            }
         }
 
         protected void OnGUISelectedEvent(EASEventGUIItem eventGUIItem)
@@ -209,7 +216,7 @@ namespace EAS
                 }
                 else
                 {
-                    EASEventDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(eventGUIItem.EASSerializable.GetType());
+                    EASEventTimelineDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(eventGUIItem.EASSerializable.GetType());
                     if (eventDrawer != null)
                     {
                         eventDrawer.OnGUISelected(eventGUIItem.Rect, eventGUIItem.EASSerializable as EASBaseEvent);
@@ -240,11 +247,23 @@ namespace EAS
             Rect eventLabelRect = ExtendedGUI.ExtendedGUI.GetInnerRect(eventGUIItem.Rect, Mathf.Min(eventLabelSize.x,
                 eventGUIItem.Rect.width - (EASSkin.TimelineEventLabelLeftMargin + EASSkin.TimelineEventLabelRightMargin)), eventGUIItem.Rect.height);
 
-            EASEventDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(baseEvent.GetType());
+            EASEventTimelineDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(baseEvent.GetType());
             Color textColor = eventDrawer != null ? eventDrawer.LabelColor : ExtendedGUI.ExtendedGUI.GetContrastingLabelColor(EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
 
             labelGUIStyle.normal.textColor = labelGUIStyle.hover.textColor = labelGUIStyle.active.textColor = textColor;
             GUI.Label(eventLabelRect, eventLabelContent, labelGUIStyle);
+        }
+
+        protected void OnGUIKeyFrames()
+        {
+            float keyFrameSize = Mathf.Min(EASSkin.TimelineKeyFrameSize, m_PixelsPerFrame - 2);
+            for (int i = 0; i < m_AnimationInformation.KeyFrames.Count; ++i)
+            {
+                Rect keyFrameRect = new Rect(GetHorizontalPositionAtFrame(m_AnimationInformation.KeyFrames[i], clipped: true) - EASSkin.TimelineHalfKeyFrameSize,
+                    m_FramesAreaRect.yMax - EASSkin.TimelineHalfKeyFrameSize, EASSkin.TimelineKeyFrameSize, EASSkin.TimelineKeyFrameSize);
+
+                GUI.DrawTexture(keyFrameRect, EASSkin.Icon("animationdopesheetkeyframe"));
+            }
         }
 
         protected void OnGUIDrag()
@@ -371,7 +390,7 @@ namespace EAS
                 draggedGUIItems.Add(new EASDragGUIItem(TransformClippedRect(clickedGUIItem.Rect), clickedGUIItem.EASSerializable, eventGUIItem.EventStartPositionAndDuration));
             }
 
-            List<EASSerializable> selectedEvents = EASEditor.Instance.GetSelected<EASBaseEvent>();
+            List<IEASSerializable> selectedEvents = EASEditor.Instance.GetSelected<EASBaseEvent>();
 
             for (int i = 0; i < selectedEvents.Count; ++i)
             {
@@ -500,7 +519,7 @@ namespace EAS
         protected bool ValidateAllEventsPositions()
         {
             int trackLength = EASEditor.Instance.GetCurrentAnimationFrames();
-            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
+            List<IEASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
             for (int i = 0; i < tracksAndGroups.Count; ++i)
             {
                 if ((tracksAndGroups[i] is EASTrackGroup && !EASEditorUtils.ValidateTrackGroupEventPositions(tracksAndGroups[i] as EASTrackGroup, trackLength)) ||
@@ -542,7 +561,7 @@ namespace EAS
 
         protected void FinishDrag()
         {
-            List<EASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
+            List<IEASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
             for (int i = 0; i < tracksAndGroups.Count; ++i)
             {
                 if (tracksAndGroups[i] is EASTrackGroup)
@@ -749,7 +768,7 @@ namespace EAS
             return m_WholeTimelineRect.Contains(mousePosition);
         }
 
-        protected EASBaseGUIItem GetGUIItemOfEASSerializable(EASSerializable serializable)
+        protected EASBaseGUIItem GetGUIItemOfEASSerializable(IEASSerializable serializable)
         {
             int serializableID = EASEditorUtils.GetSerializableID(serializable);
             if (serializable is EASBaseEvent)

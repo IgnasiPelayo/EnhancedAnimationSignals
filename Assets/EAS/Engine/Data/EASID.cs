@@ -3,10 +3,10 @@ using CustomAttributes;
 
 namespace EAS
 {
-    public interface EASSerializable { }
+    public interface IEASSerializable { }
 
     [System.Serializable]
-    public class EASID : EASSerializable
+    public class EASID : IEASSerializable
     {
 #if UNITY_EDITOR
         public const int INVALID_ID = 0;

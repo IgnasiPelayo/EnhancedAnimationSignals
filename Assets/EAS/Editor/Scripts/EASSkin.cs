@@ -15,6 +15,10 @@ namespace EAS
         public static GUIStyle InspectorTooltipStyle { get { GUIStyle tooltipStyle = new GUIStyle(GUI.skin.box); tooltipStyle.wordWrap = true; tooltipStyle.padding.left = Mathf.RoundToInt(InspectorHeaderLeftMargin + 1); 
                 tooltipStyle.alignment = TextAnchor.UpperLeft; tooltipStyle.fontSize = 11;
                 tooltipStyle.normal.textColor = tooltipStyle.hover.textColor = tooltipStyle.active.textColor = tooltipStyle.focused.textColor = Color.gray; return tooltipStyle; } }
+
+        public static GUIStyle InspectorErrorMessageStyle { get { GUIStyle errorMessageStyle = new GUIStyle(InspectorTooltipStyle);
+                errorMessageStyle.normal.textColor = errorMessageStyle.hover.textColor = errorMessageStyle.active.textColor = errorMessageStyle.focused.textColor = Color.red; return errorMessageStyle; } }
+
         public static GUIStyle InspectorFocusedLabelStyle { get { GUIStyle focusedLabelStyle = new GUIStyle(EditorStyles.label); focusedLabelStyle.normal.textColor = InspectorFocusedColor; return focusedLabelStyle; } }
         
         // ------ Colors ------
@@ -66,6 +70,8 @@ namespace EAS
         public static float TimelineMainFrameLabelUpperMargin = -2;
         public static float TimelineSecondaryFrameHeight = ControlToolbarHeight * 0.2f;
         public static float TimelineTertiaryFrameHeight = 2.0f;
+        public static float TimelineKeyFrameSize = 10;
+        public static float TimelineHalfKeyFrameSize = TimelineKeyFrameSize / 2.0f;
 
         public static float TimelineEventLabelLeftMargin = 3.0f;
         public static float TimelineEventLabelRightMargin = 3.0f;

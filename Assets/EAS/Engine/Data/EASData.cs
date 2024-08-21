@@ -30,7 +30,7 @@ namespace EAS
             return track;
         }
 
-        public bool RemoveTrackOrGroup(string animationName, EASSerializable trackOrGroup)
+        public bool RemoveTrackOrGroup(string animationName, IEASSerializable trackOrGroup)
         {
             EASAnimationData animationData = GetAnimationData(animationName);
             bool wasRemoved = animationData.RemoveTrackOrGroup(trackOrGroup);
@@ -55,7 +55,7 @@ namespace EAS
             return animationData;
         }
 
-        public List<EASSerializable> GetTracksAndGroups(string animationName)
+        public List<IEASSerializable> GetTracksAndGroups(string animationName)
         {
             EASAnimationData animationData = GetAnimationData(animationName);
             if (animationName != null)
@@ -63,7 +63,7 @@ namespace EAS
                 return animationData.TracksAndGroups;
             }
 
-            return new List<EASSerializable>();
+            return new List<IEASSerializable>();
         }
     }
 }

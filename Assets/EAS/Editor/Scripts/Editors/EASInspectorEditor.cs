@@ -51,10 +51,10 @@ namespace EAS
             Rect windowRect = position;
             windowRect.x = windowRect.y = 0;
 
-            List<EASSerializable> selectedEvents = EASEditor.Instance.GetSelected<EASBaseEvent>();
+            List<IEASSerializable> selectedEvents = EASEditor.Instance.GetSelected<EASBaseEvent>();
             if (selectedEvents.Count == 0)
             {
-                List<EASSerializable> selectedBaseTracks = EASEditor.Instance.GetSelected<EASBaseTrack>();
+                List<IEASSerializable> selectedBaseTracks = EASEditor.Instance.GetSelected<EASBaseTrack>();
                 if (selectedBaseTracks.Count == 0)
                 {
                     return;
@@ -80,7 +80,7 @@ namespace EAS
             }
         }
 
-        protected void OnGUIMultipleTracks(Rect windowRect, List<EASSerializable> tracks)
+        protected void OnGUIMultipleTracks(Rect windowRect, List<IEASSerializable> tracks)
         {
             Rect inspectorRect = new Rect(windowRect.x, windowRect.y, windowRect.width, tracks.Count * (EASSkin.InspectorHeaderHeight + EditorGUIUtility.standardVerticalSpacing));
             if (inspectorRect.height >= windowRect.height)
@@ -108,6 +108,7 @@ namespace EAS
             Rect inspectorRect = Rect.MinMaxRect(headerRect.x, headerRect.yMax + EASSkin.InspectorUpperMargin,
                 headerRect.xMax - EASSkin.InspectorRightMargin, windowRect.yMax - EASSkin.InspectorBottomMargin);
             OnGUIInspectorTooltip(headerRect, baseEvent, ref inspectorRect);
+            OnGUIErrorMessage(headerRect, baseEvent, ref inspectorRect);
 
             EditorGUI.indentLevel++;
 
@@ -122,7 +123,7 @@ namespace EAS
             GUILayout.EndArea();
         }
 
-        protected void OnGUIMultipleEvents(Rect windowRect, List<EASSerializable> events)
+        protected void OnGUIMultipleEvents(Rect windowRect, List<IEASSerializable> events)
         {
             Rect inspectorRect = new Rect(windowRect.x, windowRect.y, windowRect.width, (events.Count + 1) * (EASSkin.InspectorHeaderHeight + EditorGUIUtility.standardVerticalSpacing));
             if (inspectorRect.height >= windowRect.height)
@@ -204,6 +205,22 @@ namespace EAS
             }
         }
 
+        protected void OnGUIErrorMessage(Rect headerRect, EASBaseEvent baseEvent, ref Rect inspectorRect)
+        {
+            if (baseEvent.HasError(EASEditor.Instance.Controller))
+            {
+                GUIContent errorMessageGUIConent = new GUIContent(baseEvent.GetErrorMessage());
+
+                GUIStyle errorMessageGUIStyle = EASSkin.InspectorErrorMessageStyle;
+
+                float errorMessageHeight = errorMessageGUIStyle.CalcHeight(errorMessageGUIConent, headerRect.width);
+                Rect errorMessageRect = new Rect(headerRect.x, inspectorRect.yMax - errorMessageHeight, headerRect.width, errorMessageHeight);
+                GUI.Box(errorMessageRect, errorMessageGUIConent, errorMessageGUIStyle);
+
+                inspectorRect.height -= errorMessageHeight;
+            }
+        }
+
         public void BaseOnGUIInspector(Rect rect, EASBaseEvent baseEvent)
         {
             List<FieldInfo> fields = GetFields(baseEvent.GetType());
@@ -236,6 +253,7 @@ namespace EAS
 
             if (hasChanged)
             {
+                EASEditor.Instance.Repaint();
                 EditorUtility.SetDirty(EASEditor.Instance.Controller.Data);
             }
         }
@@ -340,6 +358,15 @@ namespace EAS
                 }
             }
 
+            if (typeof(EASBaseReference).IsAssignableFrom(type))
+            {
+                System.Type easBaseReferenceType = typeof(EASBaseReference);
+                if (m_PropertyInspectorDrawers.ContainsKey(easBaseReferenceType))
+                {
+                    return m_PropertyInspectorDrawers[easBaseReferenceType];
+                }
+            }
+
             if (getArrayAndListDrawers)
             {
                 if (type.IsArray)
@@ -430,7 +457,7 @@ namespace EAS
             return true;
         }
 
-        public T GetVariable<T>(EASSerializable serializable, string variableName)
+        public T GetVariable<T>(IEASSerializable serializable, string variableName)
         {
             for (int i = 0; i < m_PropertyInspectorVariables.Count; ++i)
             {
@@ -445,7 +472,7 @@ namespace EAS
             return defaultVariableAsT;
         }
 
-        public void SetVariable<T>(EASSerializable serializable, string variableName, T variable)
+        public void SetVariable<T>(IEASSerializable serializable, string variableName, T variable)
         {
             for (int i = 0; i < m_PropertyInspectorVariables.Count; ++i)
             {
@@ -468,12 +495,11 @@ namespace EAS
         {
             GenericMenu propertyOptionsMenu = new GenericMenu();
 
-            propertyOptionsMenu.AddItem(new GUIContent("Copy Property Path"), false, () => { Debug.Log(propertyPath); });
-
-            propertyOptionsMenu.AddSeparator("");
+            propertyOptionsMenu.AddItem(new GUIContent("Copy Property Path"), false, () => { GUIUtility.systemCopyBuffer = propertyPath; });
 
             if (copyFunction != null)
             {
+                propertyOptionsMenu.AddSeparator("");
                 ExtendedGUI.ExtendedGUI.GenericMenuAddItem(propertyOptionsMenu, new GUIContent("Copy"), true, copyFunction, copyData);
                 ExtendedGUI.ExtendedGUI.GenericMenuAddItem(propertyOptionsMenu, new GUIContent("Paste"), ShowPasteOption(propertyType), () => { OnPasteProperty(baseEvent, baseEvent, propertyPath); });
             }

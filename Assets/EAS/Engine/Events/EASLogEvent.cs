@@ -13,12 +13,12 @@ namespace EAS
 #if UNITY_EDITOR
         public override string GetErrorMessage()
         {
-            return "No Log message";
+            return $"Variable {nameof(Message)} is empty";
         }
 
         public override bool HasError(EASBaseController owner)
         {
-            return false;
+            return string.IsNullOrEmpty(m_Message);
         }
 #endif // UNITY_EDITOR
     }
