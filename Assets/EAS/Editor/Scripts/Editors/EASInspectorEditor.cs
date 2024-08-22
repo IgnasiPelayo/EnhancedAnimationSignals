@@ -214,8 +214,10 @@ namespace EAS
                 GUIStyle errorMessageGUIStyle = EASSkin.InspectorErrorMessageStyle;
 
                 float errorMessageHeight = errorMessageGUIStyle.CalcHeight(errorMessageGUIConent, headerRect.width);
-                Rect errorMessageRect = new Rect(headerRect.x, inspectorRect.yMax - errorMessageHeight, headerRect.width, errorMessageHeight);
-                GUI.Box(errorMessageRect, errorMessageGUIConent, errorMessageGUIStyle);
+                Rect errorMessageRect = new Rect(headerRect.x, inspectorRect.yMax - errorMessageHeight + EASSkin.InspectorBottomMargin, headerRect.width, errorMessageHeight);
+
+                EditorGUI.DrawRect(errorMessageRect, EASSkin.ErrorColor);
+                GUI.Label(errorMessageRect, errorMessageGUIConent, errorMessageGUIStyle);
 
                 inspectorRect.height -= errorMessageHeight;
             }

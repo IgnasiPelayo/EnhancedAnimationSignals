@@ -120,6 +120,7 @@ namespace EAS
             if (Controller != null)
             {
                 m_Hierarchy.OnUpdate();
+                m_Timeline.OnUpdate();
 
                 if (m_Playing)
                 {
@@ -237,7 +238,7 @@ namespace EAS
 
         protected void OnPlayModeChanged()
         {
-
+            m_Timeline.OnPlayModeChanged();
         }
 
         public void OnAnimationChanged()
@@ -245,6 +246,8 @@ namespace EAS
             m_SelectedObjects.Clear();
 
             m_Timeline.OnAnimationChanged();
+
+            Playing = false;
         }
 
         public string[] GetAnimationNames()

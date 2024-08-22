@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEditor;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
@@ -7,6 +8,57 @@ namespace EAS
 {
     public class EASEditorUtils : EASUtils
     {
+        public class EASTimer
+        {
+            protected bool m_Started;
+            public bool IsStarted { get => m_Started; }
+
+            protected float m_StartTime;
+
+            protected float m_EndTime;
+
+            protected float m_ElapsedTimeOnPause;
+            public bool IsPaused { get => m_ElapsedTimeOnPause != 0; }
+
+            public float Duration { get => m_EndTime - m_StartTime; }
+
+            public void Start(float duration, float elapsedTime = 0.0f)
+            {
+                m_Started = true;
+
+                m_StartTime = (float)EditorApplication.timeSinceStartup - elapsedTime;
+                m_EndTime = m_StartTime + duration;
+            }
+
+            protected bool IsElapsed() => (float)EditorApplication.timeSinceStartup >= m_EndTime;
+
+            public float ElapsedTime() => m_Started ? (float)EditorApplication.timeSinceStartup - m_StartTime : m_ElapsedTimeOnPause;
+
+            public bool StopIfElapsed()
+            {
+                if (IsStarted && IsElapsed())
+                {
+                    m_Started = false;
+                    m_ElapsedTimeOnPause = 0;
+                    return true;
+                }
+
+                return false;
+            }
+
+            public void Pause()
+            {
+                m_ElapsedTimeOnPause = ElapsedTime();
+                m_Started = false;
+            }
+
+            public void Resume()
+            {
+                Start(Duration, m_ElapsedTimeOnPause);
+                m_ElapsedTimeOnPause = 0;
+            }
+        }
+
         public static T GetAttribute<T>(System.Type type) where T : System.Attribute
         {
             MemberInfo memberInfo = type;

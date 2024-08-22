@@ -11,6 +11,8 @@ namespace EAS
         protected List<EASBaseGUIItem> m_TimelineTracksAndGroups = new List<EASBaseGUIItem>();
         protected List<EASEventGUIItem> m_TimelineEvents = new List<EASEventGUIItem>();
 
+        protected List<EASTimelineFrame> m_Frames = new List<EASTimelineFrame>();
+
         protected EASDragInformation m_DragInformation;
 
         [SerializeField]
@@ -22,9 +24,36 @@ namespace EAS
         [SerializeField]
         protected float m_PixelsPerFrame = 13;
 
-        protected List<EASTimelineFrame> m_Frames = new List<EASTimelineFrame>();
+        protected EASEditorUtils.EASTimer m_TimelineTimer = new EASEditorUtils.EASTimer();
 
         protected Rect m_WholeTimelineRect, m_FramesAreaRect;
+
+        public void OnUpdate()
+        {
+            if (EASEditor.Instance.Playing && m_TimelineTimer.StopIfElapsed() && EASEditor.Instance.Loop)
+            {
+                m_TimelineTimer.Start(m_AnimationInformation.PlayLength);
+            }
+        }
+
+        public void OnPlayModeChanged()
+        {
+            if (EASEditor.Instance.Playing)
+            {
+                if (m_TimelineTimer.IsPaused)
+                {
+                    m_TimelineTimer.Resume();
+                }
+                else
+                {
+                    m_TimelineTimer.Start(m_AnimationInformation.PlayLength);
+                }
+            }
+            else
+            {
+                m_TimelineTimer.Pause();
+            }
+        }
 
         public void OnGUI(Rect rect)
         {
@@ -48,6 +77,7 @@ namespace EAS
             OnGUIEvents();
 
             OnGUIKeyFrames();
+            OnGUITimerLine();
 
             HandleClippedInput();
 
@@ -266,6 +296,12 @@ namespace EAS
             }
         }
 
+        protected void OnGUITimerLine()
+        {
+            Rect timerLineRect = new Rect(GetHorizontalPositionAtTime(m_TimelineTimer.ElapsedTime(), clipped: true) - 1, 0, 2, m_WholeTimelineRect.height);
+            EditorGUI.DrawRect(timerLineRect, Color.white);
+        }
+
         protected void OnGUIDrag()
         {
             if (m_DragInformation != null && m_DragInformation.DragPerformed)
@@ -289,7 +325,7 @@ namespace EAS
                     OnGUIDragVerticalLine(startEndFrame.x);
                     OnGUIDragVerticalLine(startEndFrame.y);
                 }
-                else
+                else if (m_DragInformation.DragType != EASDragInformation.EASDragType.TimerLine)
                 {
                     Rect resizeRect = new Rect(Event.current.mousePosition - Vector2.one * 20, Vector2.one * 40);
                     EditorGUIUtility.AddCursorRect(resizeRect, MouseCursor.ResizeHorizontal);
@@ -364,10 +400,28 @@ namespace EAS
                     CreateDragInformation(leftClickedGUIItem);
                 }
             }
+            else if (m_FramesAreaRect.Contains(Event.current.mousePosition))
+            {
+                MoveTimerLineToMousePosition(clipped: true);
+                m_DragInformation = new EASDragInformation(Event.current.mousePosition + m_WholeTimelineRect.position, new List<EASDragGUIItem>(), EASDragInformation.EASDragType.TimerLine);
+            }
             else
             {
                 EASEditor.Instance.SelectObject(null, singleSelection: true);
             }
+        }
+
+        protected void MoveTimerLineToMousePosition(bool clipped)
+        {
+            EASEditor.Instance.Playing = false;
+
+            float frameAtMousePosition = Mathf.Clamp(GetFrameAtPosition(Event.current.mousePosition.x, clipped), 0, m_AnimationInformation.Frames - 1);
+            float elapsedTime = frameAtMousePosition * m_AnimationInformation.Length / m_AnimationInformation.Frames;
+
+            m_TimelineTimer.Start(m_AnimationInformation.PlayLength, elapsedTime);
+            m_TimelineTimer.Pause();
+
+            EASEditor.Instance.Repaint();
         }
 
         protected void CreateDragInformation(EASBaseGUIItem clickedGUIItem)
@@ -436,6 +490,10 @@ namespace EAS
                 {
                     PerformNormalDrag();
                 }
+                else if (m_DragInformation.DragType == EASDragInformation.EASDragType.TimerLine)
+                {
+                    PerformTimerLineDrag();
+                }
                 else 
                 {
                     if (m_DragInformation.DragType == EASDragInformation.EASDragType.ResizeLeft)
@@ -450,7 +508,7 @@ namespace EAS
                     EditorGUIUtility.AddCursorRect(resizeRectAtMousePosition, MouseCursor.ResizeHorizontal);
                 }
 
-                m_DragInformation.OnDragPerformed(Event.current.mousePosition, isValidDrag: ValidateAllEventsPositions());
+                m_DragInformation.OnDragPerformed(Event.current.mousePosition, isValidDrag: ValidateAllEventsPositions(), m_PixelsPerFrame);
                 EditorWindow.focusedWindow.Repaint();
             }
         }
@@ -483,6 +541,11 @@ namespace EAS
                     baseEvent.StartFrame = GetSafeFrameAtPosition(draggedEventStartHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1 - baseEvent.Duration));
                 }
             }
+        }
+
+        protected void PerformTimerLineDrag()
+        {
+            MoveTimerLineToMousePosition(clipped: false);
         }
 
         protected void PerformResizeLeftDrag()
@@ -536,20 +599,23 @@ namespace EAS
         {
             if (m_DragInformation != null)
             {
-                if (!m_DragInformation.DragPerformed && !EASEditor.Instance.HasMultipleSelectionModifier())
+                if (m_DragInformation.DragType != EASDragInformation.EASDragType.TimerLine)
                 {
-                    EASBaseGUIItem leftClickedGUIItem = TimelineGUIItemAtMousePosition();
-                    EASEditor.Instance.SelectObject(leftClickedGUIItem != null ? leftClickedGUIItem.EASSerializable : null, singleSelection: true);
-                }
-                else if (m_DragInformation.DragPerformed)
-                {
-                    if (m_DragInformation.IsValidDrag)
+                    if (!m_DragInformation.DragPerformed && !EASEditor.Instance.HasMultipleSelectionModifier())
                     {
-                        FinishDrag();
+                        EASBaseGUIItem leftClickedGUIItem = TimelineGUIItemAtMousePosition();
+                        EASEditor.Instance.SelectObject(leftClickedGUIItem != null ? leftClickedGUIItem.EASSerializable : null, singleSelection: true);
                     }
-                    else
+                    else if (m_DragInformation.DragPerformed)
                     {
-                        CancelDrag();
+                        if (m_DragInformation.IsValidDrag)
+                        {
+                            FinishDrag();
+                        }
+                        else
+                        {
+                            CancelDrag();
+                        }
                     }
                 }
 
@@ -674,6 +740,11 @@ namespace EAS
         protected float GetHorizontalPositionAtFrame(float frame, bool clipped = false)
         {
             return GetInitialFramePosition(clipped) + frame * m_PixelsPerFrame;
+        }
+
+        protected float GetHorizontalPositionAtTime(float time, bool clipped = false)
+        {
+            return GetInitialFramePosition(clipped) + (time / m_AnimationInformation.Length * m_AnimationInformation.Frames) * m_PixelsPerFrame;
         }
 
         protected float GetFrameAtPosition(float horizontalPosition, bool clipped = false)

@@ -16,8 +16,10 @@ namespace EAS
                 tooltipStyle.alignment = TextAnchor.UpperLeft; tooltipStyle.fontSize = 11;
                 tooltipStyle.normal.textColor = tooltipStyle.hover.textColor = tooltipStyle.active.textColor = tooltipStyle.focused.textColor = Color.gray; return tooltipStyle; } }
 
-        public static GUIStyle InspectorErrorMessageStyle { get { GUIStyle errorMessageStyle = new GUIStyle(InspectorTooltipStyle);
-                errorMessageStyle.normal.textColor = errorMessageStyle.hover.textColor = errorMessageStyle.active.textColor = errorMessageStyle.focused.textColor = Color.red; return errorMessageStyle; } }
+        public static GUIStyle InspectorErrorMessageStyle { get { GUIStyle errorMessageStyle = new GUIStyle(EditorStyles.label); errorMessageStyle.wordWrap = true; errorMessageStyle.padding.left = Mathf.RoundToInt(InspectorHeaderLeftMargin + 1);
+                errorMessageStyle.padding.top = errorMessageStyle.padding.bottom = 5;
+                errorMessageStyle.alignment = TextAnchor.UpperLeft; errorMessageStyle.fontSize = 11; errorMessageStyle.richText = true;
+                errorMessageStyle.normal.textColor = errorMessageStyle.hover.textColor = errorMessageStyle.active.textColor = errorMessageStyle.focused.textColor = Color.white; return errorMessageStyle; } }
 
         public static GUIStyle InspectorFocusedLabelStyle { get { GUIStyle focusedLabelStyle = new GUIStyle(EditorStyles.label); focusedLabelStyle.normal.textColor = InspectorFocusedColor; return focusedLabelStyle; } }
         
@@ -27,6 +29,7 @@ namespace EAS
         public static Color BackgroundColor { get => new Color(41.0f / 255.0f, 41.0f / 255.0f, 41.0f / 255.0f); }
         public static Color ToolbarBackgroundColor { get => new Color(60.0f / 255.0f, 60.0f / 255.0f, 60.0f / 255.0f); }
         public static Color DraggedItemErrorColor { get => new Color(36.0f / 255.0f, 10.0f / 255.0f, 10.0f / 255.0f, 0.95f); }
+        public static Color ErrorColor { get => new Color(150.0f / 255.0f, 15.0f / 255.0f, 15.0f / 255.0f, 1.0f); }
 
         public static Color HierarchyTrackGroupColor { get => new Color(38.0f / 255.0f, 138.0f / 255.0f, 111.0f / 255.0f, 0.5f); }
         public static Color HierarchyTrackColor { get => new Color(65.0f / 255.0f, 65.0f / 255.0f, 65.0f / 255.0f); }
@@ -46,6 +49,7 @@ namespace EAS
         public static Color TimelineEventSelectedColor { get => new Color(1.0f, 1.0f, 1.0f, 0.3f); }
 
         public static Color InspectorFocusedColor { get => new Color(124.0f / 255.0f, 171.0f / 255.0f, 240.0f / 255.0f, 1.0f); }
+        public static Color InspectorErrorMessageBackgroundColor { get => new Color(51.0f / 255.0f, 51.0f / 255.0f, 51.0f / 255.0f, 1.0f); }
         
         // ------ Appearance ------
         public static float ControlToolbarHeight = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;

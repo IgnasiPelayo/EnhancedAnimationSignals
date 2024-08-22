@@ -13,6 +13,7 @@ namespace EAS
         [SerializeField]
         protected float m_Length;
         public float Length { get => m_Length; }
+        public float PlayLength { get => m_Length - (m_Length / Frames); }
 
         [SerializeField]
         protected float m_FrameRate;
@@ -141,7 +142,8 @@ namespace EAS
         {
             NormalDrag,
             ResizeLeft,
-            ResizeRight
+            ResizeRight,
+            TimerLine,
         }
         protected EASDragType m_DragType;
         public EASDragType DragType { get => m_DragType; }
@@ -155,11 +157,11 @@ namespace EAS
             GUIUtility.hotControl = GetControlId();
         }
 
-        public void OnDragPerformed(Vector2 position, bool isValidDrag)
+        public void OnDragPerformed(Vector2 position, bool isValidDrag, float threshold = float.Epsilon)
         {
             if (!m_DragPerformed)
             {
-                m_DragPerformed = position != m_InitialPosition;
+                m_DragPerformed = Vector2.Distance(position, m_InitialPosition) > threshold;
             }
 
             m_IsValidDrag = isValidDrag;
