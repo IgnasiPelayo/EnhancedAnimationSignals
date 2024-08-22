@@ -21,7 +21,8 @@ MonoBehaviour:
     m_Name: Galop
     m_NameHash: 1556535090
     m_TracksAndGroups:
-    - rid: 2068510632756641792
+    - rid: 2068510632756641812
+    - rid: 2068510632756641816
   - m_ID: 485115159
     m_Name: Galop_WindUp
     m_NameHash: 436167999
@@ -31,26 +32,69 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 2068510632756641792
+    - rid: 2068510632756641812
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 1165550846
+        m_ID: 1086130962
         m_Name: Track
         m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
         m_Events:
-        - rid: 2068510632756641802
-    - rid: 2068510632756641802
+        - rid: 2068510632756641813
+    - rid: 2068510632756641813
       type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 1427985562
+        m_ID: 791889039
         m_Name: Log
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2068510632756641792
+          rid: 2068510632756641812
         m_StartFrame: 0
         m_Duration: 16
         m_Owner: {fileID: 0}
         m_Message: 
+    - rid: 2068510632756641816
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1607577000
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510632756641817
+    - rid: 2068510632756641817
+      type: {class: EASTestEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1979186308
+        m_Name: Test
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510632756641816
+        m_StartFrame: 0
+        m_Duration: 3
+        m_Owner: {fileID: 0}
+        m_AnimationCurve:
+          serializedVersion: 2
+          m_Curve: []
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Array: []
+        m_List: []
+        m_Bool: 0
+        m_Class:
+          LastName: m_Class.LastName
+          Age: 0
+        m_Color: {r: 0, g: 0, b: 0, a: 0}
+        m_Double: 0
+        m_Float: 0
+        m_Int: -59
+        m_Object: {fileID: 0}
+        m_String: m_Class.LastName
+        m_Vector2: {x: 4.86, y: 2.32}
+        m_Vector3: {x: 0, y: 0, z: 0}
+        m_Vector4: {x: 8.25, y: -0.96, z: 20.98, w: 10.59}

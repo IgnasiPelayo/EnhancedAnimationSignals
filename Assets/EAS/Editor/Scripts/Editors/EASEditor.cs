@@ -10,6 +10,7 @@ namespace EAS
     {
         protected static EASEditor m_Instance;
         public static EASEditor Instance { get { if (m_Instance == null) { m_Instance = GetWindow<EASEditor>(); } return m_Instance; } }
+        public static bool HasInstance { get => m_Instance != null; }
 
         protected int m_InstanceId = 0;
         protected const int kControllerMaxParentDepth = 2;
@@ -113,6 +114,9 @@ namespace EAS
 
             m_EventDrawers = EASEditorUtils.GetAllEASCustomEventDrawers();
             SelectObject(null, singleSelection: true);
+
+            SceneView.duringSceneGui -= OnSceneGUI;
+            SceneView.duringSceneGui += OnSceneGUI;
         }
 
         protected void Update()
@@ -138,6 +142,11 @@ namespace EAS
             }
 
             RenderOnGUI();
+        }
+
+        protected void OnDisable()
+        {
+            SceneView.duringSceneGui -= OnSceneGUI;
         }
 
         protected void OnDestroy()
@@ -225,6 +234,7 @@ namespace EAS
                         }
 
                         SelectObject(null, singleSelection: true);
+                        m_Hierarchy.OnSelectionChanged();
                     }
                 }
             }
@@ -248,6 +258,8 @@ namespace EAS
             m_Timeline.OnAnimationChanged();
 
             Playing = false;
+
+            Repaint();
         }
 
         public string[] GetAnimationNames()
@@ -505,6 +517,27 @@ namespace EAS
             }
 
             return null;
+        }
+
+        protected void OnSceneGUI(SceneView sceneView)
+        {
+            if (true)
+            {
+                Handles.BeginGUI();
+
+                Rect sceneViewRect = EditorGUIUtility.PixelsToPoints(sceneView.camera.pixelRect);
+
+                ExtendedGUI.ExtendedGUI.DrawOutlineRect(sceneViewRect, EASSkin.SceneViewColor, EASSkin.SceneViewPreviewMargin);
+
+                GUIContent easScenePreviewMessage = new GUIContent("EAS Scene Preview Enabled");
+                Vector2 easScenePreviewMessageSize = EASSkin.SceneViewLabelStyle.CalcSize(easScenePreviewMessage);
+
+                Rect easScenepreviewMessageRect = new Rect(sceneViewRect.xMax - easScenePreviewMessageSize.x - EASSkin.SceneViewPreviewMargin, sceneViewRect.yMax - easScenePreviewMessageSize.y - EASSkin.SceneViewPreviewMargin
+                    , easScenePreviewMessageSize.x, easScenePreviewMessageSize.y);
+                GUI.Label(easScenepreviewMessageRect, easScenePreviewMessage, EASSkin.SceneViewLabelStyle);
+
+                Handles.EndGUI();
+            }
         }
     }
 }

@@ -30,6 +30,12 @@ namespace EAS
 
         public void OnUpdate()
         {
+            if (m_PixelsPerFrame < 0)
+            {
+                OnAnimationChanged();
+                EASEditor.Instance.Repaint();
+            }
+
             if (EASEditor.Instance.Playing && m_TimelineTimer.StopIfElapsed())
             {
                 if (EASEditor.Instance.Loop)
@@ -240,7 +246,7 @@ namespace EAS
 
             if (baseEvent.HasError(EASEditor.Instance.Controller))
             {
-                ExtendedGUI.ExtendedGUI.DrawOutlineRect(rect, Color.red, Mathf.FloorToInt(Mathf.Min(rect.width / 2.0f, 4)));
+                ExtendedGUI.ExtendedGUI.DrawOutlineRect(rect, EASSkin.TimelineEventErrorColor, Mathf.FloorToInt(Mathf.Min(rect.width / 2.0f, 4)));
             }
         }
 
@@ -423,7 +429,7 @@ namespace EAS
         {
             EASEditor.Instance.Playing = false;
 
-            float frameAtMousePosition = Mathf.Clamp(GetFrameAtPosition(Event.current.mousePosition.x, clipped), 0, m_AnimationInformation.Frames - 1);
+            float frameAtMousePosition = Mathf.Clamp(GetFrameAtPosition(Event.current.mousePosition.x, clipped), 0, m_AnimationInformation.Frames);
             float elapsedTime = frameAtMousePosition * m_AnimationInformation.Length / m_AnimationInformation.Frames;
 
             m_TimelineTimer.Start(m_AnimationInformation.Length, elapsedTime);
@@ -567,7 +573,7 @@ namespace EAS
                 float resizingEventStartHorizontalPosition = Event.current.mousePosition.x + distanceFromEventStart.x;
 
                 int previousLastFrame = baseEvent.LastFrame;
-                baseEvent.StartFrame = Mathf.Clamp(GetSafeFrameAtPosition(resizingEventStartHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1)), 0, baseEvent.LastFrame - 1);
+                baseEvent.StartFrame = Mathf.Clamp(GetSafeFrameAtPosition(resizingEventStartHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames)), 0, baseEvent.LastFrame - 1);
                 baseEvent.Duration = previousLastFrame - baseEvent.StartFrame;
             }
         }
@@ -767,7 +773,7 @@ namespace EAS
 
         public int GetSafeFrameAtPosition(float horizontalPosition, bool clipped = false)
         {
-            return GetSafeFrameAtPosition(horizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1), clipped);
+            return GetSafeFrameAtPosition(horizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames), clipped);
         }
 
         protected EASTimelineFrameType GetFrameType(float frame, float lastFrame)

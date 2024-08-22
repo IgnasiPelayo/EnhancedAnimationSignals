@@ -38,7 +38,7 @@ namespace EAS
 
         protected void OnGUI()
         {
-            if (EASEditor.Instance == null)
+            if (!EASEditor.HasInstance)
             {
                 return;
             }

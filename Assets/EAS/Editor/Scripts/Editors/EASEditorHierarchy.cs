@@ -39,6 +39,11 @@ namespace EAS
             }
         }
 
+        public void OnSelectionChanged()
+        {
+            m_SelectedAnimationName = null;
+        }
+
         public void OnGUI(Rect rect)
         {
             Rect animationsRect = new Rect(rect.x, rect.y, rect.width, EASSkin.ControlToolbarHeight);
