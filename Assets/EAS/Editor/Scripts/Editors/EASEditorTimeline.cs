@@ -30,9 +30,17 @@ namespace EAS
 
         public void OnUpdate()
         {
-            if (EASEditor.Instance.Playing && m_TimelineTimer.StopIfElapsed() && EASEditor.Instance.Loop)
+            if (EASEditor.Instance.Playing && m_TimelineTimer.StopIfElapsed())
             {
-                m_TimelineTimer.Start(m_AnimationInformation.PlayLength);
+                if (EASEditor.Instance.Loop)
+                {
+                    m_TimelineTimer.Start(m_AnimationInformation.PlayLength);
+                }
+                else
+                {
+                    EASEditor.Instance.Playing = false;
+                    EASEditor.Instance.Repaint();
+                }
             }
         }
 
