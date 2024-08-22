@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEditor;
-using System;
 using ExtendedGUI;
+using System.Collections.Generic;
 
 namespace EAS
 {
@@ -48,13 +47,10 @@ namespace EAS
                 string[] animationNames = EASEditor.Instance.Controller.GetAnimationNames();
                 Action<int> onSelect = i =>
                 {
-                    if (m_SelectedAnimationName != animationNames[i])
-                    {
-                        m_SelectedAnimationName = animationNames[i];
-                        m_SelectedAnimationIndex = i;
+                    m_SelectedAnimationName = animationNames[i];
+                    m_SelectedAnimationIndex = i;
 
-                        EASEditor.Instance.OnAnimationChanged();
-                    }
+                    EASEditor.Instance.OnAnimationChanged();
                 };
 
                 SearchablePopup.Show(animationsRect, animationNames, m_SelectedAnimationIndex, onSelect);

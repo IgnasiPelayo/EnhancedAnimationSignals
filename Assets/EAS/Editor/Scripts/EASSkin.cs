@@ -74,7 +74,7 @@ namespace EAS
         public static float TimelineMainFrameLabelUpperMargin = -2;
         public static float TimelineSecondaryFrameHeight = ControlToolbarHeight * 0.2f;
         public static float TimelineTertiaryFrameHeight = 2.0f;
-        public static float TimelineKeyFrameSize = 10;
+        public static float TimelineKeyFrameSize = 6;
         public static float TimelineHalfKeyFrameSize = TimelineKeyFrameSize / 2.0f;
 
         public static float TimelineEventLabelLeftMargin = 3.0f;

@@ -34,7 +34,7 @@ namespace EAS
             {
                 if (EASEditor.Instance.Loop)
                 {
-                    m_TimelineTimer.Start(m_AnimationInformation.PlayLength);
+                    m_TimelineTimer.Start(m_AnimationInformation.Length);
                 }
                 else
                 {
@@ -54,7 +54,7 @@ namespace EAS
                 }
                 else
                 {
-                    m_TimelineTimer.Start(m_AnimationInformation.PlayLength);
+                    m_TimelineTimer.Start(m_AnimationInformation.Length);
                 }
             }
             else
@@ -102,9 +102,9 @@ namespace EAS
             EditorGUI.DrawRect(m_FramesAreaRect, EASSkin.TimelineFramesBackgroundColor);
 
             Rect lineRect = new Rect(0, m_FramesAreaRect.y, 1f, m_FramesAreaRect.height - 1);
-            for (int i = 0; i < m_AnimationInformation.Frames; ++i)
+            for (int i = 0; i <= m_AnimationInformation.Frames; ++i)
             {
-                EASTimelineFrameType frameType = GetFrameType(i, m_AnimationInformation.Frames - 1);
+                EASTimelineFrameType frameType = GetFrameType(i, m_AnimationInformation.Frames);
                 EASTimelineFrame timelineFrame = new EASTimelineFrame(frame: i, GetHorizontalPositionAtFrame(i, clipped: true), frameType, GetFrameColor(frameType));
                 m_Frames.Add(timelineFrame);
 
@@ -426,7 +426,7 @@ namespace EAS
             float frameAtMousePosition = Mathf.Clamp(GetFrameAtPosition(Event.current.mousePosition.x, clipped), 0, m_AnimationInformation.Frames - 1);
             float elapsedTime = frameAtMousePosition * m_AnimationInformation.Length / m_AnimationInformation.Frames;
 
-            m_TimelineTimer.Start(m_AnimationInformation.PlayLength, elapsedTime);
+            m_TimelineTimer.Start(m_AnimationInformation.Length, elapsedTime);
             m_TimelineTimer.Pause();
 
             EASEditor.Instance.Repaint();
@@ -546,7 +546,7 @@ namespace EAS
                     Vector2 distanceFromEventStart = draggingItem.Rect.position - m_DragInformation.InitialPosition;
 
                     float draggedEventStartHorizontalPosition = Event.current.mousePosition.x + distanceFromEventStart.x;
-                    baseEvent.StartFrame = GetSafeFrameAtPosition(draggedEventStartHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1 - baseEvent.Duration));
+                    baseEvent.StartFrame = GetSafeFrameAtPosition(draggedEventStartHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - baseEvent.Duration));
                 }
             }
         }
@@ -582,7 +582,7 @@ namespace EAS
                 Vector2 distanceFromEventEnd = new Vector2(resizingGUIItem.Rect.xMax, resizingGUIItem.Rect.y) - m_DragInformation.InitialPosition;
                 float resizingEventEndHorizontalPosition = Event.current.mousePosition.x + distanceFromEventEnd.x;
 
-                int frameAtMousePosition = GetSafeFrameAtPosition(resizingEventEndHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames - 1));
+                int frameAtMousePosition = GetSafeFrameAtPosition(resizingEventEndHorizontalPosition, Mathf.RoundToInt(m_AnimationInformation.Frames));
                 baseEvent.Duration = Mathf.Clamp(frameAtMousePosition - baseEvent.StartFrame, 1, int.MaxValue);
             }
         }
@@ -737,7 +737,7 @@ namespace EAS
             m_AnimationInformation = EASEditor.Instance.GetAnimationInformation();
 
             float framesAreaWidth = m_FramesAreaRect.width - EASSkin.TimelineRightMargin;
-            m_PixelsPerFrame = framesAreaWidth / (m_AnimationInformation.Frames - 1);
+            m_PixelsPerFrame = framesAreaWidth / m_AnimationInformation.Frames;
         }
 
         protected float GetInitialFramePosition(bool clipped = false)
@@ -772,7 +772,7 @@ namespace EAS
 
         protected EASTimelineFrameType GetFrameType(float frame, float lastFrame)
         {
-            if (frame == lastFrame)
+            if (Mathf.RoundToInt(frame) == Mathf.RoundToInt(lastFrame))
             {
                 return EASTimelineFrameType.MainFrame;
             }

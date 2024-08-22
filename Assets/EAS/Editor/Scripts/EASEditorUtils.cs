@@ -241,7 +241,7 @@ namespace EAS
 
         public static bool ValidateTrackEventPositions(EASTrack track, int trackLength)
         {
-            bool[] occupiedFrames = new bool[trackLength - 1];
+            bool[] occupiedFrames = new bool[trackLength];
             for (int i = 0; i < track.Events.Count; ++i)
             {
                 EASBaseEvent baseEvent = track.Events[i] as EASBaseEvent;
@@ -267,7 +267,7 @@ namespace EAS
                 occupiedFramesCount += baseEvent.Duration;
             }
 
-            return (trackLength - 1) > occupiedFramesCount;
+            return trackLength > occupiedFramesCount;
         }
 
         public static bool SetStartFrameAndDurationForNewEvent(EASBaseEvent baseEvent, int trackLength)
@@ -322,9 +322,9 @@ namespace EAS
                 }
             }
 
-            if (latestFreeSpace.y < trackLength - 1)
+            if (latestFreeSpace.y < trackLength)
             {
-                latestFreeSpace.y = trackLength - 1;
+                latestFreeSpace.y = trackLength;
                 freeSpaces.Add(latestFreeSpace);
             }
 

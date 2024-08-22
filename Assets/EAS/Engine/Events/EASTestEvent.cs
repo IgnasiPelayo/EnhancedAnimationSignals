@@ -4,6 +4,13 @@ using System.Collections.Generic;
 namespace EAS
 {
     [System.Serializable]
+    public class TestClass
+    {
+        public string LastName;
+        public int Age;
+    }
+
+    [System.Serializable]
     [EASEventColor("#FFFFFF"), EASEventTooltip("This is a test event to show default property inspectors")]
     public class EASTestEvent : EASEvent
     {

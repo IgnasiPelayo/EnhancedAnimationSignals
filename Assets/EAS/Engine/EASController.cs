@@ -72,16 +72,16 @@ namespace EAS
                 int lastFrame = Mathf.RoundToInt(animationClip.length * animationClip.frameRate);
                 List<int> keyFrames = new List<int>();
 
-                UnityEditor.EditorCurveBinding[] curveBindings = UnityEditor.AnimationUtility.GetCurveBindings(animationClip);
+                UnityEditor.EditorCurveBinding[] curveBindings = UnityEditor.AnimationUtility.GetObjectReferenceCurveBindings(animationClip);
                 for (int i = 0; i < curveBindings.Length; ++i)
                 {
-                    AnimationCurve animationCurve = UnityEditor.AnimationUtility.GetEditorCurve(animationClip, curveBindings[i]);
-                    for (int j = 0; j < animationCurve.keys.Length; ++j)
+                    UnityEditor.ObjectReferenceKeyframe[] objectReferenceKeyFrames = UnityEditor.AnimationUtility.GetObjectReferenceCurve(animationClip, curveBindings[i]);
+                    for (int j = 0; j < objectReferenceKeyFrames.Length; ++j)
                     {
-                        int frame = Mathf.RoundToInt(Mathf.Clamp(animationCurve.keys[j].time * animationClip.frameRate, 0, lastFrame - 1));
-                        if (!keyFrames.Contains(frame))
+                        int keyFrame = Mathf.RoundToInt(objectReferenceKeyFrames[j].time * animationClip.frameRate);
+                        if (!keyFrames.Contains(keyFrame))
                         {
-                            keyFrames.Add(frame);
+                            keyFrames.Add(keyFrame);
                         }
                     }
                 }

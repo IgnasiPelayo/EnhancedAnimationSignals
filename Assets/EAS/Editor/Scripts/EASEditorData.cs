@@ -13,8 +13,7 @@ namespace EAS
         [SerializeField]
         protected float m_Length;
         public float Length { get => m_Length; }
-        public float PlayLength { get => m_Length - (m_Length / Frames); }
-
+        
         [SerializeField]
         protected float m_FrameRate;
         public float FrameRate { get => m_FrameRate; }
