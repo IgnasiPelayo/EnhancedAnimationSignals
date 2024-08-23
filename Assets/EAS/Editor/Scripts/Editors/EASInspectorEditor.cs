@@ -33,7 +33,10 @@ namespace EAS
         {
             m_PropertyInspectorDrawers = EASEditorUtils.GetAllEASCustomPropertyInspectorDrawers();
 
-            OpenWindow();
+            if (!HasInstance)
+            {
+                OpenWindow();
+            }
         }
 
         protected void OnGUI()
@@ -207,10 +210,9 @@ namespace EAS
 
         protected void OnGUIErrorMessage(Rect headerRect, EASBaseEvent baseEvent, ref Rect inspectorRect)
         {
-            if (baseEvent.HasError(EASEditor.Instance.Controller))
+            GUIContent errorMessageGUIConent = new GUIContent(baseEvent.GetErrorMessage(EASEditor.Instance.Controller));
+            if (baseEvent.HasError(errorMessageGUIConent.text))
             {
-                GUIContent errorMessageGUIConent = new GUIContent(baseEvent.GetErrorMessage());
-
                 GUIStyle errorMessageGUIStyle = EASSkin.InspectorErrorMessageStyle;
 
                 float errorMessageHeight = errorMessageGUIStyle.CalcHeight(errorMessageGUIConent, headerRect.width);
@@ -255,6 +257,8 @@ namespace EAS
 
             if (hasChanged)
             {
+                baseEvent.OnValidate();
+
                 EASEditor.Instance.Repaint();
                 EditorUtility.SetDirty(EASEditor.Instance.Controller.Data);
             }

@@ -6,14 +6,9 @@ namespace EAS
     public class EASPlayParticlesEvent : EASEvent
     {
 #if UNITY_EDITOR
-        public override string GetErrorMessage()
+        public override string GetErrorMessage(EASBaseController owner)
         {
-            return "";
-        }
-
-        public override bool HasError(EASBaseController owner)
-        {
-            return false;
+            return base.GetErrorMessage(owner);
         }
 #endif // UNITY_EDITOR
     }

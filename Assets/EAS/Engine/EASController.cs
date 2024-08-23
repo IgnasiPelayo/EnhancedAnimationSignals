@@ -23,73 +23,72 @@ namespace EAS
             return new string[0];
         }
 
-        public override object GetAnimation(string animationName)
+#if UNITY_EDITOR
+        public override EASAnimationInformation GetAnimation(string animationName)
         {
             Animator animator = GetComponent<Animator>();
 
             if (animator != null && animator.runtimeAnimatorController != null)
             {
-                for (int i = 0; i < animator.runtimeAnimatorController.animationClips.Length; ++i)
+                AnimationClip animationClip = GetAnimationClipByName(animator.runtimeAnimatorController, animationName);
+                if (animationClip != null)
                 {
-                    if (animator.runtimeAnimatorController.animationClips[i].name == animationName)
-                    {
-                        return animator.runtimeAnimatorController.animationClips[i];
-                    }
+                    return new EASAnimationInformation(animationClip, animationClip.name, animationClip.length, animationClip.frameRate, GetKeyFrames(animationClip));
                 }
             }
 
             return null;
         }
 
-        public override float GetLength(object animation)
+        protected AnimationClip GetAnimationClipByName(RuntimeAnimatorController runtimeAnimatorController, string animationName)
         {
-            AnimationClip animationClip = animation as AnimationClip;
-            if (animationClip != null)
+            for (int i = 0; i < runtimeAnimatorController.animationClips.Length; ++i)
             {
-                return animationClip.length;
-            }
-
-            return 0;
-        }
-
-        public override float GetFrameRate(object animation)
-        {
-            AnimationClip animationClip = animation as AnimationClip;
-            if (animationClip != null)
-            {
-                return animationClip.frameRate;
-            }
-
-            return 0;
-        }
-
-#if UNITY_EDITOR
-        public override List<int> GetKeyFrames(object animation)
-        {
-            AnimationClip animationClip = animation as AnimationClip;
-            if (animationClip != null)
-            {
-                int lastFrame = Mathf.RoundToInt(animationClip.length * animationClip.frameRate);
-                List<int> keyFrames = new List<int>();
-
-                UnityEditor.EditorCurveBinding[] curveBindings = UnityEditor.AnimationUtility.GetObjectReferenceCurveBindings(animationClip);
-                for (int i = 0; i < curveBindings.Length; ++i)
+                if (runtimeAnimatorController.animationClips[i].name == animationName)
                 {
-                    UnityEditor.ObjectReferenceKeyframe[] objectReferenceKeyFrames = UnityEditor.AnimationUtility.GetObjectReferenceCurve(animationClip, curveBindings[i]);
-                    for (int j = 0; j < objectReferenceKeyFrames.Length; ++j)
-                    {
-                        int keyFrame = Mathf.RoundToInt(objectReferenceKeyFrames[j].time * animationClip.frameRate);
-                        if (!keyFrames.Contains(keyFrame))
-                        {
-                            keyFrames.Add(keyFrame);
-                        }
-                    }
+                    return runtimeAnimatorController.animationClips[i];
                 }
-
-                return keyFrames;
             }
 
             return null;
+        }
+
+        public List<int> GetKeyFrames(AnimationClip animationClip)
+        {
+            int lastFrame = Mathf.RoundToInt(animationClip.length * animationClip.frameRate);
+            List<int> keyFrames = new List<int>();
+
+            UnityEditor.EditorCurveBinding[] curveBindings = UnityEditor.AnimationUtility.GetObjectReferenceCurveBindings(animationClip);
+            for (int i = 0; i < curveBindings.Length; ++i)
+            {
+                UnityEditor.ObjectReferenceKeyframe[] objectReferenceKeyFrames = UnityEditor.AnimationUtility.GetObjectReferenceCurve(animationClip, curveBindings[i]);
+                for (int j = 0; j < objectReferenceKeyFrames.Length; ++j)
+                {
+                    int keyFrame = Mathf.RoundToInt(objectReferenceKeyFrames[j].time * animationClip.frameRate);
+                    if (!keyFrames.Contains(keyFrame))
+                    {
+                        keyFrames.Add(keyFrame);
+                    }
+                }
+            }
+
+            return keyFrames;
+        }
+
+        public override void PreviewAnimations(float time, EASAnimationInformation animation, List<EASAdditionalAnimationInformation> animations)
+        {
+            UnityEditor.AnimationMode.BeginSampling();
+            Animator animator = GetComponent<Animator>();
+
+            UnityEditor.AnimationMode.SampleAnimationClip(gameObject, animation.Animation as AnimationClip, time);
+
+            for (int i = 0; i < animations.Count; ++i)
+            {
+                EASAdditionalAnimationInformation additionalAnimationInformation = animations[i];
+                UnityEditor.AnimationMode.SampleAnimationClip(additionalAnimationInformation.GameObject, additionalAnimationInformation.AnimationClip, additionalAnimationInformation.Time);
+            }
+
+            UnityEditor.AnimationMode.EndSampling();
         }
 #endif // UNITY_EDITOR
     }

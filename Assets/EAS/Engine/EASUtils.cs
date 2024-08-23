@@ -1,8 +1,73 @@
 using UnityEngine;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace EAS
 {
+    [System.Serializable]
+    public class EASAnimationInformation
+    {
+        [SerializeField]
+        protected object m_Animation;
+        public object Animation { get => m_Animation; }
+
+        [SerializeField]
+        protected string m_Name;
+        public string Name { get => m_Name; }
+
+        [SerializeField]
+        protected float m_Length;
+        public float Length { get => m_Length; }
+
+        [SerializeField]
+        protected float m_FrameRate;
+        public float FrameRate { get => m_FrameRate; }
+
+        public float Frames { get => Mathf.Clamp(m_Length * m_FrameRate, 1.0f, float.MaxValue); }
+
+        [SerializeField]
+        protected List<int> m_KeyFrames;
+        public List<int> KeyFrames { get => m_KeyFrames; }
+
+        public EASAnimationInformation(object animation, string name, float length, float frameRate, List<int> keyFrames)
+        {
+            m_Animation = animation;
+
+            m_Name = name;
+
+            m_Length = length;
+            m_FrameRate = frameRate;
+
+            m_KeyFrames = new List<int>(keyFrames);
+        }
+    }
+
+    [System.Serializable]
+    public class EASAdditionalAnimationInformation : EASAnimationInformation
+    {
+        public AnimationClip AnimationClip { get => m_Animation as AnimationClip; }
+
+        [SerializeField]
+        protected float m_Time;
+        public float Time { get => m_Time; set => m_Time = value; }
+
+        [SerializeField]
+        protected int m_StartFrame;
+        public int StartFrame { get => m_StartFrame; }
+
+        [SerializeField]
+        public GameObject m_GameObject;
+        public GameObject GameObject { get => m_GameObject; }
+
+        public EASAdditionalAnimationInformation(object animation, string name, float length, float frameRate, int startFrame, GameObject gameObject)
+            : base(animation, name, length, frameRate, new List<int>())
+        {
+            m_Time = 0.0f;
+            m_StartFrame = startFrame;
+            m_GameObject = gameObject;
+        }
+    }
+
     public class EASUtils
     {
         protected static int HexToInt(char hexChar)

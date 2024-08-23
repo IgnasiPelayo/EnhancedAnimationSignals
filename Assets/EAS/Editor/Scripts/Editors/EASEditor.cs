@@ -6,7 +6,7 @@ using ExtendedGUI;
 
 namespace EAS
 {
-    public class EASEditor : EditorWindow
+    public class EASEditor : EditorWindow, IEASEditorBridge
     {
         protected static EASEditor m_Instance;
         public static EASEditor Instance { get { if (m_Instance == null) { m_Instance = GetWindow<EASEditor>(); } return m_Instance; } }
@@ -23,6 +23,10 @@ namespace EAS
         [SerializeField]
         protected bool m_Playing;
         public bool Playing { get => m_Playing; set { if (m_Playing != value) { m_Playing = value; OnPlayModeChanged(); } } }
+
+        [SerializeField]
+        protected List<float> m_ActiveTimeScales = new List<float>() { 1.0f };
+        public float TimeScale { get => m_ActiveTimeScales[0]; set => m_ActiveTimeScales = new List<float>() { value }; }
 
         [SerializeField]
         protected bool m_Loop;
@@ -155,6 +159,21 @@ namespace EAS
             EditorUtility.SetDirty(this);
         }
 
+        public void SetTimeScale(float timeScale)
+        {
+            m_ActiveTimeScales.Insert(0, timeScale);
+        }
+
+        public void CancelTimeScale(float timeScale)
+        {
+            m_ActiveTimeScales.Remove(timeScale);
+        }
+
+        public void AddSecondaryPreviewAnimation(AnimationClip animationClip, int startFrame, GameObject gameObject)
+        {
+            m_Timeline.AdditionalAnimationInformations.Add(new EASAdditionalAnimationInformation(animationClip, animationClip.name, animationClip.length, animationClip.frameRate, startFrame, gameObject));
+        }
+
         protected void NoControllerGUI()
         {
             GameObject activeGameObject = m_LockSelection ? EditorUtility.InstanceIDToObject(m_InstanceId) as GameObject : Selection.activeGameObject;
@@ -262,6 +281,27 @@ namespace EAS
             Repaint();
         }
 
+        protected void OnSceneGUI(SceneView sceneView)
+        {
+            if (AnimationMode.InAnimationMode())
+            {
+                Handles.BeginGUI();
+
+                Rect sceneViewRect = EditorGUIUtility.PixelsToPoints(sceneView.camera.pixelRect);
+
+                ExtendedGUI.ExtendedGUI.DrawOutlineRect(sceneViewRect, EASSkin.SceneViewColor, EASSkin.SceneViewPreviewMargin);
+
+                GUIContent easScenePreviewMessage = new GUIContent("EAS Scene Preview Enabled");
+                Vector2 easScenePreviewMessageSize = EASSkin.SceneViewLabelStyle.CalcSize(easScenePreviewMessage);
+
+                Rect easScenepreviewMessageRect = new Rect(sceneViewRect.xMax - easScenePreviewMessageSize.x - EASSkin.SceneViewPreviewMargin, sceneViewRect.yMax - easScenePreviewMessageSize.y - EASSkin.SceneViewPreviewMargin
+                    , easScenePreviewMessageSize.x, easScenePreviewMessageSize.y);
+                GUI.Label(easScenepreviewMessageRect, easScenePreviewMessage, EASSkin.SceneViewLabelStyle);
+
+                Handles.EndGUI();
+            }
+        }
+
         public string[] GetAnimationNames()
         {
             return Controller.GetAnimationNames();
@@ -269,9 +309,7 @@ namespace EAS
 
         public EASAnimationInformation GetAnimationInformation()
         {
-            object animation = Controller.GetAnimation(SelectedAnimationName);
-
-            return new EASAnimationInformation(animation, Controller.GetLength(animation), Controller.GetFrameRate(animation), Controller.GetKeyFrames(animation));
+            return Controller.GetAnimation(SelectedAnimationName);
         }
 
         public int GetCurrentAnimationFrames()
@@ -282,6 +320,47 @@ namespace EAS
         public List<IEASSerializable> GetTracksAndGroups()
         {
             return Controller.Data.GetTracksAndGroups(SelectedAnimationName);
+        }
+
+        public List<EASBaseEvent> GetUnmutedEvents()
+        {
+            List<IEASSerializable> tracksAndGroups = GetTracksAndGroups();
+            List<EASBaseEvent> unmutedEvents = new List<EASBaseEvent>();
+
+            for (int i = 0; i < tracksAndGroups.Count; ++i)
+            {
+                if (tracksAndGroups[i] is EASTrackGroup)
+                {
+                    EASTrackGroup trackGroup = tracksAndGroups[i] as EASTrackGroup;
+                    if (!trackGroup.Muted)
+                    {
+                        for (int j = 0; j < trackGroup.Tracks.Count; ++j)
+                        {
+                            EASTrack track = trackGroup.Tracks[j];
+                            if (!track.Muted)
+                            {
+                                for (int k = 0; k < track.Events.Count; ++k)
+                                {
+                                    unmutedEvents.Add(track.Events[k] as EASBaseEvent);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (tracksAndGroups[i] is EASTrack)
+                {
+                    EASTrack track = tracksAndGroups[i] as EASTrack;
+                    if (!track.Muted)
+                    {
+                        for (int j = 0; j < track.Events.Count; ++j)
+                        {
+                            unmutedEvents.Add(track.Events[j] as EASBaseEvent);
+                        }
+                    }
+                }
+            }
+
+            return unmutedEvents;
         }
 
         public EASTrackGroup AddTrackGroup()
@@ -310,6 +389,11 @@ namespace EAS
 
         public bool RemoveEvent(EASBaseEvent baseEvent)
         {
+            if (!Application.isPlaying && baseEvent.IsTriggered)
+            {
+                baseEvent.OnDisableEditor(this);
+            }
+
             bool success = baseEvent.ParentTrack.Events.Remove(baseEvent);
             EditorUtility.SetDirty(Controller.Data);
 
@@ -517,27 +601,6 @@ namespace EAS
             }
 
             return null;
-        }
-
-        protected void OnSceneGUI(SceneView sceneView)
-        {
-            if (true)
-            {
-                Handles.BeginGUI();
-
-                Rect sceneViewRect = EditorGUIUtility.PixelsToPoints(sceneView.camera.pixelRect);
-
-                ExtendedGUI.ExtendedGUI.DrawOutlineRect(sceneViewRect, EASSkin.SceneViewColor, EASSkin.SceneViewPreviewMargin);
-
-                GUIContent easScenePreviewMessage = new GUIContent("EAS Scene Preview Enabled");
-                Vector2 easScenePreviewMessageSize = EASSkin.SceneViewLabelStyle.CalcSize(easScenePreviewMessage);
-
-                Rect easScenepreviewMessageRect = new Rect(sceneViewRect.xMax - easScenePreviewMessageSize.x - EASSkin.SceneViewPreviewMargin, sceneViewRect.yMax - easScenePreviewMessageSize.y - EASSkin.SceneViewPreviewMargin
-                    , easScenePreviewMessageSize.x, easScenePreviewMessageSize.y);
-                GUI.Label(easScenepreviewMessageRect, easScenePreviewMessage, EASSkin.SceneViewLabelStyle);
-
-                Handles.EndGUI();
-            }
         }
     }
 }

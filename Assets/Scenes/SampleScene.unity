@@ -134,6 +134,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Deer
       objectReference: {fileID: 0}
+    - target: {fileID: 7164342070520991979, guid: 22a8881c89d8bff47b495d4d265e132f, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8453910777486397226, guid: 22a8881c89d8bff47b495d4d265e132f, type: 3}
       propertyPath: m_RootOrder
       value: 1

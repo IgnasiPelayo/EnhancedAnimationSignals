@@ -19,33 +19,53 @@ namespace EAS
         protected EASAnimationInformation m_AnimationInformation;
 
         [SerializeField]
+        protected List<EASAdditionalAnimationInformation> m_AdditionalAnimationInformations = new List<EASAdditionalAnimationInformation>();
+        public List<EASAdditionalAnimationInformation> AdditionalAnimationInformations { get => m_AdditionalAnimationInformations; }
+
+        [SerializeField]
         protected Vector2 m_ScrollPositionOffsets = Vector2.zero;
 
         [SerializeField]
         protected float m_PixelsPerFrame = 13;
 
-        protected EASEditorUtils.EASTimer m_TimelineTimer = new EASEditorUtils.EASTimer();
+        protected EASEditorUtils.EASTimescaledTimer m_TimelineTimer = new EASEditorUtils.EASTimescaledTimer();
 
         protected Rect m_WholeTimelineRect, m_FramesAreaRect;
 
         public void OnUpdate()
         {
-            if (m_PixelsPerFrame < 0)
+            if (m_PixelsPerFrame < 0 || (m_AnimationInformation != null && m_AnimationInformation.Animation == null))
             {
                 OnAnimationChanged();
                 EASEditor.Instance.Repaint();
             }
 
-            if (EASEditor.Instance.Playing && m_TimelineTimer.StopIfElapsed())
+            if (!Application.isPlaying)
             {
-                if (EASEditor.Instance.Loop)
+                if (EASEditor.Instance.Playing)
                 {
-                    m_TimelineTimer.Start(m_AnimationInformation.Length);
+                    m_TimelineTimer.Update(EASEditor.Instance.TimeScale);
+
+                    UpdateEvents();
+
+                    if (m_TimelineTimer.StopIfElapsed())
+                    {
+                        if (EASEditor.Instance.Loop)
+                        {
+                            m_TimelineTimer.Start(m_AnimationInformation.Length);
+                        }
+                        else
+                        {
+                            EASEditor.Instance.Playing = false;
+                            EASEditor.Instance.Repaint();
+                        }
+
+                        EASEditor.Instance.TimeScale = 1.0f;
+                    }
                 }
-                else
+                else if (m_DragInformation != null && m_DragInformation.DragType == EASDragInformation.EASDragType.TimerLine)
                 {
-                    EASEditor.Instance.Playing = false;
-                    EASEditor.Instance.Repaint();
+                    UpdateEvents();
                 }
             }
         }
@@ -65,6 +85,7 @@ namespace EAS
             }
             else
             {
+                ResetEventsTrigger();
                 m_TimelineTimer.Pause();
             }
         }
@@ -99,6 +120,86 @@ namespace EAS
 
             HandleInput();
             OnGUIDrag();
+        }
+
+        protected void UpdateEvents()
+        {
+            float currentFrame = m_TimelineTimer.ElapsedTime * m_AnimationInformation.FrameRate;
+            int currentFrameInt = Mathf.FloorToInt(currentFrame);
+            IEASEditorBridge editorBridge = EASEditor.Instance;
+
+            List<EASBaseEvent> unmutedEASBaseEvents = EASEditor.Instance.GetUnmutedEvents();
+
+            foreach (EASBaseEvent baseEvent in unmutedEASBaseEvents)
+            {
+                if (baseEvent.IsTriggered)
+                {
+                    if (!EASEditorUtils.IsFrameInsideEvent(baseEvent, currentFrame))
+                    {
+                        baseEvent.IsTriggered = false;
+                        baseEvent.OnEndEditor(currentFrameInt, editorBridge);
+                    }
+                    else if (!baseEvent.CanPreviewInEditor(editorBridge))
+                    {
+                        baseEvent.IsTriggered = false;
+                        baseEvent.OnResetEditor(editorBridge);
+                    }
+                }
+            }
+
+            foreach (EASBaseEvent baseEvent in unmutedEASBaseEvents)
+            {
+                if (baseEvent.CanPreviewInEditor(editorBridge))
+                {
+                    if (EASEditorUtils.IsFrameInsideEvent(baseEvent, currentFrame))
+                    {
+                        if (!baseEvent.IsTriggered)
+                        {
+                            baseEvent.IsTriggered = true;
+                            baseEvent.OnStartEditor(currentFrameInt, editorBridge);
+                        }
+
+                        baseEvent.OnUpdateEditor(currentFrameInt, editorBridge);
+                    }
+                }
+            }
+
+            if (!AnimationMode.InAnimationMode() && !PrefabUtility.IsPartOfPrefabAsset(EASEditor.Instance.Controller))
+            {
+                AnimationMode.StartAnimationMode();
+            }
+
+            if (AnimationMode.InAnimationMode())
+            {
+                for (int i = 0; i < m_AdditionalAnimationInformations.Count; ++i)
+                {
+                    m_AdditionalAnimationInformations[i].Time = m_AnimationInformation.Length * ((currentFrame - m_AdditionalAnimationInformations[i].StartFrame) / m_AnimationInformation.Frames);
+                    m_AdditionalAnimationInformations[i].Time = AdjustAnimationTimeToActualFrame(m_AdditionalAnimationInformations[i].Time, m_AdditionalAnimationInformations[i].FrameRate);
+                }
+
+                float time = AdjustAnimationTimeToActualFrame(m_TimelineTimer.ElapsedTime, m_AnimationInformation.FrameRate);
+                EASEditor.Instance.Controller.PreviewAnimations(time, m_AnimationInformation, m_AdditionalAnimationInformations);
+
+                m_AdditionalAnimationInformations.Clear();
+            }
+        }
+        protected float AdjustAnimationTimeToActualFrame(float currentTime, float frameRate)
+        {
+            int frame = Mathf.RoundToInt(currentTime * frameRate);
+            return frame / frameRate;
+        }
+
+        protected void ResetEventsTrigger()
+        {
+            int currentFrame = Mathf.FloorToInt(m_TimelineTimer.ElapsedTime * m_AnimationInformation.FrameRate);
+            IEASEditorBridge editorBridge = EASEditor.Instance;
+
+            List<EASBaseEvent> unmutedEASBaseEvents = EASEditor.Instance.GetUnmutedEvents();
+            foreach (EASBaseEvent baseEvent in unmutedEASBaseEvents)
+            {
+                baseEvent.IsTriggered = false;
+                baseEvent.OnEndEditor(currentFrame, editorBridge);
+            }
         }
 
         protected void OnGUIFramesArea()
@@ -312,7 +413,7 @@ namespace EAS
 
         protected void OnGUITimerLine()
         {
-            Rect timerLineRect = new Rect(GetHorizontalPositionAtTime(m_TimelineTimer.ElapsedTime(), clipped: true) - 1, 0, 2, m_WholeTimelineRect.height);
+            Rect timerLineRect = new Rect(GetHorizontalPositionAtTime(m_TimelineTimer.ElapsedTime, clipped: true) - 1, 0, 2, m_WholeTimelineRect.height);
             EditorGUI.DrawRect(timerLineRect, Color.white);
         }
 
@@ -744,6 +845,9 @@ namespace EAS
 
             float framesAreaWidth = m_FramesAreaRect.width - EASSkin.TimelineRightMargin;
             m_PixelsPerFrame = framesAreaWidth / m_AnimationInformation.Frames;
+
+            m_TimelineTimer.Start(m_AnimationInformation.Length);
+            m_TimelineTimer.Pause();
         }
 
         protected float GetInitialFramePosition(bool clipped = false)

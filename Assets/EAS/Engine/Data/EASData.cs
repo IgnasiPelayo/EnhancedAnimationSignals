@@ -1,6 +1,6 @@
-using System.Collections.Generic;
 using UnityEngine;
 using CustomAttributes;
+using System.Collections.Generic;
 
 namespace EAS
 {

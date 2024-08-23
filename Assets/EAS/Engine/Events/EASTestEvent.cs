@@ -46,14 +46,9 @@ namespace EAS
         public Vector4 m_Vector4;
 
 #if UNITY_EDITOR
-        public override string GetErrorMessage()
+        public override string GetErrorMessage(EASBaseController owner)
         {
             return "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
-        }
-
-        public override bool HasError(EASBaseController owner)
-        {
-            return true;
         }
 #endif // UNITY_EDITOR
     }

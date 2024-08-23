@@ -11,16 +11,23 @@ namespace EAS
             ShowEventOptionsMenuOnRightClick(rect, baseEvent, propertyValue, propertyName, propertyType);
 
             EASBaseReference baseReference = propertyValue as EASBaseReference;
-            UnityEngine.Object propertyValueAsObject = baseReference.Resolve(EASEditor.Instance.Controller) as UnityEngine.Object;
-
-            EditorGUI.BeginChangeCheck();
-
-            propertyValueAsObject = EditorGUI.ObjectField(rect, label, propertyValueAsObject, baseReference.GetObjectType(), allowSceneObjects: true);
-
-            if (EditorGUI.EndChangeCheck())
+            if (baseReference != null)
             {
-                baseReference.UpdateValue(propertyValueAsObject, EASEditor.Instance.Controller.DataRoot);
-                return true;
+                UnityEngine.Object propertyValueAsObject = baseReference.ResolveReference(EASEditor.Instance.Controller) as UnityEngine.Object;
+
+                EditorGUI.BeginChangeCheck();
+
+                propertyValueAsObject = EditorGUI.ObjectField(rect, label, propertyValueAsObject, baseReference.GetObjectType(), allowSceneObjects: true);
+
+                if (EditorGUI.EndChangeCheck())
+                {
+                    baseReference.UpdateValue(propertyValueAsObject, EASEditor.Instance.Controller.DataRoot);
+                    return true;
+                }
+            }
+            else
+            {
+                GUI.Label(EditorGUI.IndentedRect(rect), new GUIContent($"{propertyName} is null. Declare it as EASReference<{propertyType.GetGenericArguments()[0]}> {propertyName} = new EASReference<{propertyType.GetGenericArguments()[0]}>"));
             }
 
             return false;

@@ -71,21 +71,31 @@ namespace EAS
         protected virtual void OnDurationChanged() { }
 
 #if UNITY_EDITOR
+        public virtual void OnValidate() { }
+
         public virtual string GetLabel() => m_Name;
 
         public virtual bool HasOwnerType(EASBaseController owner) => true;
         public virtual bool IsObjectCompatible(GameObject root) => true;
 
-        public abstract bool HasError(EASBaseController owner);
-        public abstract string GetErrorMessage();
+        public bool HasError(string errorMessage) => !string.IsNullOrEmpty(errorMessage);
+        public bool HasError(EASBaseController owner) => HasError(GetErrorMessage(owner));
+        public virtual string GetErrorMessage(EASBaseController owner) => string.Empty;
 
         public static EASBaseEvent Create(System.Type type)
         {
             EASBaseEvent newEvent = System.Activator.CreateInstance(type) as EASBaseEvent;
-
-
             return newEvent;
         }
+
+        public virtual bool CanPreviewInEditor(IEASEditorBridge editorBridge) => true;
+
+        public virtual void OnStartEditor(int currentFrame, IEASEditorBridge editorBridge) { }
+        public virtual void OnUpdateEditor(int currentFrame, IEASEditorBridge editorBridge) { }
+        public virtual void OnEndEditor(int currentFrame, IEASEditorBridge editorBridge) { }
+        public virtual void OnResetEditor(IEASEditorBridge editorBridge) { }
+        public virtual void OnDisableEditor(IEASEditorBridge editorBridge) { }
+
 #endif // UNITY_EDITOR
     }
 

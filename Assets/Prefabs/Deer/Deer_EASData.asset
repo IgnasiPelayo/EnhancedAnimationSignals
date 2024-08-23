@@ -23,10 +23,13 @@ MonoBehaviour:
     m_TracksAndGroups:
     - rid: 2068510632756641812
     - rid: 2068510632756641816
+    - rid: 2068510652628205618
   - m_ID: 485115159
     m_Name: Galop_WindUp
     m_NameHash: 436167999
-    m_TracksAndGroups: []
+    m_TracksAndGroups:
+    - rid: 2068510656446070800
+    - rid: 2068510656446070817
   references:
     version: 2
     RefIds:
@@ -51,10 +54,12 @@ MonoBehaviour:
         m_Controller: {fileID: 0}
         m_ParentTrack:
           rid: 2068510632756641812
-        m_StartFrame: 0
-        m_Duration: 16
+        m_StartFrame: 1
+        m_Duration: 8
         m_Owner: {fileID: 0}
-        m_Message: 
+        m_Message: Churumbel
+        m_LogOnce: 1
+        m_LogType: 3
     - rid: 2068510632756641816
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -64,37 +69,83 @@ MonoBehaviour:
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
-        m_Events:
-        - rid: 2068510632756641817
-    - rid: 2068510632756641817
-      type: {class: EASTestEvent, ns: EAS, asm: Assembly-CSharp}
+        m_Events: []
+    - rid: 2068510652628205618
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 1979186308
-        m_Name: Test
+        m_ID: 160079941
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510652628205619
+    - rid: 2068510652628205619
+      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -766407804
+        m_Name: Play Animation
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2068510632756641816
+          rid: 2068510652628205618
         m_StartFrame: 0
-        m_Duration: 3
+        m_Duration: 16
         m_Owner: {fileID: 0}
-        m_AnimationCurve:
-          serializedVersion: 2
-          m_Curve: []
-          m_PreInfinity: 2
-          m_PostInfinity: 2
-          m_RotationOrder: 4
-        m_Array: []
-        m_List: []
-        m_Bool: 0
-        m_Class:
-          LastName: m_Class.LastName
-          Age: 0
-        m_Color: {r: 0, g: 0, b: 0, a: 0}
-        m_Double: 0
-        m_Float: 0
-        m_Int: -59
-        m_Object: {fileID: 0}
-        m_String: m_Class.LastName
-        m_Vector2: {x: 4.86, y: 2.32}
-        m_Vector3: {x: 0, y: 0, z: 0}
-        m_Vector4: {x: 8.25, y: -0.96, z: 20.98, w: 10.59}
+        m_Animator:
+          m_Path: Horns
+          m_Instance: {fileID: 0}
+        m_AnimationName: Galop_Male
+        m_AnimationHash: 1272229344
+        m_SyncWithAnimation: 1
+    - rid: 2068510656446070800
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1243136901
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510656446070818
+    - rid: 2068510656446070816
+      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -569436033
+        m_Name: Play Animation
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510656446070817
+        m_StartFrame: 0
+        m_Duration: 53
+        m_Owner: {fileID: 0}
+        m_Animator:
+          m_Path: Horns
+          m_Instance: {fileID: 0}
+        m_AnimationName: Galop_WindUp_Male
+        m_AnimationHash: -1567913441
+        m_SyncWithAnimation: 1
+    - rid: 2068510656446070817
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -812816377
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510656446070816
+    - rid: 2068510656446070818
+      type: {class: EASAnimationTimeScaleEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1790083698
+        m_Name: Animation Time Scale
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510656446070800
+        m_StartFrame: 12
+        m_Duration: 6
+        m_Owner: {fileID: 0}
+        m_TimeScaleRange: {x: 0.5, y: 0.5}

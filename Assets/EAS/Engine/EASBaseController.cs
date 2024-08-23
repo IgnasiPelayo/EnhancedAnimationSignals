@@ -16,14 +16,10 @@ namespace EAS
 
         public abstract string[] GetAnimationNames();
 
-        public abstract object GetAnimation(string animationName);
-
-        public abstract float GetLength(object animation);
-
-        public abstract float GetFrameRate(object animation);
-
 #if UNITY_EDITOR
-        public abstract List<int> GetKeyFrames(object animation);
+        public abstract EASAnimationInformation GetAnimation(string animationName);
+
+        public abstract void PreviewAnimations(float time, EASAnimationInformation animation, List<EASAdditionalAnimationInformation> animations);
 #endif // UNITY_EDITOR
     }
 }

@@ -7,7 +7,7 @@ namespace EAS
     {
         public abstract System.Type GetObjectType();
 
-        public abstract object Resolve(EASBaseController controller);
+        public abstract object ResolveReference(EASBaseController controller);
 
         public abstract void UpdateValue(object newInstance, Transform rootTransform);
     }
@@ -27,10 +27,15 @@ namespace EAS
 
         public override System.Type GetObjectType() => typeof(T);
 
-        public override object Resolve(EASBaseController controller)
+        public override object ResolveReference(EASBaseController controller)
         {
             m_Instance = InternalResolve(controller);
             return m_Instance;
+        }
+
+        public T Resolve(EASBaseController controller)
+        {
+            return ResolveReference(controller) as T;
         }
 
         protected T InternalResolve(EASBaseController controller)
