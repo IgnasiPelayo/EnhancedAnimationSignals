@@ -105,10 +105,14 @@ namespace EAS
 
         public EASBaseEvent CreateEvent(System.Type type)
         {
+#if UNITY_EDITOR
             EASBaseEvent newEvent = EASBaseEvent.Create(type);
             newEvent.ParentTrack = this;
 
             return newEvent;
+#else // UNITY_EDITOR
+            return null;
+#endif 
         }
 
         public EASBaseEvent AddEvent(EASBaseEvent baseEvent)
