@@ -1,5 +1,3 @@
-using CustomAttributes;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -95,6 +93,35 @@ namespace EAS
         public virtual void OnEndEditor(int currentFrame, IEASEditorBridge editorBridge) { }
         public virtual void OnResetEditor(IEASEditorBridge editorBridge) { }
         public virtual void OnDisableEditor(IEASEditorBridge editorBridge) { }
+
+        public virtual void CreateRuntimeData(EASBaseController controller) 
+        {
+            m_Controller = controller;
+
+            System.Type baseReferenceType = typeof(EASBaseReference);
+
+            System.Reflection.FieldInfo[] fields = GetType().GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            for (int i = 0; i < fields.Length; ++i)
+            {
+                System.Reflection.FieldInfo field = fields[i];
+                System.Type fieldType = field.FieldType;
+
+                if (baseReferenceType.IsAssignableFrom(fieldType))
+                {
+                    EASBaseReference baseReference = field.GetValue(this) as EASBaseReference;
+                    baseReference.GenerateRuntimeData(controller);
+                }
+                else if ((fieldType.IsArray && baseReferenceType.IsAssignableFrom(fieldType.GetElementType())) || (fieldType.IsGenericType && fieldType.GetGenericTypeDefinition() == typeof(List<>)))
+                {
+                    System.Collections.IList iList = (System.Collections.IList)field.GetValue(this);
+                    for (int j = 0; j < iList.Count; ++j)
+                    {
+                        EASBaseReference baseReference = iList[j] as EASBaseReference;
+                        baseReference.GenerateRuntimeData(controller);
+                    }
+                }
+            }
+        }
 
 #endif // UNITY_EDITOR
     }

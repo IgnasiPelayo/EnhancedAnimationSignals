@@ -9,6 +9,7 @@ namespace EAS
     {
         [SerializeField, ArrayElementTitle("m_Name")]
         protected List<EASAnimationData> m_AnimationsData = new List<EASAnimationData>();
+        public List<EASAnimationData> AnimationData { get => m_AnimationsData; }
 
         public EASTrackGroup AddTrackGroup(string animationName)
         {
@@ -65,5 +66,12 @@ namespace EAS
 
             return new List<IEASSerializable>();
         }
+
+#if UNITY_EDITOR
+        public List<EASBaseEvent> GetUnmutedEvents(string animationName)
+        {
+            return GetAnimationData(animationName).GetUnmutedEvents();
+        }
+#endif // UNITY_EDITOR
     }
 }

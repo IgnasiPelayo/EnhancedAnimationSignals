@@ -35,6 +35,19 @@ namespace EAS
             }
         }
 
+        public override void OnStart(float currentFrame)
+        {
+            Log();
+        }
+
+        public override void OnUpdate(float progress)
+        {
+            if (!m_LogOnce)
+            {
+                Log();
+            }
+        }
+
 #if UNITY_EDITOR
         public override string GetErrorMessage(EASBaseController owner)
         {

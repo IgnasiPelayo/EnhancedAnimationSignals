@@ -345,3 +345,147 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Data: {fileID: 11400000, guid: 6f57bca82ba0c194fb87fc997e49fb16, type: 2}
   m_DataRoot: {fileID: 8453910777486397226}
+  m_RuntimeData:
+    m_Animations:
+    - m_Hash: 1556535090
+      m_Frames: 16
+      m_FrameRate: 24
+      m_Events:
+      - rid: 2068510746361200670
+    - m_Hash: 436167999
+      m_Frames: 53
+      m_FrameRate: 24
+      m_Events:
+      - rid: 2068510746361200671
+      - rid: 2068510746361200672
+  m_Animator: {fileID: 842627257355050964}
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 2068510746361200670
+      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -766407804
+        m_Name: Play Animation
+        m_Controller: {fileID: 1530579473622646332}
+        m_ParentTrack:
+          rid: 2068510746361200673
+        m_StartFrame: 0
+        m_Duration: 16
+        m_Owner: {fileID: 0}
+        m_Animator:
+          m_Path: Horns
+          m_Instance: {fileID: 6844052570237971454}
+        m_AnimationName: Galop_Male
+        m_AnimationHash: 1272229344
+        m_SyncWithAnimation: 1
+    - rid: 2068510746361200671
+      type: {class: EASAnimationTimeScaleEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1790083698
+        m_Name: Animation Time Scale
+        m_Controller: {fileID: 1530579473622646332}
+        m_ParentTrack:
+          rid: 2068510746361200674
+        m_StartFrame: 12
+        m_Duration: 6
+        m_Owner: {fileID: 0}
+        m_TimeScaleRange: {x: 0.5, y: 0.5}
+    - rid: 2068510746361200672
+      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -569436033
+        m_Name: Play Animation
+        m_Controller: {fileID: 1530579473622646332}
+        m_ParentTrack:
+          rid: 2068510746361200675
+        m_StartFrame: 0
+        m_Duration: 53
+        m_Owner: {fileID: 0}
+        m_Animator:
+          m_Path: Horns
+          m_Instance: {fileID: 6844052570237971454}
+        m_AnimationName: Galop_WindUp_Male
+        m_AnimationHash: -1567913441
+        m_SyncWithAnimation: 1
+    - rid: 2068510746361200673
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 160079941
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510746361200676
+    - rid: 2068510746361200674
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1243136901
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510746361200677
+    - rid: 2068510746361200675
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -812816377
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510746361200678
+    - rid: 2068510746361200676
+      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -766407804
+        m_Name: Play Animation
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510746361200673
+        m_StartFrame: 0
+        m_Duration: 16
+        m_Owner: {fileID: 0}
+        m_Animator:
+          m_Path: Horns
+          m_Instance: {fileID: 0}
+        m_AnimationName: Galop_Male
+        m_AnimationHash: 1272229344
+        m_SyncWithAnimation: 1
+    - rid: 2068510746361200677
+      type: {class: EASAnimationTimeScaleEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1790083698
+        m_Name: Animation Time Scale
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510746361200674
+        m_StartFrame: 12
+        m_Duration: 6
+        m_Owner: {fileID: 0}
+        m_TimeScaleRange: {x: 0.5, y: 0.5}
+    - rid: 2068510746361200678
+      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -569436033
+        m_Name: Play Animation
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510746361200675
+        m_StartFrame: 0
+        m_Duration: 53
+        m_Owner: {fileID: 0}
+        m_Animator:
+          m_Path: Horns
+          m_Instance: {fileID: 0}
+        m_AnimationName: Galop_WindUp_Male
+        m_AnimationHash: -1567913441
+        m_SyncWithAnimation: 1

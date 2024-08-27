@@ -68,6 +68,29 @@ namespace EAS
         }
     }
 
+    [System.Serializable]
+    public class EASAnimationState
+    {
+        [SerializeField]
+        protected int m_AnimationHash;
+        public int AnimationHash { get => m_AnimationHash; }
+
+        [SerializeField]
+        protected float m_NormalizedTime;
+        public float NormalizedTime { get => m_NormalizedTime; }
+
+        [SerializeField]
+        protected bool m_IsLoop;
+        public bool IsLoop { get => m_IsLoop; }
+
+        public EASAnimationState(int animationHash, float normalizedTime, bool isLoop)
+        {
+            m_AnimationHash = animationHash;
+            m_NormalizedTime = normalizedTime;
+            m_IsLoop = isLoop;
+        }
+    }
+
     public class EASUtils
     {
         protected static int HexToInt(char hexChar)
@@ -152,6 +175,11 @@ namespace EAS
         public static string FromCamelCase(string camelCase)
         {
             return Regex.Replace(camelCase, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
+        }
+
+        public static bool IsFrameInsideEvent(EASBaseEvent baseEvent, float currentFrame)
+        {
+            return baseEvent.StartFrame <= currentFrame && baseEvent.LastFrame > currentFrame;
         }
     }
 }

@@ -55,6 +55,48 @@ namespace EAS
 
             return true;
         }
+
+#if UNITY_EDITOR
+        public List<EASBaseEvent> GetUnmutedEvents()
+        {
+            List<EASBaseEvent> unmutedEvents = new List<EASBaseEvent>();
+
+            for (int i = 0; i < m_TracksAndGroups.Count; ++i)
+            {
+                if (m_TracksAndGroups[i] is EASTrackGroup)
+                {
+                    EASTrackGroup trackGroup = m_TracksAndGroups[i] as EASTrackGroup;
+                    if (!trackGroup.Muted)
+                    {
+                        for (int j = 0; j < trackGroup.Tracks.Count; ++j)
+                        {
+                            EASTrack track = trackGroup.Tracks[j];
+                            if (!track.Muted)
+                            {
+                                for (int k = 0; k < track.Events.Count; ++k)
+                                {
+                                    unmutedEvents.Add(track.Events[k] as EASBaseEvent);
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (m_TracksAndGroups[i] is EASTrack)
+                {
+                    EASTrack track = m_TracksAndGroups[i] as EASTrack;
+                    if (!track.Muted)
+                    {
+                        for (int j = 0; j < track.Events.Count; ++j)
+                        {
+                            unmutedEvents.Add(track.Events[j] as EASBaseEvent);
+                        }
+                    }
+                }
+            }
+
+            return unmutedEvents;
+        }
+#endif // UNITY_EDITOR
     }
 
     [System.Serializable]

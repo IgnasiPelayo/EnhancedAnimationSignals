@@ -210,9 +210,10 @@ namespace EAS
 
         protected void OnGUIErrorMessage(Rect headerRect, EASBaseEvent baseEvent, ref Rect inspectorRect)
         {
-            GUIContent errorMessageGUIConent = new GUIContent(baseEvent.GetErrorMessage(EASEditor.Instance.Controller));
-            if (baseEvent.HasError(errorMessageGUIConent.text))
+            EASBaseController controller = EASEditor.Instance.Controller;
+            if (baseEvent.HasError(controller))
             {
+                GUIContent errorMessageGUIConent = new GUIContent(baseEvent.GetErrorMessage(controller));
                 GUIStyle errorMessageGUIStyle = EASSkin.InspectorErrorMessageStyle;
 
                 float errorMessageHeight = errorMessageGUIStyle.CalcHeight(errorMessageGUIConent, headerRect.width);

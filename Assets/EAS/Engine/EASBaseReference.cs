@@ -10,6 +10,10 @@ namespace EAS
         public abstract object ResolveReference(EASBaseController controller);
 
         public abstract void UpdateValue(object newInstance, Transform rootTransform);
+
+#if UNITY_EDITOR
+        public abstract void GenerateRuntimeData(EASBaseController controller);
+#endif // UNITY_EDITOR
     }
 
     [System.Serializable]
@@ -38,14 +42,14 @@ namespace EAS
             return ResolveReference(controller) as T;
         }
 
-        protected T InternalResolve(EASBaseController controller)
+        protected T InternalResolve(EASBaseController controller, bool forceFindComponent = false)
         {
             if (string.IsNullOrEmpty(m_Path))
             {
                 return null;
             }
 
-            if (m_Instance != null)
+            if (m_Instance != null && !forceFindComponent)
             {
                 return m_Instance;
             }
@@ -107,6 +111,18 @@ namespace EAS
 
             return path;
         }
+
+#if UNITY_EDITOR
+        public override void GenerateRuntimeData(EASBaseController controller)
+        {
+            m_Instance = InternalResolve(controller, forceFindComponent: true);
+
+            if (m_Instance == null)
+            {
+                Debug.LogError($"Couldn't find a valid Instance for EASReference<{GetObjectType().Name}> at path: {m_Path}", controller.DataRootGameObject);
+            }
+        }
+#endif // UNITY_EDITOR
     }
 }
 

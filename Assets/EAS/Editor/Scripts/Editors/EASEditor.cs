@@ -324,43 +324,7 @@ namespace EAS
 
         public List<EASBaseEvent> GetUnmutedEvents()
         {
-            List<IEASSerializable> tracksAndGroups = GetTracksAndGroups();
-            List<EASBaseEvent> unmutedEvents = new List<EASBaseEvent>();
-
-            for (int i = 0; i < tracksAndGroups.Count; ++i)
-            {
-                if (tracksAndGroups[i] is EASTrackGroup)
-                {
-                    EASTrackGroup trackGroup = tracksAndGroups[i] as EASTrackGroup;
-                    if (!trackGroup.Muted)
-                    {
-                        for (int j = 0; j < trackGroup.Tracks.Count; ++j)
-                        {
-                            EASTrack track = trackGroup.Tracks[j];
-                            if (!track.Muted)
-                            {
-                                for (int k = 0; k < track.Events.Count; ++k)
-                                {
-                                    unmutedEvents.Add(track.Events[k] as EASBaseEvent);
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (tracksAndGroups[i] is EASTrack)
-                {
-                    EASTrack track = tracksAndGroups[i] as EASTrack;
-                    if (!track.Muted)
-                    {
-                        for (int j = 0; j < track.Events.Count; ++j)
-                        {
-                            unmutedEvents.Add(track.Events[j] as EASBaseEvent);
-                        }
-                    }
-                }
-            }
-
-            return unmutedEvents;
+            return Controller.Data.GetUnmutedEvents(SelectedAnimationName);
         }
 
         public EASTrackGroup AddTrackGroup()

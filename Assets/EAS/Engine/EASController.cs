@@ -5,17 +5,18 @@ namespace EAS
 {
     public class EASController : EASBaseController
     {
+        [SerializeField]
+        protected Animator m_Animator;
+
         public override string[] GetAnimationNames()
         {
-            Animator animator = GetComponent<Animator>();
-
-            if (animator != null && animator.runtimeAnimatorController != null)
+            if (m_Animator != null && m_Animator.runtimeAnimatorController != null)
             {
-                string[] animationNames = new string[animator.runtimeAnimatorController.animationClips.Length];
+                string[] animationNames = new string[m_Animator.runtimeAnimatorController.animationClips.Length];
 
-                for (int i = 0; i < animator.runtimeAnimatorController.animationClips.Length; ++i)
+                for (int i = 0; i < m_Animator.runtimeAnimatorController.animationClips.Length; ++i)
                 {
-                    animationNames[i] = animator.runtimeAnimatorController.animationClips[i].name;
+                    animationNames[i] = m_Animator.runtimeAnimatorController.animationClips[i].name;
                 }
                 return animationNames;
             }
@@ -23,14 +24,18 @@ namespace EAS
             return new string[0];
         }
 
+        public override EASAnimationState GetCurrentAnimationState()
+        {
+            AnimatorStateInfo animatorStateInfo = m_Animator.GetCurrentAnimatorStateInfo(0);
+            return new EASAnimationState(animatorStateInfo.shortNameHash, animatorStateInfo.normalizedTime, animatorStateInfo.loop);
+        }
+
 #if UNITY_EDITOR
         public override EASAnimationInformation GetAnimation(string animationName)
         {
-            Animator animator = GetComponent<Animator>();
-
-            if (animator != null && animator.runtimeAnimatorController != null)
+            if (m_Animator != null && m_Animator.runtimeAnimatorController != null)
             {
-                AnimationClip animationClip = GetAnimationClipByName(animator.runtimeAnimatorController, animationName);
+                AnimationClip animationClip = GetAnimationClipByName(m_Animator.runtimeAnimatorController, animationName);
                 if (animationClip != null)
                 {
                     return new EASAnimationInformation(animationClip, animationClip.name, animationClip.length, animationClip.frameRate, GetKeyFrames(animationClip));
@@ -51,6 +56,17 @@ namespace EAS
             }
 
             return null;
+        }
+
+        public override EASAnimationInformation[] GetAnimations()
+        {
+            List<EASAnimationInformation> animations = new List<EASAnimationInformation>();
+            foreach (AnimationClip animationClip in m_Animator.runtimeAnimatorController.animationClips)
+            {
+                animations.Add(new EASAnimationInformation(animationClip, animationClip.name, animationClip.length, animationClip.frameRate, GetKeyFrames(animationClip)));
+            }
+
+            return animations.ToArray();
         }
 
         public List<int> GetKeyFrames(AnimationClip animationClip)

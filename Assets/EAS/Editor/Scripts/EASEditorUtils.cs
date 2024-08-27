@@ -522,10 +522,5 @@ namespace EAS
 
             return freeSpaces;
         }
-
-        public static bool IsFrameInsideEvent(EASBaseEvent baseEvent, float currentFrame)
-        {
-            return baseEvent.StartFrame <= currentFrame && baseEvent.LastFrame > currentFrame;
-        }
     }
 }

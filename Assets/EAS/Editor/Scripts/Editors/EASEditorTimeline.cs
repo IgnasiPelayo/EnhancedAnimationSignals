@@ -134,7 +134,7 @@ namespace EAS
             {
                 if (baseEvent.IsTriggered)
                 {
-                    if (!EASEditorUtils.IsFrameInsideEvent(baseEvent, currentFrame))
+                    if (!EASUtils.IsFrameInsideEvent(baseEvent, currentFrame))
                     {
                         baseEvent.IsTriggered = false;
                         baseEvent.OnEndEditor(currentFrameInt, editorBridge);
@@ -151,7 +151,7 @@ namespace EAS
             {
                 if (baseEvent.CanPreviewInEditor(editorBridge))
                 {
-                    if (EASEditorUtils.IsFrameInsideEvent(baseEvent, currentFrame))
+                    if (EASUtils.IsFrameInsideEvent(baseEvent, currentFrame))
                     {
                         if (!baseEvent.IsTriggered)
                         {

@@ -23,6 +23,27 @@ namespace EAS
         [SerializeField, Tooltip("If enabled, the animation will be synchronized with the current animation's time. If disabled, the animation will start from the beginning.")]
         protected bool m_SyncWithAnimation = true;
 
+        public override void OnStart(float currentFrame)
+        {
+            if (m_Animator != null && m_Animator.Instance != null)
+            {
+                if (m_SyncWithAnimation)
+                {
+                    EASAnimationState animationState = m_Controller.GetCurrentAnimationState();
+                    m_Animator.Instance.Play(m_AnimationHash, -1, animationState.NormalizedTime);
+                    m_Animator.Instance.Update(0.0f);
+                }
+                else
+                {
+                    m_Animator.Instance.Play(m_AnimationHash);
+                }
+            }
+            else
+            {
+                Debug.LogError("Animator is not resolved");
+            }
+        }
+
 #if UNITY_EDITOR
         public override void OnValidate()
         {
