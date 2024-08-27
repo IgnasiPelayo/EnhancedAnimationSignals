@@ -52,6 +52,19 @@ namespace EAS
 
         public void AddSkippedEvent(EASBaseEvent baseEvent) => m_SkippedEvents.Add(baseEvent);
 
+        public T GetActiveEvent<T>() where T : EASBaseEvent
+        {
+            for (int i = 0; i < m_ActiveEvents.Count; ++i)
+            {
+                if (m_ActiveEvents[i] is T)
+                {
+                    return m_ActiveEvents[i] as T;
+                }
+            }
+
+            return null;
+        }
+
         public abstract string[] GetAnimationNames();
 
         public abstract EASAnimationState GetCurrentAnimationState();
@@ -69,7 +82,7 @@ namespace EAS
                 EASAnimationInformation animationInformation = GetAnimation(animationData.Name);
                 if (animationInformation != null)
                 {
-                    List<EASBaseEvent> unmutedEvents = animationData.GetUnmutedEvents();
+                    List<EASBaseEvent> unmutedEvents = animationData.GetEvents(addMuted: false);
                     if (unmutedEvents.Count > 0)
                     {
                         List<EASBaseEvent> baseEvents = new List<EASBaseEvent>(unmutedEvents.Count);

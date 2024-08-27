@@ -23,6 +23,7 @@ MonoBehaviour:
     m_TracksAndGroups:
     - rid: 2068510632756641812
     - rid: 2068510746361200737
+    - rid: 2068510746361200791
   - m_ID: 485115159
     m_Name: Galop_WindUp
     m_NameHash: 436167999
@@ -39,7 +40,7 @@ MonoBehaviour:
       data:
         m_ID: 1086130962
         m_Name: Track
-        m_Muted: 0
+        m_Muted: 1
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
@@ -81,7 +82,7 @@ MonoBehaviour:
       data:
         m_ID: -1243136901
         m_Name: Track
-        m_Muted: 1
+        m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
@@ -109,7 +110,7 @@ MonoBehaviour:
       data:
         m_ID: -812816377
         m_Name: Track
-        m_Muted: 1
+        m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
@@ -127,6 +128,9 @@ MonoBehaviour:
         m_Duration: 6
         m_Owner: {fileID: 0}
         m_TimeScaleRange: {x: 0.5, y: 0.5}
+        m_TargetAnimators:
+        - m_Path: Horns
+          m_Instance: {fileID: 0}
     - rid: 2068510746361200737
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -138,3 +142,42 @@ MonoBehaviour:
           rid: -2
         m_Events:
         - rid: 2068510652628205619
+    - rid: 2068510746361200791
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 175308853
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510746361200793
+        - rid: 2068510746361200796
+    - rid: 2068510746361200793
+      type: {class: EASPlayParticlesEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -704465215
+        m_Name: Play Particles
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510746361200791
+        m_StartFrame: 2
+        m_Duration: 3
+        m_ParticleSystem:
+          m_Path: Particles/ParticleSystem
+          m_Instance: {fileID: 0}
+    - rid: 2068510746361200796
+      type: {class: EASStopParticlesEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1615724697
+        m_Name: Stop Particles
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510746361200791
+        m_StartFrame: 11
+        m_Duration: 5
+        m_ParticleSystem:
+          m_Path: Particles/ParticleSystem
+          m_Instance: {fileID: 0}
+        m_StopBehaviour: 0

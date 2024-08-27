@@ -33,6 +33,7 @@ namespace EAS
         public bool Loop { get => m_Loop; set { if (m_Loop != value) { m_Loop = value; } } }
 
         public int CurrentFrame { get; set; }
+        public float FrameRate { get => 24.0f; }
 
         [SerializeField]
         protected bool m_Mute = true;
@@ -322,9 +323,25 @@ namespace EAS
             return Controller.Data.GetTracksAndGroups(SelectedAnimationName);
         }
 
-        public List<EASBaseEvent> GetUnmutedEvents()
+        public List<EASBaseEvent> GetEvents(bool addMuted)
         {
-            return Controller.Data.GetUnmutedEvents(SelectedAnimationName);
+            return Controller.Data.GetEvents(SelectedAnimationName, addMuted);
+        }
+
+        public List<T> GetEvents<T>(bool addMuted) where T : EASBaseEvent
+        {
+            List<EASBaseEvent> allEvents = GetEvents(addMuted);
+            List<T> events = new List<T>();
+
+            foreach (EASBaseEvent baseEvent in allEvents)
+            {
+                if (baseEvent is T)
+                {
+                    events.Add(baseEvent as T);
+                }
+            }
+
+            return events;
         }
 
         public EASTrackGroup AddTrackGroup()
@@ -346,6 +363,9 @@ namespace EAS
         public bool RemoveTrackOrGroup(IEASSerializable trackOrGroup)
         {
             bool success = Controller.Data.RemoveTrackOrGroup(SelectedAnimationName, trackOrGroup);
+
+            OnAnimationModified();
+
             EditorUtility.SetDirty(Controller.Data);
 
             return success;
@@ -359,6 +379,9 @@ namespace EAS
             }
 
             bool success = baseEvent.ParentTrack.Events.Remove(baseEvent);
+
+            OnAnimationModified();
+
             EditorUtility.SetDirty(Controller.Data);
 
             return success;
@@ -397,11 +420,22 @@ namespace EAS
             {
                 baseEvent = track.AddEvent(baseEvent);
 
+                OnAnimationModified();
+
                 EditorUtility.SetDirty(Controller.Data);
                 return baseEvent;
             }
 
             return null;
+        }
+
+        public void OnAnimationModified()
+        {
+            List<EASBaseEvent> events = GetEvents(addMuted: true);
+            foreach (EASBaseEvent baseEvent in events)
+            {
+                baseEvent.OnAnimationModified(this);
+            }
         }
 
         public bool IsSelected(IEASSerializable selectedObject)

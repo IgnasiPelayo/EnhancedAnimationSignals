@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EAS
 {
@@ -260,6 +261,8 @@ namespace EAS
             {
                 baseEvent.OnValidate();
 
+                EASEditor.Instance.OnAnimationModified();
+
                 EASEditor.Instance.Repaint();
                 EditorUtility.SetDirty(EASEditor.Instance.Controller.Data);
             }
@@ -440,7 +443,7 @@ namespace EAS
                 }
             }
 
-            return inspectorFields;
+            return inspectorFields.OrderBy(i => i.DeclaringType == type).ToList();
         }
 
         protected bool IsInspectorField(FieldInfo fieldInfo)

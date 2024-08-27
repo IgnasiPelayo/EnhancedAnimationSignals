@@ -70,6 +70,7 @@ namespace EAS
 
 #if UNITY_EDITOR
         public virtual void OnValidate() { }
+        public virtual void OnAnimationModified(IEASEditorBridge editorBridge) { }
 
         public virtual string GetLabel() => m_Name;
 
@@ -77,8 +78,8 @@ namespace EAS
         public virtual bool IsObjectCompatible(GameObject root) => true;
 
         public bool HasError(string errorMessage) => !string.IsNullOrEmpty(errorMessage);
-        public bool HasError(EASBaseController owner) => HasError(GetErrorMessage(owner));
-        public virtual string GetErrorMessage(EASBaseController owner) => string.Empty;
+        public bool HasError(EASBaseController controller) => HasError(GetErrorMessage(controller));
+        public virtual string GetErrorMessage(EASBaseController controller) => string.Empty;
 
         public static EASBaseEvent Create(System.Type type)
         {
@@ -90,6 +91,7 @@ namespace EAS
 
         public virtual void OnStartEditor(int currentFrame, IEASEditorBridge editorBridge) { }
         public virtual void OnUpdateEditor(int currentFrame, IEASEditorBridge editorBridge) { }
+        public virtual void OnUpdateTrackEditor(int currentFrame, IEASEditorBridge editorBridge) { }
         public virtual void OnEndEditor(int currentFrame, IEASEditorBridge editorBridge) { }
         public virtual void OnResetEditor(IEASEditorBridge editorBridge) { }
         public virtual void OnDisableEditor(IEASEditorBridge editorBridge) { }
@@ -134,36 +136,43 @@ namespace EAS
         public T Owner { get => m_Owner; }
 
 #if UNITY_EDITOR
-        public override bool HasOwnerType(EASBaseController owner)
+        public override bool HasOwnerType(EASBaseController controller)
         {
             if (typeof(T) == typeof(Animator))
             {
-                return owner.gameObject.GetComponent<Animator>() != null;
+                return controller.gameObject.GetComponent<Animator>() != null;
             }
 
-            if (owner.DataRoot != null)
+            if (controller.DataRoot != null)
             {
-                T[] componentsInChildren = owner.DataRoot.GetComponentsInChildren<T>(includeInactive: true);
+                T[] componentsInChildren = controller.DataRoot.GetComponentsInChildren<T>(includeInactive: true);
                 return componentsInChildren.Length > 0;
             }
 
             return false;
         }
 
-        public virtual T GetOwner(EASBaseController owner)
+        public virtual T GetOwner(EASBaseController controller)
         {
             if (typeof(T) == typeof(Animator))
             {
-                return owner.gameObject.GetComponent<T>();
+                return controller.gameObject.GetComponent<T>();
             }
 
-            if (owner.DataRoot != null)
+            if (controller.DataRoot != null)
             {
-                T[] componentsInChildren = owner.DataRoot.GetComponentsInChildren<T>(includeInactive: true);
+                T[] componentsInChildren = controller.DataRoot.GetComponentsInChildren<T>(includeInactive: true);
                 return componentsInChildren.Length > 0 ? componentsInChildren[0] : null;
             }
 
             return null;
+        }
+
+        public override void CreateRuntimeData(EASBaseController controller)
+        {
+            m_Owner = GetOwner(controller);
+
+            base.CreateRuntimeData(controller);
         }
 #endif // UNITY_EDITOR
     }

@@ -7,6 +7,7 @@ namespace EAS
     {
         [SerializeField]
         protected Animator m_Animator;
+        public Animator Animator { get => m_Animator; }
 
         public override string[] GetAnimationNames()
         {

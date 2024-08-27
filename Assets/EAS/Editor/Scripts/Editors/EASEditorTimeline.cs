@@ -128,7 +128,7 @@ namespace EAS
             int currentFrameInt = Mathf.FloorToInt(currentFrame);
             IEASEditorBridge editorBridge = EASEditor.Instance;
 
-            List<EASBaseEvent> unmutedEASBaseEvents = EASEditor.Instance.GetUnmutedEvents();
+            List<EASBaseEvent> unmutedEASBaseEvents = EASEditor.Instance.GetEvents(addMuted: false);
 
             foreach (EASBaseEvent baseEvent in unmutedEASBaseEvents)
             {
@@ -161,6 +161,8 @@ namespace EAS
 
                         baseEvent.OnUpdateEditor(currentFrameInt, editorBridge);
                     }
+
+                    baseEvent.OnUpdateTrackEditor(currentFrameInt, editorBridge);
                 }
             }
 
@@ -194,7 +196,7 @@ namespace EAS
             int currentFrame = Mathf.FloorToInt(m_TimelineTimer.ElapsedTime * m_AnimationInformation.FrameRate);
             IEASEditorBridge editorBridge = EASEditor.Instance;
 
-            List<EASBaseEvent> unmutedEASBaseEvents = EASEditor.Instance.GetUnmutedEvents();
+            List<EASBaseEvent> unmutedEASBaseEvents = EASEditor.Instance.GetEvents(addMuted: false);
             foreach (EASBaseEvent baseEvent in unmutedEASBaseEvents)
             {
                 baseEvent.IsTriggered = false;

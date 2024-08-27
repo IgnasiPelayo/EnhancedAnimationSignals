@@ -57,7 +57,7 @@ namespace EAS
         }
 
 #if UNITY_EDITOR
-        public List<EASBaseEvent> GetUnmutedEvents()
+        public List<EASBaseEvent> GetEvents(bool addMuted)
         {
             List<EASBaseEvent> unmutedEvents = new List<EASBaseEvent>();
 
@@ -66,12 +66,12 @@ namespace EAS
                 if (m_TracksAndGroups[i] is EASTrackGroup)
                 {
                     EASTrackGroup trackGroup = m_TracksAndGroups[i] as EASTrackGroup;
-                    if (!trackGroup.Muted)
+                    if (!trackGroup.Muted || addMuted)
                     {
                         for (int j = 0; j < trackGroup.Tracks.Count; ++j)
                         {
                             EASTrack track = trackGroup.Tracks[j];
-                            if (!track.Muted)
+                            if (!track.Muted || addMuted)
                             {
                                 for (int k = 0; k < track.Events.Count; ++k)
                                 {
@@ -84,7 +84,7 @@ namespace EAS
                 else if (m_TracksAndGroups[i] is EASTrack)
                 {
                     EASTrack track = m_TracksAndGroups[i] as EASTrack;
-                    if (!track.Muted)
+                    if (!track.Muted || addMuted)
                     {
                         for (int j = 0; j < track.Events.Count; ++j)
                         {

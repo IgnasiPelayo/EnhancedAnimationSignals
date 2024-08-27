@@ -156,7 +156,18 @@ namespace EAS
 
         protected object GetDefaultValue(System.Type elementType)
         {
-            return elementType.IsValueType ? System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(elementType) : null;
+            if (elementType.IsValueType)
+            {
+                return System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(elementType);
+            }
+
+            System.Reflection.ConstructorInfo defaultConstructor = elementType.GetConstructor(System.Type.EmptyTypes);
+            if (defaultConstructor != null)
+            {
+                return defaultConstructor.Invoke(new object[] { });
+            }
+
+            return null;
         }
 
         protected string GetExpandedVariableName(string propertyName) => propertyName + "Expanded";

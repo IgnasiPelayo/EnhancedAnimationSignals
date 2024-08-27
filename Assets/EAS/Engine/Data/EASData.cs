@@ -68,9 +68,9 @@ namespace EAS
         }
 
 #if UNITY_EDITOR
-        public List<EASBaseEvent> GetUnmutedEvents(string animationName)
+        public List<EASBaseEvent> GetEvents(string animationName, bool addMuted)
         {
-            return GetAnimationData(animationName).GetUnmutedEvents();
+            return GetAnimationData(animationName).GetEvents(addMuted);
         }
 #endif // UNITY_EDITOR
     }

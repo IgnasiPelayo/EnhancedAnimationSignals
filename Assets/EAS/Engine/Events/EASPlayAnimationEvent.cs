@@ -9,6 +9,7 @@ namespace EAS
         [Header("Animator Settings")]
         [SerializeField, Tooltip("The Animator component that will play the animation.")]
         protected EASReference<Animator> m_Animator = new EASReference<Animator>();
+        public EASReference<Animator> AnimatorReference { get => m_Animator; }
 
         [Space(10)]
 
@@ -70,7 +71,7 @@ namespace EAS
                     UnityEditor.Animations.AnimatorController controller = animator.runtimeAnimatorController as UnityEditor.Animations.AnimatorController;
                     if (controller != null)
                     {
-                        UnityEditor.Animations.AnimatorState state = GetAnimatorStateByHash(controller, m_AnimationHash);
+                        UnityEditor.Animations.AnimatorState state = EASUtils.GetAnimatorStateByHash(controller, m_AnimationHash);
                         if (state != null)
                         {
                             return errorMessage;
@@ -99,32 +100,13 @@ namespace EAS
                 UnityEditor.Animations.AnimatorController controller = animator.runtimeAnimatorController as UnityEditor.Animations.AnimatorController;
                 if (controller != null)
                 {
-                    UnityEditor.Animations.AnimatorState animatorState = GetAnimatorStateByHash(controller, m_AnimationHash);
+                    UnityEditor.Animations.AnimatorState animatorState = EASUtils.GetAnimatorStateByHash(controller, m_AnimationHash);
                     if (animatorState != null)
                     {
                         editorBridge.AddSecondaryPreviewAnimation(animatorState.motion as AnimationClip, m_SyncWithAnimation ? 0 : m_StartFrame, animator.gameObject);
                     }
                 }
             }
-        }
-
-        protected UnityEditor.Animations.AnimatorState GetAnimatorStateByHash(UnityEditor.Animations.AnimatorController controller, int animationHash)
-        {
-            if (controller != null)
-            {
-                foreach (UnityEditor.Animations.AnimatorControllerLayer layer in controller.layers)
-                {
-                    foreach (UnityEditor.Animations.ChildAnimatorState state in layer.stateMachine.states)
-                    {
-                        if (state.state.nameHash == m_AnimationHash && state.state.motion != null && state.state.motion is AnimationClip)
-                        {
-                            return state.state;
-                        }
-                    }
-                }
-            }
-
-            return null;
         }
 #endif // UNITY_EDITOR
     }

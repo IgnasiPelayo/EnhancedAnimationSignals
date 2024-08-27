@@ -181,5 +181,45 @@ namespace EAS
         {
             return baseEvent.StartFrame <= currentFrame && baseEvent.LastFrame > currentFrame;
         }
+
+#if UNITY_EDITOR
+        public static UnityEditor.Animations.AnimatorState GetAnimatorStateByHash(UnityEditor.Animations.AnimatorController controller, int animationHash)
+        {
+            if (controller != null)
+            {
+                foreach (UnityEditor.Animations.AnimatorControllerLayer layer in controller.layers)
+                {
+                    foreach (UnityEditor.Animations.ChildAnimatorState state in layer.stateMachine.states)
+                    {
+                        if (state.state.nameHash == animationHash && state.state.motion != null && state.state.motion is AnimationClip)
+                        {
+                            return state.state;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+#endif // UNITY_EDITOR
+
+        public static void SetTimeScale(Animator animator, float timeScale)
+        {
+            int timeScaleHash = Animator.StringToHash("TimeScale");
+
+#if UNITY_EDITOR
+            if (timeScale != 1f)
+            {
+                UnityEditor.Animations.AnimatorController animatorController = animator.runtimeAnimatorController as UnityEditor.Animations.AnimatorController;
+                UnityEditor.Animations.AnimatorState animatorState = GetAnimatorStateByHash(animatorController, animator.GetCurrentAnimatorStateInfo(0).shortNameHash);
+                Debug.Assert(animatorState.speedParameterActive && Animator.StringToHash(animatorState.speedParameter) == timeScaleHash, animatorState.name + " state does not support TimeScale Speed Parameter at animator: " + animator.gameObject.name, animator.gameObject);
+            }
+#endif // UNITY_EDITOR
+
+            Debug.Assert(timeScale > 0.0f, "You can't set a timescale smaller or equal than 0.0f! That is not supported", animator.gameObject);
+
+            timeScale = Mathf.Sign(animator.GetFloat(timeScaleHash)) * timeScale;
+            animator.SetFloat(timeScaleHash, timeScale);
+        }
     }
 }
