@@ -93,6 +93,7 @@ namespace EAS
         public virtual void OnUpdateEditor(int currentFrame, IEASEditorBridge editorBridge) { }
         public virtual void OnUpdateTrackEditor(int currentFrame, IEASEditorBridge editorBridge) { }
         public virtual void OnEndEditor(int currentFrame, IEASEditorBridge editorBridge) { }
+        public virtual void OnAnimationEndEditor(IEASEditorBridge editorBridge) { }
         public virtual void OnResetEditor(IEASEditorBridge editorBridge) { }
         public virtual void OnDisableEditor(IEASEditorBridge editorBridge) { }
 

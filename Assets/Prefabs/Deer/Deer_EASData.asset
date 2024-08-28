@@ -23,7 +23,6 @@ MonoBehaviour:
     m_TracksAndGroups:
     - rid: 2068510632756641812
     - rid: 2068510746361200737
-    - rid: 2068510746361200791
   - m_ID: 485115159
     m_Name: Galop_WindUp
     m_NameHash: 436167999
@@ -88,6 +87,8 @@ MonoBehaviour:
           rid: -2
         m_Events:
         - rid: 2068510656446070818
+        - rid: 2068510768554049575
+        - rid: 2068510768554049576
     - rid: 2068510656446070816
       type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -142,41 +143,29 @@ MonoBehaviour:
           rid: -2
         m_Events:
         - rid: 2068510652628205619
-    - rid: 2068510746361200791
-      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
-      data:
-        m_ID: 175308853
-        m_Name: Track
-        m_Muted: 0
-        m_Locked: 0
-        m_ParentTrackGroup:
-          rid: -2
-        m_Events:
-        - rid: 2068510746361200793
-        - rid: 2068510746361200796
-    - rid: 2068510746361200793
+    - rid: 2068510768554049575
       type: {class: EASPlayParticlesEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -704465215
+        m_ID: -67154659
         m_Name: Play Particles
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2068510746361200791
-        m_StartFrame: 2
+          rid: 2068510656446070800
+        m_StartFrame: 33
         m_Duration: 3
         m_ParticleSystem:
           m_Path: Particles/ParticleSystem
           m_Instance: {fileID: 0}
-    - rid: 2068510746361200796
+    - rid: 2068510768554049576
       type: {class: EASStopParticlesEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 1615724697
+        m_ID: -1862511995
         m_Name: Stop Particles
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2068510746361200791
-        m_StartFrame: 11
-        m_Duration: 5
+          rid: 2068510656446070800
+        m_StartFrame: 47
+        m_Duration: 3
         m_ParticleSystem:
           m_Path: Particles/ParticleSystem
           m_Instance: {fileID: 0}

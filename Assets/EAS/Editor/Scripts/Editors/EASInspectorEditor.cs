@@ -443,7 +443,17 @@ namespace EAS
                 }
             }
 
-            return inspectorFields.OrderBy(i => i.DeclaringType == type).ToList();
+            return inspectorFields.OrderByDescending(i => GetDepthLevelOfFieldInfo(type, i.DeclaringType)).ToList();
+        }
+
+        protected int GetDepthLevelOfFieldInfo(System.Type initialType, System.Type targetType)
+        {
+            if (initialType == targetType)
+            {
+                return 0;
+            }
+
+            return GetDepthLevelOfFieldInfo(initialType.BaseType, targetType) + 1;
         }
 
         protected bool IsInspectorField(FieldInfo fieldInfo)

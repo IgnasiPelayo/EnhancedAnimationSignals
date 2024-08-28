@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace EAS
@@ -20,6 +21,50 @@ namespace EAS
             }
 
             return base.GetErrorMessage(controller);
+        }
+
+        public override void OnUpdateTrackEditor(int currentFrame, IEASEditorBridge editorBridge)
+        {
+            ParticleSystem particleSystem = m_ParticleSystem.Resolve(editorBridge.Controller);
+            if (particleSystem != null)
+            {
+                if (editorBridge.ShowParticleSystems)
+                {
+                    if (m_LastFrameUpdate != currentFrame)
+                    {
+                        float elapsedTime = (currentFrame - m_LastFrameUpdate) / editorBridge.FrameRate;
+                        OnUpdateTrackEditorInternal(currentFrame, elapsedTime, particleSystem, editorBridge);
+
+                        m_LastFrameUpdate = currentFrame;
+                    }
+                }
+                else if (m_Previewing)
+                {
+                    StopPreview(particleSystem);
+                }
+            }
+        }
+
+        protected abstract void OnUpdateTrackEditorInternal(int currentFrame, float elapsedTime, ParticleSystem particleSystem, IEASEditorBridge editorBridge);
+
+        protected abstract bool ResolvePreviewConflicts(List<IEASSerializable> conflicts);
+
+        public override void OnDisableEditor(IEASEditorBridge editorBridge)
+        {
+            ParticleSystem particleSystem = m_ParticleSystem.Resolve(editorBridge.Controller);
+            if (particleSystem != null && m_Previewing)
+            {
+                StopPreview(particleSystem);
+            }
+        }
+
+        public override void OnAnimationEndEditor(IEASEditorBridge editorBridge)
+        {
+            ParticleSystem particleSystem = m_ParticleSystem.Resolve(editorBridge.Controller);
+            if (particleSystem != null && m_Previewing)
+            {
+                StopPreview(particleSystem);
+            }
         }
 
         protected void StartPreview(ParticleSystem particleSystem, float elapsedTime)

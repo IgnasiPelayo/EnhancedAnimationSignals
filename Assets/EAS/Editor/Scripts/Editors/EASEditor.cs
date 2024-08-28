@@ -33,7 +33,7 @@ namespace EAS
         public bool Loop { get => m_Loop; set { if (m_Loop != value) { m_Loop = value; } } }
 
         public int CurrentFrame { get; set; }
-        public float FrameRate { get => 24.0f; }
+        public float FrameRate { get => m_Timeline.AnimationInformation.FrameRate; }
 
         [SerializeField]
         protected bool m_Mute = true;
@@ -61,8 +61,7 @@ namespace EAS
         [SerializeField]
         protected Vector2 m_MousePosition;
 
-        [SerializeField]
-        protected Dictionary<System.Type, EASEventTimelineDrawer> m_EventDrawers = new Dictionary<System.Type, EASEventTimelineDrawer>();
+        protected Dictionary<Object, List<IEASSerializable>> m_PreviewBlockedObjects = new Dictionary<Object, List<IEASSerializable>>();
 
         internal T GetComponent<T>() where T : Component
         {
@@ -117,7 +116,6 @@ namespace EAS
 
             }
 
-            m_EventDrawers = EASEditorUtils.GetAllEASCustomEventDrawers();
             SelectObject(null, singleSelection: true);
 
             SceneView.duringSceneGui -= OnSceneGUI;
@@ -268,11 +266,13 @@ namespace EAS
 
         protected void OnPlayModeChanged()
         {
+            m_PreviewBlockedObjects.Clear();
             m_Timeline.OnPlayModeChanged();
         }
 
         public void OnAnimationChanged()
         {
+            m_PreviewBlockedObjects.Clear();
             m_SelectedObjects.Clear();
 
             m_Timeline.OnAnimationChanged();
@@ -591,14 +591,41 @@ namespace EAS
             eventOptionsMenu.ShowAsContext();
         }
 
-        public EASEventTimelineDrawer GetEventDrawer(System.Type type)
+        public void BlockPreviewObject(Object previewObject, IEASSerializable serializable)
         {
-            if (m_EventDrawers.ContainsKey(type))
+            if (m_PreviewBlockedObjects.ContainsKey(previewObject))
             {
-                return m_EventDrawers[type];
+                if (!m_PreviewBlockedObjects[previewObject].Contains(serializable))
+                {
+                    m_PreviewBlockedObjects[previewObject].Add(serializable);
+                }
+            }
+            else
+            {
+                m_PreviewBlockedObjects.Add(previewObject, new List<IEASSerializable>() { serializable });
+            }
+        }
+
+        public void FreePreviewObject(Object previewObject, IEASSerializable serializable)
+        {
+            if (m_PreviewBlockedObjects.ContainsKey(previewObject))
+            {
+                m_PreviewBlockedObjects[previewObject].Remove(serializable);
+                if (m_PreviewBlockedObjects[previewObject].Count == 0)
+                {
+                    m_PreviewBlockedObjects.Remove(previewObject);
+                }
+            }
+        }
+
+        public List<IEASSerializable> GetPreviewObjectConflicts(Object previewObject)
+        {
+            if (m_PreviewBlockedObjects.ContainsKey(previewObject))
+            {
+                return m_PreviewBlockedObjects[previewObject];
             }
 
-            return null;
-        }
+            return new List<IEASSerializable>();
+        }    
     }
 }

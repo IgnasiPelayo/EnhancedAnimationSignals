@@ -17,6 +17,7 @@ namespace EAS
 
         [SerializeField]
         protected EASAnimationInformation m_AnimationInformation;
+        public EASAnimationInformation AnimationInformation { get => m_AnimationInformation; }
 
         [SerializeField]
         protected List<EASAdditionalAnimationInformation> m_AdditionalAnimationInformations = new List<EASAdditionalAnimationInformation>();
@@ -50,6 +51,8 @@ namespace EAS
 
                     if (m_TimelineTimer.StopIfElapsed())
                     {
+                        OnAnimationEnd();
+
                         if (EASEditor.Instance.Loop)
                         {
                             m_TimelineTimer.Start(m_AnimationInformation.Length);
@@ -185,6 +188,26 @@ namespace EAS
                 m_AdditionalAnimationInformations.Clear();
             }
         }
+
+        protected void OnAnimationEnd()
+        {
+            float currentFrame = m_TimelineTimer.ElapsedTime * m_AnimationInformation.FrameRate;
+            int currentFrameInt = Mathf.FloorToInt(currentFrame);
+            IEASEditorBridge editorBridge = EASEditor.Instance;
+
+            List<EASBaseEvent> unmutedEASBaseEvents = EASEditor.Instance.GetEvents(addMuted: false);
+            foreach (EASBaseEvent baseEvent in unmutedEASBaseEvents)
+            {
+                if (baseEvent.IsTriggered)
+                {
+                    baseEvent.OnEndEditor(currentFrameInt, editorBridge);
+                }
+
+                baseEvent.IsTriggered = false;
+                baseEvent.OnAnimationEndEditor(editorBridge);
+            }
+        }
+
         protected float AdjustAnimationTimeToActualFrame(float currentTime, float frameRate)
         {
             int frame = Mathf.RoundToInt(currentTime * frameRate);
@@ -314,15 +337,7 @@ namespace EAS
             }
             else
             {
-                EASEventTimelineDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(baseEvent.GetType());
-                if (eventDrawer != null)
-                {
-                    eventDrawer.OnGUIBackground(eventRect, baseEvent);
-                }
-                else
-                {
-                    BaseOnGUIEventBackground(eventRect, baseEvent);
-                }
+                BaseOnGUIEventBackground(eventRect, baseEvent);
             }
 
             Rect eventSeparatorRect = new Rect(eventRect.x, eventRect.y, 1, eventRect.height);
@@ -363,15 +378,7 @@ namespace EAS
                 }
                 else
                 {
-                    EASEventTimelineDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(eventGUIItem.EASSerializable.GetType());
-                    if (eventDrawer != null)
-                    {
-                        eventDrawer.OnGUISelected(eventGUIItem.Rect, eventGUIItem.EASSerializable as EASBaseEvent);
-                    }
-                    else
-                    {
-                        BaseOnGUIEventSelected(eventGUIItem.Rect, eventGUIItem.EASSerializable as EASBaseEvent);
-                    }
+                    BaseOnGUIEventSelected(eventGUIItem.Rect, eventGUIItem.EASSerializable as EASBaseEvent);
                 }
             }
         }
@@ -394,8 +401,7 @@ namespace EAS
             Rect eventLabelRect = ExtendedGUI.ExtendedGUI.GetInnerRect(eventGUIItem.Rect, Mathf.Min(eventLabelSize.x,
                 eventGUIItem.Rect.width - (EASSkin.TimelineEventLabelLeftMargin + EASSkin.TimelineEventLabelRightMargin)), eventGUIItem.Rect.height);
 
-            EASEventTimelineDrawer eventDrawer = EASEditor.Instance.GetEventDrawer(baseEvent.GetType());
-            Color textColor = eventDrawer != null ? eventDrawer.LabelColor : ExtendedGUI.ExtendedGUI.GetContrastingLabelColor(EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
+            Color textColor = ExtendedGUI.ExtendedGUI.GetContrastingLabelColor(EASEditorUtils.GetEASEventColorAttribute(baseEvent.GetType()));
 
             labelGUIStyle.normal.textColor = labelGUIStyle.hover.textColor = labelGUIStyle.active.textColor = textColor;
             GUI.Label(eventLabelRect, eventLabelContent, labelGUIStyle);

@@ -92,7 +92,7 @@ namespace EAS
             return $"{(m_SyncWithAnimation ? "[Synced] " : "")}" + base.GetLabel() + $": {m_AnimationName}";
         }
 
-        public override void OnUpdateEditor(int currentFrame, IEASEditorBridge editorBridge)
+        public override void OnUpdateTrackEditor(int currentFrame, IEASEditorBridge editorBridge)
         {
             Animator animator = m_Animator.Resolve(editorBridge.Controller);
             if (animator != null)

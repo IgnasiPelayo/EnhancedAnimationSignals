@@ -229,7 +229,7 @@ namespace EAS
                 if (IsStarted && IsElapsed())
                 {
                     m_Started = false;
-                    m_ElapsedTime = 0;
+                    m_ElapsedTime = m_Duration - 0.001f;
                     return true;
                 }
 
@@ -325,23 +325,6 @@ namespace EAS
             }
 
             return null;
-        }
-
-        public static Dictionary<System.Type, EASEventTimelineDrawer> GetAllEASCustomEventDrawers()
-        {
-            Dictionary<System.Type, EASEventTimelineDrawer> eventDrawers = new Dictionary<System.Type, EASEventTimelineDrawer>();
-
-            List<System.Type> allEventDrawers = GetAllDerivedTypesOf<EASEventTimelineDrawer>();
-            for (int i = 0; i < allEventDrawers.Count; ++i)
-            {
-                System.Type eventTypeOfEventDrawer = GetEASCustomEventDrawerAttribute(allEventDrawers[i]);
-                if (!eventDrawers.ContainsKey(eventTypeOfEventDrawer))
-                {
-                    eventDrawers.Add(eventTypeOfEventDrawer, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(allEventDrawers[i]) as EASEventTimelineDrawer);
-                }
-            }
-
-            return eventDrawers;
         }
 
         public static System.Type GetEASCustomEventInspectorDrawerAttribute(System.Type type)

@@ -1,5 +1,5 @@
-
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace EAS
 {
@@ -7,42 +7,70 @@ namespace EAS
     [EASEventColor("#FFA500"), EASEventCategory("Visual Effects"), EASEventTooltip("Triggers the playback of a specified Particle System")]
     public class EASPlayParticlesEvent : EASBaseParticlesEvent
     {
-#if UNITY_EDITOR
-        public override void OnUpdateTrackEditor(int currentFrame, IEASEditorBridge editorBridge)
+        public override void OnStart(float currentFrame)
         {
-            ParticleSystem particleSystem = m_ParticleSystem.Resolve(editorBridge.Controller);
-            if (particleSystem != null)
+            if (m_ParticleSystem != null && m_ParticleSystem.Instance != null)
             {
-                if (editorBridge.ShowParticleSystems)
-                {
-                    if (m_LastFrameUpdate != currentFrame)
-                    {
-                        float elapsedTime = (currentFrame - m_LastFrameUpdate) / editorBridge.FrameRate;
-                        if (currentFrame >= StartFrame && elapsedTime > 0.0f)
-                        {
-                            if (!m_Previewing)
-                            {
-                                elapsedTime = (currentFrame - StartFrame) / editorBridge.FrameRate;
-                                StartPreview(particleSystem, elapsedTime);
-                            }
-                            else
-                            {
-                                UpdatePreview(particleSystem, elapsedTime);
-                            }
-                        }
-                        else if (m_Previewing)
-                        {
-                            StopPreview(particleSystem);
-                        }
+                m_ParticleSystem.Instance.Play();
+            }
+        }
 
-                        m_LastFrameUpdate = currentFrame;
+#if UNITY_EDITOR
+        protected override void OnUpdateTrackEditorInternal(int currentFrame, float elapsedTime, ParticleSystem particleSystem, IEASEditorBridge editorBridge)
+        {
+            if (currentFrame >= StartFrame && elapsedTime > 0.0f)
+            {
+                editorBridge.FreePreviewObject(particleSystem, this);
+
+                if (ResolvePreviewConflicts(editorBridge.GetPreviewObjectConflicts(particleSystem)))
+                {
+                    if (!m_Previewing)
+                    {
+                        elapsedTime = (currentFrame - StartFrame) / editorBridge.FrameRate;
+                        StartPreview(particleSystem, elapsedTime);
+                    }
+                    else
+                    {
+                        UpdatePreview(particleSystem, elapsedTime);
                     }
                 }
-                else if (m_Previewing)
+            }
+            else
+            {
+                editorBridge.BlockPreviewObject(particleSystem, this);
+
+                if (m_Previewing)
                 {
                     StopPreview(particleSystem);
                 }
             }
+        }
+
+        protected override bool ResolvePreviewConflicts(List<IEASSerializable> conflicts)
+        {
+            if (conflicts.Count == 0)
+            {
+                return true;
+            }
+
+            for (int i = 0; i < conflicts.Count; ++i)
+            {
+                if (conflicts[i] is EASPlayParticlesEvent)
+                {
+                    return false;
+                }
+
+                if (conflicts[i] is EASStopParticlesEvent)
+                {
+                    EASStopParticlesEvent stopParticlesEvent = conflicts[i] as EASStopParticlesEvent;
+                    if (stopParticlesEvent.StartFrame >= StartFrame)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 #endif // UNITY_EDITOR
     }
