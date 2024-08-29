@@ -23,6 +23,9 @@ namespace EAS
         protected List<EASBaseEvent> m_ActiveEvents = new List<EASBaseEvent>(16);
         protected List<EASBaseEvent> m_SkippedEvents = new List<EASBaseEvent>(8);
 
+        protected Dictionary<System.Type, List<int>> m_ActiveMarkups = new Dictionary<System.Type, List<int>>(4);
+        protected Dictionary<System.Type, List<int>> m_SkippedMarkups = new Dictionary<System.Type, List<int>>(4);
+
         protected void Start()
         {
 #if UNITY_EDITOR
@@ -33,6 +36,8 @@ namespace EAS
         protected void LateUpdate()
         {
             m_SkippedEvents.Clear();
+            m_SkippedMarkups.Clear();
+
             m_RuntimeData.Update(this);
         }
 
@@ -63,6 +68,81 @@ namespace EAS
             }
 
             return null;
+        }
+
+        public void AddActiveMarkup(System.Type markupType, int markup)
+        {
+            if (m_ActiveMarkups.ContainsKey(markupType))
+            {
+                m_ActiveMarkups[markupType].Add(markup);
+            }
+            else
+            {
+                m_ActiveMarkups.Add(markupType, new List<int>(capacity: 8) { markup });
+            }
+
+#if UNITY_EDITOR
+            Debug.Assert(m_ActiveMarkups[markupType].Count < 5, $"Reached markup limit of type {markupType} in EASBaseController {m_DataRoot.gameObject.name}. Maximum capacity is 4.", m_DataRoot.gameObject);
+#endif // UNITY_EDITOR
+        }
+
+        public void RemoveActiveMarkup(System.Type markupType, int markup)
+        {
+            if (m_ActiveMarkups.ContainsKey(markupType))
+            {
+                List<int> activeMarkups = m_ActiveMarkups[markupType];
+                for (int i = 0; i < activeMarkups.Count; ++i)
+                {
+                    if (activeMarkups[i] == markup)
+                    {
+                        m_ActiveMarkups[markupType].RemoveAt(i);
+                        return;
+                    }
+                }
+            }
+
+            Debug.LogError($"Can't remove markup {markup} of type {markupType}. EASBaseController {m_DataRoot.gameObject.name} doesn't have this markup as active");
+        }
+
+        public void AddSkippedMarkup(System.Type markupType, int markup)
+        {
+            if (m_SkippedMarkups.ContainsKey(markupType))
+            {
+                m_SkippedMarkups[markupType].Add(markup);
+            }
+            else
+            {
+                m_SkippedMarkups.Add(markupType, new List<int>() { markup });
+            }
+        }
+
+        public bool IsMarkupActive(System.Type markupType, int markup)
+        {
+            if (m_ActiveMarkups.ContainsKey(markupType))
+            {
+                List<int> activeMarkups = m_ActiveMarkups[markupType];
+                for (int i = 0; i < activeMarkups.Count; ++i)
+                {
+                    if (activeMarkups[i] == markup)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            if (m_SkippedMarkups.ContainsKey(markupType))
+            {
+                List<int> skippedMarkups = m_SkippedMarkups[markupType];
+                for (int i = 0; i < skippedMarkups.Count; ++i)
+                {
+                    if (skippedMarkups[i] == markup)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         public abstract string[] GetAnimationNames();

@@ -136,7 +136,7 @@ MonoBehaviour:
           m_Instance: {fileID: 8300000, guid: 3a06a27039e144e5c853a93d408fd63a, type: 3}
         m_Loop: 0
         m_Volume: {x: 0.8, y: 1}
-        m_Pitch: {x: 0.9, y: 1.1}
+        m_Pitch: {x: 0.8, y: 1.5}
     - rid: 2068510775429824528
       type: {class: EASAdvancedSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -171,7 +171,7 @@ MonoBehaviour:
           m_Instance: {fileID: 8300000, guid: 3a06a27039e144e5c853a93d408fd63a, type: 3}
         m_Loop: 0
         m_Volume: {x: 0.8, y: 1}
-        m_Pitch: {x: 0.9, y: 1.1}
+        m_Pitch: {x: 0.8, y: 1.5}
     - rid: 2068510789004689414
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
