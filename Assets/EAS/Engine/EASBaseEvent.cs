@@ -95,7 +95,7 @@ namespace EAS
         public virtual void OnEndEditor(int currentFrame, IEASEditorBridge editorBridge) { }
         public virtual void OnAnimationEndEditor(IEASEditorBridge editorBridge) { }
         public virtual void OnResetEditor(IEASEditorBridge editorBridge) { }
-        public virtual void OnDisableEditor(IEASEditorBridge editorBridge) { }
+        public virtual void OnDeleteEvent(IEASEditorBridge editorBridge) { }
 
         public virtual void CreateRuntimeData(EASBaseController controller) 
         {

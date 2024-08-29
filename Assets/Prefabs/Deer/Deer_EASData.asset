@@ -13,60 +13,58 @@ MonoBehaviour:
   m_Name: Deer_EASData
   m_EditorClassIdentifier: 
   m_AnimationsData:
-  - m_ID: -290391975
-    m_Name: 
-    m_NameHash: 0
-    m_TracksAndGroups: []
-  - m_ID: -1818503813
+  - m_ID: 1906754682
     m_Name: Galop
     m_NameHash: 1556535090
     m_TracksAndGroups:
-    - rid: 2068510632756641812
-    - rid: 2068510746361200737
-  - m_ID: 485115159
+    - rid: 2068510770221809696
+    - rid: 2068510770221809703
+  - m_ID: -1090012126
     m_Name: Galop_WindUp
     m_NameHash: 436167999
     m_TracksAndGroups:
-    - rid: 2068510656446070800
-    - rid: 2068510656446070817
+    - rid: 2068510770221809698
+    - rid: 2068510789004689414
+  - m_ID: 999847836
+    m_Name: 
+    m_NameHash: 0
+    m_TracksAndGroups: []
   references:
     version: 2
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 2068510632756641812
+    - rid: 2068510770221809696
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 1086130962
+        m_ID: -741529564
         m_Name: Track
-        m_Muted: 1
+        m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
         m_Events:
-        - rid: 2068510632756641813
-    - rid: 2068510632756641813
-      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
+        - rid: 2068510775429824521
+        - rid: 2068510775429824528
+    - rid: 2068510770221809698
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 791889039
-        m_Name: Log
-        m_Controller: {fileID: 0}
-        m_ParentTrack:
-          rid: 2068510632756641812
-        m_StartFrame: 1
-        m_Duration: 6
-        m_Owner: {fileID: 0}
-        m_Message: Churumbel
-        m_LogOnce: 1
-        m_LogType: 2
-    - rid: 2068510652628205619
+        m_ID: 1877309382
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: -2
+        m_Events:
+        - rid: 2068510789004689415
+    - rid: 2068510770221809699
       type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -766407804
+        m_ID: 672954355
         m_Name: Play Animation
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2068510746361200737
+          rid: 2068510770221809703
         m_StartFrame: 0
         m_Duration: 16
         m_Owner: {fileID: 0}
@@ -76,27 +74,14 @@ MonoBehaviour:
         m_AnimationName: Galop_Male
         m_AnimationHash: 1272229344
         m_SyncWithAnimation: 1
-    - rid: 2068510656446070800
-      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
-      data:
-        m_ID: -1243136901
-        m_Name: Track
-        m_Muted: 0
-        m_Locked: 0
-        m_ParentTrackGroup:
-          rid: -2
-        m_Events:
-        - rid: 2068510656446070818
-        - rid: 2068510768554049575
-        - rid: 2068510768554049576
-    - rid: 2068510656446070816
+    - rid: 2068510770221809700
       type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -569436033
+        m_ID: 81001499
         m_Name: Play Animation
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2068510656446070817
+          rid: 2068510789004689414
         m_StartFrame: 0
         m_Duration: 53
         m_Owner: {fileID: 0}
@@ -106,67 +91,112 @@ MonoBehaviour:
         m_AnimationName: Galop_WindUp_Male
         m_AnimationHash: -1567913441
         m_SyncWithAnimation: 1
-    - rid: 2068510656446070817
+    - rid: 2068510770221809703
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -812816377
+        m_ID: 691443313
         m_Name: Track
         m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
         m_Events:
-        - rid: 2068510656446070816
-    - rid: 2068510656446070818
-      type: {class: EASAnimationTimeScaleEvent, ns: EAS, asm: Assembly-CSharp}
+        - rid: 2068510770221809699
+    - rid: 2068510775429824521
+      type: {class: EASAdvancedSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 1790083698
-        m_Name: Animation Time Scale
+        m_ID: -87199768
+        m_Name: Advanced Sound FX
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2068510656446070800
-        m_StartFrame: 12
-        m_Duration: 6
+          rid: 2068510770221809696
+        m_StartFrame: 5
+        m_Duration: 4
         m_Owner: {fileID: 0}
-        m_TimeScaleRange: {x: 0.5, y: 0.5}
-        m_TargetAnimators:
-        - m_Path: Horns
-          m_Instance: {fileID: 0}
-    - rid: 2068510746361200737
+        m_AudioClips:
+        - m_Path: 05a08dd4ee0c046a6b56466d5c9aa9b8
+          m_Instance: {fileID: 8300000, guid: 05a08dd4ee0c046a6b56466d5c9aa9b8, type: 3}
+        - m_Path: bc1c11a60c94e439d84d64c56fdd354f
+          m_Instance: {fileID: 8300000, guid: bc1c11a60c94e439d84d64c56fdd354f, type: 3}
+        - m_Path: 64049f336db3d403dabd0425eb159922
+          m_Instance: {fileID: 8300000, guid: 64049f336db3d403dabd0425eb159922, type: 3}
+        - m_Path: aa9d74433c06a41a9b25cc9175d3f3ae
+          m_Instance: {fileID: 8300000, guid: aa9d74433c06a41a9b25cc9175d3f3ae, type: 3}
+        - m_Path: f7bff2a24d7d64eb296a8133060bd3e9
+          m_Instance: {fileID: 8300000, guid: f7bff2a24d7d64eb296a8133060bd3e9, type: 3}
+        - m_Path: f626dafe2c3e045cd852e86532182f70
+          m_Instance: {fileID: 8300000, guid: f626dafe2c3e045cd852e86532182f70, type: 3}
+        - m_Path: 27f4d8a727d874633b0292b089ec9b7c
+          m_Instance: {fileID: 8300000, guid: 27f4d8a727d874633b0292b089ec9b7c, type: 3}
+        - m_Path: c1eac1c698fc84605adb7e1074fd7d34
+          m_Instance: {fileID: 8300000, guid: c1eac1c698fc84605adb7e1074fd7d34, type: 3}
+        - m_Path: f54a7e8aabfc8436b965149db8156132
+          m_Instance: {fileID: 8300000, guid: f54a7e8aabfc8436b965149db8156132, type: 3}
+        - m_Path: 3a06a27039e144e5c853a93d408fd63a
+          m_Instance: {fileID: 8300000, guid: 3a06a27039e144e5c853a93d408fd63a, type: 3}
+        m_Loop: 0
+        m_Volume: {x: 0.8, y: 1}
+        m_Pitch: {x: 0.9, y: 1.1}
+    - rid: 2068510775429824528
+      type: {class: EASAdvancedSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1711714310
+        m_Name: Advanced Sound FX
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2068510770221809696
+        m_StartFrame: 11
+        m_Duration: 4
+        m_Owner: {fileID: 0}
+        m_AudioClips:
+        - m_Path: 05a08dd4ee0c046a6b56466d5c9aa9b8
+          m_Instance: {fileID: 8300000, guid: 05a08dd4ee0c046a6b56466d5c9aa9b8, type: 3}
+        - m_Path: bc1c11a60c94e439d84d64c56fdd354f
+          m_Instance: {fileID: 8300000, guid: bc1c11a60c94e439d84d64c56fdd354f, type: 3}
+        - m_Path: 64049f336db3d403dabd0425eb159922
+          m_Instance: {fileID: 8300000, guid: 64049f336db3d403dabd0425eb159922, type: 3}
+        - m_Path: aa9d74433c06a41a9b25cc9175d3f3ae
+          m_Instance: {fileID: 8300000, guid: aa9d74433c06a41a9b25cc9175d3f3ae, type: 3}
+        - m_Path: f7bff2a24d7d64eb296a8133060bd3e9
+          m_Instance: {fileID: 8300000, guid: f7bff2a24d7d64eb296a8133060bd3e9, type: 3}
+        - m_Path: f626dafe2c3e045cd852e86532182f70
+          m_Instance: {fileID: 8300000, guid: f626dafe2c3e045cd852e86532182f70, type: 3}
+        - m_Path: 27f4d8a727d874633b0292b089ec9b7c
+          m_Instance: {fileID: 8300000, guid: 27f4d8a727d874633b0292b089ec9b7c, type: 3}
+        - m_Path: c1eac1c698fc84605adb7e1074fd7d34
+          m_Instance: {fileID: 8300000, guid: c1eac1c698fc84605adb7e1074fd7d34, type: 3}
+        - m_Path: f54a7e8aabfc8436b965149db8156132
+          m_Instance: {fileID: 8300000, guid: f54a7e8aabfc8436b965149db8156132, type: 3}
+        - m_Path: 3a06a27039e144e5c853a93d408fd63a
+          m_Instance: {fileID: 8300000, guid: 3a06a27039e144e5c853a93d408fd63a, type: 3}
+        m_Loop: 0
+        m_Volume: {x: 0.8, y: 1}
+        m_Pitch: {x: 0.9, y: 1.1}
+    - rid: 2068510789004689414
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 430800989
+        m_ID: 235890847
         m_Name: Track
         m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
         m_Events:
-        - rid: 2068510652628205619
-    - rid: 2068510768554049575
-      type: {class: EASPlayParticlesEvent, ns: EAS, asm: Assembly-CSharp}
+        - rid: 2068510770221809700
+    - rid: 2068510789004689415
+      type: {class: EASSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -67154659
-        m_Name: Play Particles
+        m_ID: -1124034372
+        m_Name: Sound FX
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2068510656446070800
-        m_StartFrame: 33
-        m_Duration: 3
-        m_ParticleSystem:
-          m_Path: Particles/ParticleSystem
-          m_Instance: {fileID: 0}
-    - rid: 2068510768554049576
-      type: {class: EASStopParticlesEvent, ns: EAS, asm: Assembly-CSharp}
-      data:
-        m_ID: -1862511995
-        m_Name: Stop Particles
-        m_Controller: {fileID: 0}
-        m_ParentTrack:
-          rid: 2068510656446070800
-        m_StartFrame: 47
-        m_Duration: 3
-        m_ParticleSystem:
-          m_Path: Particles/ParticleSystem
-          m_Instance: {fileID: 0}
-        m_StopBehaviour: 0
+          rid: 2068510770221809698
+        m_StartFrame: 8
+        m_Duration: 45
+        m_Owner: {fileID: 0}
+        m_AudioClip:
+          m_Path: bf5d4102f62c644aa91a146267aaf815
+          m_Instance: {fileID: 8300000, guid: bf5d4102f62c644aa91a146267aaf815, type: 3}
+        m_Loop: 0
+        m_Volume: 0.3
+        m_Pitch: 0.5

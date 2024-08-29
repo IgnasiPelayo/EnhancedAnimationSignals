@@ -5,7 +5,7 @@ using UnityEngine;
 namespace EAS
 {
     [System.Serializable]
-    [EASEventColor("#008080"), EASEventCategory("Visual Effects"), EASEventTooltip("Stops the playback of a specified Particle System")]
+    [EASEventColor("#008080"), EASEventCategory("General"), EASEventTooltip("Stops the playback of a specified Particle System")]
     public class EASStopParticlesEvent : EASBaseParticlesEvent
     {
         [Space(10)]

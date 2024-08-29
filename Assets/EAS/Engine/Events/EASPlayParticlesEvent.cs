@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace EAS
 {
     [System.Serializable]
-    [EASEventColor("#FFA500"), EASEventCategory("Visual Effects"), EASEventTooltip("Triggers the playback of a specified Particle System")]
+    [EASEventColor("#FFA500"), EASEventCategory("General"), EASEventTooltip("Triggers the playback of a specified Particle System")]
     public class EASPlayParticlesEvent : EASBaseParticlesEvent
     {
         public override void OnStart(float currentFrame)

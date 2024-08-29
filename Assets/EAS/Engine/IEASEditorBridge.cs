@@ -7,6 +7,7 @@ namespace EAS
     {
         public EASBaseController Controller { get; }
 
+        public bool Mute { get; set; }
         public bool ShowParticleSystems { get; set; }
         public float FrameRate { get; }
 

@@ -141,7 +141,7 @@ namespace EAS
                     EASBaseEvent baseEvent = runtimeAnimationInformation.Events[i];
                     if (baseEvent.StartFrame > currentFrameInt)
                     {
-                        break;
+                        continue;
                     }
 
                     float eventProgress = Mathf.Clamp01((currentFrame - (float)baseEvent.StartFrame) / (float)baseEvent.Duration);

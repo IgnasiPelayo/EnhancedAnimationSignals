@@ -6,7 +6,7 @@ using ExtendedGUI;
 
 namespace EAS
 {
-    public class EASEditor : EditorWindow, IEASEditorBridge
+    public class EASEditor : EditorWindow, IEASEditorBridge, IHasCustomMenu
     {
         protected static EASEditor m_Instance;
         public static EASEditor Instance { get { if (m_Instance == null) { m_Instance = GetWindow<EASEditor>(); } return m_Instance; } }
@@ -36,11 +36,11 @@ namespace EAS
         public float FrameRate { get => m_Timeline.AnimationInformation.FrameRate; }
 
         [SerializeField]
-        protected bool m_Mute = true;
+        protected bool m_Mute = false;
         public bool Mute { get => m_Mute; set { if (m_Mute != value) { m_Mute = value; } } }
 
         [SerializeField]
-        protected bool m_ShowParticleSystems;
+        protected bool m_ShowParticleSystems = true;
         public bool ShowParticleSystems { get => m_ShowParticleSystems; set { if (m_ShowParticleSystems != value) { m_ShowParticleSystems = value; } } }
 
         public string SelectedAnimationName { get => m_Hierarchy.SelectedAnimationName; }
@@ -105,6 +105,12 @@ namespace EAS
             {
                 LockSelection = newLock;
             }
+        }
+
+        public void AddItemsToMenu(GenericMenu menu)
+        {
+            menu.AddItem(new GUIContent("Get Event colors"), false, () => { EASEditorUtils.LogAllEASEventColorAttributes(); });
+            menu.AddSeparator("");
         }
 
         protected void OnEnable()
@@ -373,9 +379,9 @@ namespace EAS
 
         public bool RemoveEvent(EASBaseEvent baseEvent)
         {
-            if (!Application.isPlaying && baseEvent.IsTriggered)
+            if (!Application.isPlaying)
             {
-                baseEvent.OnDisableEditor(this);
+                baseEvent.OnDeleteEvent(this);
             }
 
             bool success = baseEvent.ParentTrack.Events.Remove(baseEvent);
@@ -626,6 +632,6 @@ namespace EAS
             }
 
             return new List<IEASSerializable>();
-        }    
+        }
     }
 }

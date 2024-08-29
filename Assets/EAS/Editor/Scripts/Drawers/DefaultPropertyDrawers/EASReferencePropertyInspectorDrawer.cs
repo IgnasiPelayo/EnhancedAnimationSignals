@@ -17,7 +17,7 @@ namespace EAS
 
                 EditorGUI.BeginChangeCheck();
 
-                propertyValueAsObject = EditorGUI.ObjectField(rect, label, propertyValueAsObject, baseReference.GetObjectType(), allowSceneObjects: true);
+                propertyValueAsObject = EditorGUI.ObjectField(rect, label, propertyValueAsObject, baseReference.GetObjectType(), allowSceneObjects: baseReference.IsGlobal);
 
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -27,7 +27,8 @@ namespace EAS
             }
             else
             {
-                GUI.Label(EditorGUI.IndentedRect(rect), new GUIContent($"{propertyName} is null. Declare it as EASReference<{propertyType.GetGenericArguments()[0]}> {propertyName} = new EASReference<{propertyType.GetGenericArguments()[0]}>"));
+                string referenceName = propertyType.Name.Substring(0, propertyType.Name.Length - 2);
+                GUI.Label(EditorGUI.IndentedRect(rect), new GUIContent($"{propertyName} is null. Declare it as {referenceName}<{propertyType.GetGenericArguments()[0]}> {propertyName} = new {referenceName}<{propertyType.GetGenericArguments()[0]}>"));
             }
 
             return false;

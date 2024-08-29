@@ -4,7 +4,7 @@ using UnityEngine;
 namespace EAS
 {
     [System.Serializable]
-    [EASEventColor("#4A90E2"), EASEventCategory("Animation"), EASEventTooltip("Adjusts the time scale of the animation by applying a random value between the specified minimum and maximum values.")]
+    [EASEventColor("#4A90E2"), EASEventCategory("General"), EASEventTooltip("Adjusts the time scale of the animation by applying a random value between the specified minimum and maximum values.")]
     public class EASAnimationTimeScaleEvent : EASCustomOwnerEvent<EASController>
     {
         [Header("Animation Time Scale Settings")]

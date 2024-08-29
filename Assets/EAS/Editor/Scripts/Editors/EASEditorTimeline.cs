@@ -198,13 +198,20 @@ namespace EAS
             List<EASBaseEvent> unmutedEASBaseEvents = EASEditor.Instance.GetEvents(addMuted: false);
             foreach (EASBaseEvent baseEvent in unmutedEASBaseEvents)
             {
-                if (baseEvent.IsTriggered)
+                if (baseEvent.CanPreviewInEditor(editorBridge))
                 {
-                    baseEvent.OnEndEditor(currentFrameInt, editorBridge);
-                }
+                    if (baseEvent.IsTriggered)
+                    {
+                        baseEvent.OnEndEditor(currentFrameInt, editorBridge);
+                    }
 
-                baseEvent.IsTriggered = false;
-                baseEvent.OnAnimationEndEditor(editorBridge);
+                    baseEvent.IsTriggered = false;
+                    baseEvent.OnAnimationEndEditor(editorBridge);
+                }
+                else
+                {
+                    baseEvent.OnResetEditor(editorBridge);
+                }
             }
         }
 
@@ -849,6 +856,8 @@ namespace EAS
 
         public void OnAnimationChanged()
         {
+            OnAnimationEnd();
+
             m_AnimationInformation = EASEditor.Instance.GetAnimationInformation();
 
             float framesAreaWidth = m_FramesAreaRect.width - EASSkin.TimelineRightMargin;

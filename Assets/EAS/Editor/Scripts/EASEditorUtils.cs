@@ -305,6 +305,31 @@ namespace EAS
             return HexToColor("#C0C0C0");
         }
 
+        public static Dictionary<System.Type, Color> GetAllEASEventColorAttributes()
+        {
+            Dictionary<System.Type, Color> allEventColorAttributes = new Dictionary<System.Type, Color>();
+
+            List<System.Type> allEASBaseEvents = GetAllDerivedTypesOf<EASBaseEvent>();
+            for (int i = 0; i < allEASBaseEvents.Count; ++i)
+            {
+                allEventColorAttributes.Add(allEASBaseEvents[i], GetEASEventColorAttribute(allEASBaseEvents[i]));
+            }
+
+            return allEventColorAttributes;
+        }
+
+        public static void LogAllEASEventColorAttributes()
+        {
+            string message = string.Empty;
+            Dictionary<System.Type, Color> allEventColorAttributes = GetAllEASEventColorAttributes();
+
+            foreach (KeyValuePair<System.Type, Color> typeAndColor in allEventColorAttributes)
+            {
+                message += $"{typeAndColor.Key.Name}: #{ColorToHex(typeAndColor.Value)} ";
+            }
+            Debug.Log(message);
+        }
+
         public static string GetEASEventTooltipAttribute(System.Type type)
         {
             EASEventTooltipAttribute attribute = GetAttribute<EASEventTooltipAttribute>(type);

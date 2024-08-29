@@ -3,7 +3,7 @@ using UnityEngine;
 namespace EAS
 {
     [System.Serializable]
-    [EASEventColor("#66CDAA"), EASEventCategory("Animation"), EASEventTooltip("Plays a specified animation on a given Animator. Optionally, the animation can be synchronized with the current animation")]
+    [EASEventColor("#66CDAA"), EASEventCategory("General"), EASEventTooltip("Plays a specified animation on a given Animator. Optionally, the animation can be synchronized with the current animation")]
     public class EASPlayAnimationEvent : EASEvent
     {
         [Header("Animator Settings")]

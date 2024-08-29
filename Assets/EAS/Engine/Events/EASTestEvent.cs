@@ -11,7 +11,7 @@ namespace EAS
     }
 
     [System.Serializable]
-    [EASEventColor("#FFFFFF"), EASEventTooltip("This is a test event to show default property inspectors")]
+    [EASEventColor("#FFFFFF"), EASEventCategory("General"), EASEventTooltip("This is a test event to show default property inspectors")]
     public class EASTestEvent : EASEvent
     {
         public AnimationCurve m_AnimationCurve;

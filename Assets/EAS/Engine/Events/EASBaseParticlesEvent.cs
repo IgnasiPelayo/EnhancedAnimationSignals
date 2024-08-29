@@ -49,7 +49,7 @@ namespace EAS
 
         protected abstract bool ResolvePreviewConflicts(List<IEASSerializable> conflicts);
 
-        public override void OnDisableEditor(IEASEditorBridge editorBridge)
+        public override void OnDeleteEvent(IEASEditorBridge editorBridge)
         {
             ParticleSystem particleSystem = m_ParticleSystem.Resolve(editorBridge.Controller);
             if (particleSystem != null && m_Previewing)
