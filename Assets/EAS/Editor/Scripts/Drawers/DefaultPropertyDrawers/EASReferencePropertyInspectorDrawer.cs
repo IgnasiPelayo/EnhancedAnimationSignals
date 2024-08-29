@@ -17,7 +17,7 @@ namespace EAS
 
                 EditorGUI.BeginChangeCheck();
 
-                propertyValueAsObject = EditorGUI.ObjectField(rect, label, propertyValueAsObject, baseReference.GetObjectType(), allowSceneObjects: baseReference.IsGlobal);
+                propertyValueAsObject = EditorGUI.ObjectField(rect, label, propertyValueAsObject, baseReference.GetObjectType(), allowSceneObjects: !baseReference.IsGlobal);
 
                 if (EditorGUI.EndChangeCheck())
                 {
