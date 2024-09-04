@@ -32,7 +32,7 @@ namespace EAS
         protected bool m_Loop;
         public bool Loop { get => m_Loop; set { if (m_Loop != value) { m_Loop = value; } } }
 
-        public int CurrentFrame { get; set; }
+        public int CurrentFrame { get => Mathf.FloorToInt(m_Timeline.CurrentFrame); set => m_Timeline.CurrentFrame = value; }
         public float FrameRate { get => m_Timeline.AnimationInformation.FrameRate; }
 
         [SerializeField]
@@ -49,14 +49,14 @@ namespace EAS
         protected List<IEASSerializable> m_SelectedObjects = new List<IEASSerializable>();
 
         [SerializeField]
-        protected EASEditorControls m_Controls = new EASEditorControls();
+        protected EASControls m_Controls = new EASControls();
 
         [SerializeField]
-        protected EASEditorHierarchy m_Hierarchy = new EASEditorHierarchy();
+        protected EASHierarchy m_Hierarchy = new EASHierarchy();
 
         [SerializeField]
-        protected EASEditorTimeline m_Timeline = new EASEditorTimeline();
-        public EASEditorTimeline Timeline { get => m_Timeline; }
+        protected EASTimeline m_Timeline = new EASTimeline();
+        public EASTimeline Timeline { get => m_Timeline; }
 
         [SerializeField]
         protected Vector2 m_MousePosition;
@@ -286,6 +286,11 @@ namespace EAS
             Playing = false;
 
             Repaint();
+
+            if (EASInspector.HasInstance)
+            {
+                EASInspector.Instance.Repaint();
+            }
         }
 
         protected void OnSceneGUI(SceneView sceneView)
@@ -355,6 +360,8 @@ namespace EAS
             EASTrackGroup trackGroup = Controller.Data.AddTrackGroup(SelectedAnimationName);
             EditorUtility.SetDirty(Controller.Data);
 
+            SelectObject(trackGroup, singleSelection: true);
+
             return trackGroup;
         }
 
@@ -362,6 +369,8 @@ namespace EAS
         {
             EASTrack track = Controller.Data.AddTrack(SelectedAnimationName);
             EditorUtility.SetDirty(Controller.Data);
+
+            SelectObject(track, singleSelection: true);
 
             return track;
         }
@@ -373,6 +382,11 @@ namespace EAS
             OnAnimationModified();
 
             EditorUtility.SetDirty(Controller.Data);
+
+            if (IsSelected(trackOrGroup))
+            {
+                SelectObject(trackOrGroup, singleSelection: false);
+            }
 
             return success;
         }
@@ -389,6 +403,16 @@ namespace EAS
             OnAnimationModified();
 
             EditorUtility.SetDirty(Controller.Data);
+
+            if (IsSelected(baseEvent))
+            {
+                SelectObject(baseEvent, singleSelection: false);
+            }
+
+            if (EASInspector.HasInstance)
+            {
+                EASInspector.Instance.Repaint();
+            }
 
             return success;
         }
@@ -429,6 +453,9 @@ namespace EAS
                 OnAnimationModified();
 
                 EditorUtility.SetDirty(Controller.Data);
+
+                SelectObject(baseEvent, singleSelection: true);
+
                 return baseEvent;
             }
 
@@ -483,9 +510,9 @@ namespace EAS
             GUI.FocusControl(null);
             Repaint();
 
-            if (EASInspectorEditor.HasInstance)
+            if (EASInspector.HasInstance)
             {
-                EASInspectorEditor.Instance.Repaint();
+                EASInspector.Instance.Repaint();
             }
         }
 

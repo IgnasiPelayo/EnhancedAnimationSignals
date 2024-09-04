@@ -145,6 +145,8 @@ namespace EAS
             return false;
         }
 
+        public abstract bool HasAnimations();
+
         public abstract string[] GetAnimationNames();
 
         public abstract EASAnimationState GetCurrentAnimationState();

@@ -8,7 +8,7 @@ namespace EAS
     {
         public virtual float GetPropertyHeight(EASBaseEvent baseEvent, string propertyName, System.Type propertyType, object propertyValue, object[] propertyAttributes)
         {
-            return EASInspectorEditor.Instance.BaseGetPorpertyHeight();
+            return EASInspector.Instance.BaseGetPorpertyHeight();
         }
 
         public bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, object propertyObject, FieldInfo property, object[] propertyAttributes, string propertyPath = "")
@@ -33,12 +33,12 @@ namespace EAS
 
         protected T GetInspectorVariable<T>(IEASSerializable serializable, string propertyName)
         {
-            return EASInspectorEditor.Instance.GetVariable<T>(serializable, propertyName);
+            return EASInspector.Instance.GetVariable<T>(serializable, propertyName);
         }
 
         protected void SetInspectorVariable<T>(IEASSerializable serializable, string propertyName, T value)
         {
-            EASInspectorEditor.Instance.SetVariable<T>(serializable, propertyName, value);
+            EASInspector.Instance.SetVariable<T>(serializable, propertyName, value);
         }
 
         protected Rect GetLabelRect(Rect propertyRect)
@@ -79,9 +79,9 @@ namespace EAS
 
         protected void ShowEventOptionsMenuOnRightClick(Rect propertyRect, EASBaseEvent baseEvent, object propertyValue, string propertyPath, System.Type propertyType)
         {
-            if (EASInspectorEditor.Instance.CanShowEventOptionsMenu(propertyRect))
+            if (EASInspector.Instance.CanShowEventOptionsMenu(propertyRect))
             {
-                EASInspectorEditor.Instance.ShowEventOptionsMenu(baseEvent, propertyValue, propertyPath, propertyType, CanCopy() ? OnCopy : null, (propertyValue, propertyPath, propertyType));
+                EASInspector.Instance.ShowEventOptionsMenu(baseEvent, propertyValue, propertyPath, propertyType, CanCopy() ? OnCopy : null, (propertyValue, propertyPath, propertyType));
             }
         }
     }

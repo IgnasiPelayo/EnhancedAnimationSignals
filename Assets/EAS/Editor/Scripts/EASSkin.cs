@@ -43,9 +43,9 @@ namespace EAS
 
         public static Color TimelineFramesBackgroundColor { get => new Color(55.0f / 255.0f, 55.0f / 255.0f, 55.0f / 255.0f); }
         public static Color TimelineFrameColor { get => new Color(180.0f / 255.0f, 180.0f / 255.0f, 180.0f / 255.0f); }
-        public static Color TimelineFrameLineColor { get => TimelineFramesBackgroundColor; }
-        public static Color TimelineSecondaryFrameLineColor { get => new Color(TimelineFrameLineColor.r, TimelineFrameLineColor.g, TimelineFrameLineColor.b, 0.5f); }
-        public static Color TimelineTertiaryFrameLineColor { get => new Color(TimelineFrameLineColor.r, TimelineFrameLineColor.g, TimelineFrameLineColor.b, 0.2f); }
+        public static Color TimelineFrameLineColor { get => new Color(111f / 255.0f, 111f / 255.0f, 111f / 255.0f, 0.2f); }
+        public static Color TimelineSecondaryFrameLineColor { get => new Color(TimelineFrameLineColor.r, TimelineFrameLineColor.g, TimelineFrameLineColor.b, 0.1f); }
+        public static Color TimelineTertiaryFrameLineColor { get => new Color(TimelineFrameLineColor.r, TimelineFrameLineColor.g, TimelineFrameLineColor.b, 0.05f); }
         public static Color TimelineTrackGroupColor { get => new Color(35.0f / 255.0f, 65.0f / 255.0f, 57.0f / 255.0f); }
         public static Color TimelineTrackColor { get => new Color(50.0f / 255.0f, 50.0f / 255.0f, 50.0f / 255.0f); }
         public static Color TimelineSelectedColor { get => new Color(54.0f / 255.0f, 64.0f / 255.0f, 83.0f / 255.0f); }

@@ -14,13 +14,13 @@ namespace EAS
             {
                 float height = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
-                List<FieldInfo> fields = EASInspectorEditor.Instance.GetFields(propertyType);
+                List<FieldInfo> fields = EASInspector.Instance.GetFields(propertyType);
                 for (int i = 0; i < fields.Count; ++i)
                 {
                     object[] fieldAttributes = fields[i].GetCustomAttributes(true);
-                    height += EASInspectorEditor.Instance.GetHeaderAndSpacesHeight(fieldAttributes);
+                    height += EASInspector.Instance.GetHeaderAndSpacesHeight(fieldAttributes);
 
-                    EASPropertyInspectorDrawer propertyInspectorDrawer = EASInspectorEditor.Instance.GetPropertyInspectorDrawer(fields[i]);
+                    EASPropertyInspectorDrawer propertyInspectorDrawer = EASInspector.Instance.GetPropertyInspectorDrawer(fields[i]);
                     if (propertyInspectorDrawer != null)
                     {
                         FieldInfo property = fields[i];
@@ -30,7 +30,7 @@ namespace EAS
                     }
                     else
                     {
-                        height += EASInspectorEditor.Instance.BaseGetPorpertyHeight();
+                        height += EASInspector.Instance.BaseGetPorpertyHeight();
                     }
                 }
 
@@ -51,7 +51,7 @@ namespace EAS
             {
                 EditorGUI.indentLevel++;
 
-                List<FieldInfo> fields = EASInspectorEditor.Instance.GetFields(propertyType);
+                List<FieldInfo> fields = EASInspector.Instance.GetFields(propertyType);
 
                 Rect propertyRect = new Rect(rect.x, foldoutRect.y, rect.width, foldoutRect.height);
 
@@ -59,13 +59,13 @@ namespace EAS
                 for (int i = 0; i < fields.Count; ++i)
                 {
                     object[] fieldAttributes = fields[i].GetCustomAttributes(true);
-                    EASInspectorEditor.Instance.OnGUIHeaderAndSpaces(rect, fieldAttributes);
+                    EASInspector.Instance.OnGUIHeaderAndSpaces(rect, fieldAttributes);
 
-                    GUIContent propertyLabel = EASInspectorEditor.Instance.GetPropertyLabel(fields[i], fieldAttributes);
+                    GUIContent propertyLabel = EASInspector.Instance.GetPropertyLabel(fields[i], fieldAttributes);
 
                     EditorGUI.BeginDisabledGroup(EASEditorUtils.GetAttribute<CustomAttributes.ReadOnlyAttribute>(fieldAttributes) != null);
 
-                    EASPropertyInspectorDrawer propertyInspectorDrawer = EASInspectorEditor.Instance.GetPropertyInspectorDrawer(fields[i]);
+                    EASPropertyInspectorDrawer propertyInspectorDrawer = EASInspector.Instance.GetPropertyInspectorDrawer(fields[i]);
                     if (propertyInspectorDrawer != null)
                     {
                         FieldInfo property = fields[i];
@@ -77,8 +77,8 @@ namespace EAS
                     }
                     else
                     {
-                        propertyRect = new Rect(propertyRect.x, propertyRect.yMax + EditorGUIUtility.standardVerticalSpacing, propertyRect.width, EASInspectorEditor.Instance.BaseGetPorpertyHeight());
-                        hasChanged |= EASInspectorEditor.Instance.BaseOnGUIProperty(propertyRect, label, fields[i].FieldType);
+                        propertyRect = new Rect(propertyRect.x, propertyRect.yMax + EditorGUIUtility.standardVerticalSpacing, propertyRect.width, EASInspector.Instance.BaseGetPorpertyHeight());
+                        hasChanged |= EASInspector.Instance.BaseOnGUIProperty(propertyRect, label, fields[i].FieldType);
                     }
 
                     EditorGUI.EndDisabledGroup();
@@ -101,7 +101,7 @@ namespace EAS
                 if (className == propertyName)
                 {
                     propertyName = copiedPropertyPath.Substring(copiedPropertyPath.IndexOf(className + ".") + (className + ".").Length);
-                    return EASInspectorEditor.Instance.CanPasteProperty(baseEvent, property, propertyName, ref field, ref finalInstance);
+                    return EASInspector.Instance.CanPasteProperty(baseEvent, property, propertyName, ref field, ref finalInstance);
                 }
             }
 

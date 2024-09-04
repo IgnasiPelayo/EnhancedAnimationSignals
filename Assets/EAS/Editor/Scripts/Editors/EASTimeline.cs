@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace EAS
 {
     [System.Serializable]
-    public class EASEditorTimeline
+    public class EASTimeline
     {
         protected List<EASBaseGUIItem> m_TimelineTracksAndGroups = new List<EASBaseGUIItem>();
         protected List<EASEventGUIItem> m_TimelineEvents = new List<EASEventGUIItem>();
@@ -32,6 +32,10 @@ namespace EAS
         protected EASEditorUtils.EASTimescaledTimer m_TimelineTimer = new EASEditorUtils.EASTimescaledTimer();
 
         protected Rect m_WholeTimelineRect, m_FramesAreaRect;
+
+        protected IEASSerializable m_RightClickedEASSerializable = null;
+
+        public float CurrentFrame { get => m_TimelineTimer.ElapsedTime * m_AnimationInformation.FrameRate; set { SetElapsedTimeAtFrame(value); EASEditor.Instance.Playing = false; UpdateEvents(); } }
 
         public void OnUpdate()
         {
@@ -77,13 +81,13 @@ namespace EAS
         {
             if (EASEditor.Instance.Playing)
             {
-                if (m_TimelineTimer.IsPaused)
+                if (m_TimelineTimer.IsElapsed() || !m_TimelineTimer.IsPaused)
                 {
-                    m_TimelineTimer.Resume();
+                    m_TimelineTimer.Start(m_AnimationInformation.Length);
                 }
                 else
                 {
-                    m_TimelineTimer.Start(m_AnimationInformation.Length);
+                    m_TimelineTimer.Resume();
                 }
             }
             else
@@ -127,7 +131,7 @@ namespace EAS
 
         protected void UpdateEvents()
         {
-            float currentFrame = m_TimelineTimer.ElapsedTime * m_AnimationInformation.FrameRate;
+            float currentFrame = CurrentFrame;
             int currentFrameInt = Mathf.FloorToInt(currentFrame);
             IEASEditorBridge editorBridge = EASEditor.Instance;
 
@@ -191,7 +195,7 @@ namespace EAS
 
         protected void OnAnimationEnd()
         {
-            float currentFrame = m_TimelineTimer.ElapsedTime * m_AnimationInformation.FrameRate;
+            float currentFrame = CurrentFrame;
             int currentFrameInt = Mathf.FloorToInt(currentFrame);
             IEASEditorBridge editorBridge = EASEditor.Instance;
 
@@ -479,6 +483,25 @@ namespace EAS
 
         protected void HandleClippedInput()
         {
+            if (m_RightClickedEASSerializable != null)
+            {
+                if (m_RightClickedEASSerializable is EASBaseEvent)
+                {
+                    EASEditor.Instance.ShowEventOptionsMenu(m_RightClickedEASSerializable as EASBaseEvent);
+                }
+                else if (m_RightClickedEASSerializable is EASTrackGroup)
+                {
+                    EASEditor.Instance.ShowTrackGroupOptionsMenu(m_RightClickedEASSerializable as EASTrackGroup);
+                }
+                else if (m_RightClickedEASSerializable is EASTrack)
+                {
+                    EASEditor.Instance.ShowTrackOptionsMenu(m_RightClickedEASSerializable as EASTrack);
+                }
+
+                m_RightClickedEASSerializable = null;
+                return;
+            }
+
             if (Event.current.type == EventType.MouseDown)
             {
                 if (Event.current.button == 0)
@@ -546,12 +569,18 @@ namespace EAS
             EASEditor.Instance.Playing = false;
 
             float frameAtMousePosition = Mathf.Clamp(GetFrameAtPosition(Event.current.mousePosition.x, clipped), 0, m_AnimationInformation.Frames);
-            float elapsedTime = frameAtMousePosition * m_AnimationInformation.Length / m_AnimationInformation.Frames;
+            SetElapsedTimeAtFrame(frameAtMousePosition);
+
+            EASEditor.Instance.Repaint();
+        }
+
+        public void SetElapsedTimeAtFrame(float frame)
+        {
+            frame = Mathf.Clamp(frame, 0, m_AnimationInformation.Frames);
+            float elapsedTime = frame * m_AnimationInformation.Length / m_AnimationInformation.Frames;
 
             m_TimelineTimer.Start(m_AnimationInformation.Length, elapsedTime);
             m_TimelineTimer.Pause();
-
-            EASEditor.Instance.Repaint();
         }
 
         protected void CreateDragInformation(EASBaseGUIItem clickedGUIItem)
@@ -593,18 +622,9 @@ namespace EAS
             EASBaseGUIItem rightClickedGUIItem = TimelineGUIItemAtMousePosition(clipped: true);
             if (rightClickedGUIItem != null)
             {
-                if (rightClickedGUIItem.EASSerializable is EASBaseEvent)
-                {
-                    EASEditor.Instance.ShowEventOptionsMenu(rightClickedGUIItem.EASSerializable as EASBaseEvent);
-                }
-                else if (rightClickedGUIItem.EASSerializable is EASTrackGroup)
-                {
-                    EASEditor.Instance.ShowTrackGroupOptionsMenu(rightClickedGUIItem.EASSerializable as EASTrackGroup);
-                }
-                else if (rightClickedGUIItem.EASSerializable is EASTrack)
-                {
-                    EASEditor.Instance.ShowTrackOptionsMenu(rightClickedGUIItem.EASSerializable as EASTrack);
-                }
+                EASEditor.Instance.SelectObject(rightClickedGUIItem.EASSerializable, singleSelection: true);
+
+                m_RightClickedEASSerializable = rightClickedGUIItem.EASSerializable;
             }
             else
             {
@@ -863,8 +883,7 @@ namespace EAS
             float framesAreaWidth = m_FramesAreaRect.width - EASSkin.TimelineRightMargin;
             m_PixelsPerFrame = framesAreaWidth / m_AnimationInformation.Frames;
 
-            m_TimelineTimer.Start(m_AnimationInformation.Length);
-            m_TimelineTimer.Pause();
+            SetElapsedTimeAtFrame(0.0f);
         }
 
         protected float GetInitialFramePosition(bool clipped = false)

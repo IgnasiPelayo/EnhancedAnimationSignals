@@ -9,6 +9,16 @@ namespace EAS
         protected Animator m_Animator;
         public Animator Animator { get => m_Animator; }
 
+        public override bool HasAnimations()
+        {
+            if (m_Animator != null && m_Animator.runtimeAnimatorController != null)
+            {
+                return m_Animator.runtimeAnimatorController.animationClips.Length > 0;
+            }
+
+            return false;
+        }
+
         public override string[] GetAnimationNames()
         {
             if (m_Animator != null && m_Animator.runtimeAnimatorController != null)

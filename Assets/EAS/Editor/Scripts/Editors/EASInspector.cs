@@ -6,10 +6,10 @@ using System.Linq;
 
 namespace EAS
 {
-    public class EASInspectorEditor : EditorWindow
+    public class EASInspector : EditorWindow
     {
-        protected static EASInspectorEditor m_Instance;
-        public static EASInspectorEditor Instance { get { if (m_Instance == null) { OpenWindow(); } return m_Instance; } }
+        protected static EASInspector m_Instance;
+        public static EASInspector Instance { get { if (m_Instance == null) { OpenWindow(); } return m_Instance; } }
         public static bool HasInstance { get => m_Instance != null; }
 
         [SerializeField]
@@ -23,7 +23,7 @@ namespace EAS
         [MenuItem("Window/Animation/Enhanced Animation Signals Inspector")]
         public static void OpenWindow()
         {
-            EASInspectorEditor window = EditorWindow.GetWindow<EASInspectorEditor>(false, "EAS Inspector");
+            EASInspector window = EditorWindow.GetWindow<EASInspector>(false, "EAS Inspector");
             window.titleContent = new GUIContent(window.titleContent.text, EASSkin.Icon("d_UnityEditor.InspectorWindow"), window.titleContent.tooltip);
             window.Show();
 

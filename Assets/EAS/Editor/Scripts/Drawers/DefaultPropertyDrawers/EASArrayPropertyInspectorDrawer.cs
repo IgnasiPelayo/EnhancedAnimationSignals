@@ -66,7 +66,7 @@ namespace EAS
                 reorderableList = new ReorderableList(propertyValue, elementType, draggable: true, displayHeader: false, displayAddButton: true, displayRemoveButton: true);
                 reorderableList.multiSelect = true;
 
-                EASPropertyInspectorDrawer arrayElementPropertyInspectorDrawer = EASInspectorEditor.Instance.GetPropertyInspectorDrawer(elementType, getArrayAndListDrawers: false);
+                EASPropertyInspectorDrawer arrayElementPropertyInspectorDrawer = EASInspector.Instance.GetPropertyInspectorDrawer(elementType, getArrayAndListDrawers: false);
                 reorderableList.drawNoneElementCallback = (Rect rect) =>
                 {
                     OnGUINoneElements(rect);
@@ -87,14 +87,14 @@ namespace EAS
                             iList[index] = element;
 
                             reorderableList.list = iList;
-                            EASInspectorEditor.Instance.Repaint();
+                            EASInspector.Instance.Repaint();
                         }
 
                         EditorGUI.indentLevel--;
                     }
                     else
                     {
-                        EASInspectorEditor.Instance.BaseOnGUIProperty(rect, label, elementType);
+                        EASInspector.Instance.BaseOnGUIProperty(rect, label, elementType);
                     }
                 };
 

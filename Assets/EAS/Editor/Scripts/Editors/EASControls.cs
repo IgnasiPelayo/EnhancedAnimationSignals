@@ -5,7 +5,7 @@ using UnityEditor;
 
 namespace EAS
 {
-    public class EASEditorControls
+    public class EASControls
     {
         public void OnGUI(Rect rect)
         {
@@ -14,12 +14,12 @@ namespace EAS
 
             if (ControlRect(ref buttonRect, EASSkin.Icon("d_Animation.FirstKey")))
             {
-
+                EASEditor.Instance.CurrentFrame = 0;
             }
 
             if (ControlRect(ref buttonRect, EASSkin.Icon("d_Animation.PrevKey")))
             {
-
+                EASEditor.Instance.CurrentFrame = EASEditor.Instance.CurrentFrame - 1;
             }
 
             if (ControlRect(ref buttonRect, EASSkin.Icon(EASEditor.Instance.Playing ? "d_PauseButton" : "d_PlayButton"), 2, EASEditor.Instance.Playing))
@@ -29,12 +29,12 @@ namespace EAS
 
             if (ControlRect(ref buttonRect, EASSkin.Icon("d_Animation.NextKey")))
             {
-
+                EASEditor.Instance.CurrentFrame = EASEditor.Instance.CurrentFrame + 1;
             }
 
             if (ControlRect(ref buttonRect, EASSkin.Icon("d_Animation.LastKey")))
             {
-
+                EASEditor.Instance.CurrentFrame = int.MaxValue;
             }
 
             Rect loopButtonRect = new Rect(buttonRect.x, buttonRect.y, 40, buttonRect.height);
@@ -69,7 +69,7 @@ namespace EAS
             buttonRect.x = controllerRect.x - buttonRect.width;
             if (ControlRect(ref buttonRect, EASSkin.Icon("d_UnityEditor.InspectorWindow"), 2, false, -1))
             {
-                EASInspectorEditor.OpenWindow();
+                EASInspector.OpenWindow();
             }
 
             if (ControlRect(ref buttonRect, EASSkin.CustomIcon("import_export"), 3, false, -1))

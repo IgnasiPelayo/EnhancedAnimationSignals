@@ -229,7 +229,7 @@ namespace EAS
                 if (IsStarted && IsElapsed())
                 {
                     m_Started = false;
-                    m_ElapsedTime = m_Duration - 0.001f;
+                    m_ElapsedTime = m_Duration;
                     return true;
                 }
 

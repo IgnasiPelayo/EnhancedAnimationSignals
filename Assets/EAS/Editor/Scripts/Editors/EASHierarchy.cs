@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace EAS
 {
     [System.Serializable]
-    public class EASEditorHierarchy
+    public class EASHierarchy
     {
         [SerializeField]
         protected string m_SelectedAnimationName = null;
@@ -16,8 +16,9 @@ namespace EAS
         [SerializeField]
         protected int m_SelectedAnimationIndex = 0;
 
-
         protected List<EASBaseGUIItem> m_HierarchyGUIItems = new List<EASBaseGUIItem>();
+
+        protected IEASSerializable m_RightClickedEASSerializable = null;
 
         public void OnUpdate()
         {
@@ -46,7 +47,40 @@ namespace EAS
 
         public void OnGUI(Rect rect)
         {
-            Rect animationsRect = new Rect(rect.x, rect.y, rect.width, EASSkin.ControlToolbarHeight);
+            Rect upperControlsRect = new Rect(rect.x, rect.y, rect.width, EASSkin.ControlToolbarHeight);
+            Rect arrowsRect = Rect.MinMaxRect(upperControlsRect.xMax - 2.0f * upperControlsRect.height, upperControlsRect.y, upperControlsRect.xMax, upperControlsRect.yMax);
+
+            bool hasAnimations = EASEditor.Instance.Controller.HasAnimations();
+
+            Rect upArrowRect = new Rect(arrowsRect.x, arrowsRect.y, arrowsRect.width / 2.0f, arrowsRect.height);
+            if (ExtendedGUI.ExtendedGUI.IconButton(upArrowRect, GUIContent.none, EditorStyles.toolbarButton, EASSkin.Icon("UpArrow"), iconPadding: 3, 
+                iconIsOnTop: true, isSelected: false, enabled: hasAnimations))
+            {
+                string[] animationNames = EASEditor.Instance.Controller.GetAnimationNames();
+
+                m_SelectedAnimationIndex = (++m_SelectedAnimationIndex) % animationNames.Length;
+                m_SelectedAnimationName = animationNames[m_SelectedAnimationIndex];
+
+                EASEditor.Instance.OnAnimationChanged();
+            }
+
+            Rect downArrowRect = new Rect(upArrowRect.xMax - 1, arrowsRect.y, upArrowRect.width + 1, arrowsRect.height);
+            ExtendedGUI.ExtendedGUI.PreviewRect(downArrowRect);
+
+            GUIUtility.RotateAroundPivot(180.0f, downArrowRect.center);
+            if (ExtendedGUI.ExtendedGUI.IconButton(downArrowRect, GUIContent.none, EditorStyles.toolbarButton, EASSkin.Icon("UpArrow"), iconPadding: 3, 
+                iconIsOnTop: true, isSelected: false, enabled: hasAnimations))
+            {
+                string[] animationNames = EASEditor.Instance.Controller.GetAnimationNames();
+
+                m_SelectedAnimationIndex = (--m_SelectedAnimationIndex + animationNames.Length) % animationNames.Length;
+                m_SelectedAnimationName = animationNames[m_SelectedAnimationIndex];
+
+                EASEditor.Instance.OnAnimationChanged();
+            }
+            GUIUtility.RotateAroundPivot(-180.0f, downArrowRect.center);
+
+            Rect animationsRect = Rect.MinMaxRect(upperControlsRect.x, upperControlsRect.y, arrowsRect.x, upperControlsRect.yMax);
             if (GUI.Button(animationsRect, m_SelectedAnimationName, EditorStyles.toolbarDropDown))
             {
                 string[] animationNames = EASEditor.Instance.Controller.GetAnimationNames();
@@ -217,9 +251,9 @@ namespace EAS
 
                 GUI.FocusControl(null);
 
-                if (EASInspectorEditor.HasInstance)
+                if (EASInspector.HasInstance)
                 {
-                    EASInspectorEditor.Instance.Repaint();
+                    EASInspector.Instance.Repaint();
                 }
             }
 
@@ -228,18 +262,33 @@ namespace EAS
 
         protected void HandleInput(Rect hierarchyRect)
         {
+            if (m_RightClickedEASSerializable != null)
+            {
+                if (m_RightClickedEASSerializable is EASTrackGroup)
+                {
+                    EASEditor.Instance.ShowTrackGroupOptionsMenu(m_RightClickedEASSerializable as EASTrackGroup);
+                }
+                else if (m_RightClickedEASSerializable is EASTrack)
+                {
+                    EASEditor.Instance.ShowTrackOptionsMenu(m_RightClickedEASSerializable as EASTrack);
+                }
+
+                m_RightClickedEASSerializable = null;
+                return;
+            }
+
             if (Event.current.type == EventType.MouseUp)
             {
-                if (hierarchyRect.Contains(Event.current.mousePosition))
+                if (hierarchyRect.Contains(Event.current.mousePosition) && Event.current.button == 0)
                 {
-                    if (Event.current.button == 0)
-                    {
-                        OnHierarchyLeftClick();
-                    }
-                    else if (Event.current.button == 1)
-                    {
-                        OnHierarchyRightClick();
-                    }
+                    OnHierarchyLeftClick();
+                }
+            }
+            else if (Event.current.type == EventType.MouseDown)
+            {
+                if (hierarchyRect.Contains(Event.current.mousePosition) && Event.current.button == 1)
+                {
+                    OnHierarchyRightClick();
                 }
             }
         }
@@ -262,14 +311,9 @@ namespace EAS
             IEASSerializable rightClickedHierarchyTrack = HierarchyTrackAtMousePosition();
             if (rightClickedHierarchyTrack != null)
             {
-                if (rightClickedHierarchyTrack is EASTrackGroup)
-                {
-                    EASEditor.Instance.ShowTrackGroupOptionsMenu(rightClickedHierarchyTrack as EASTrackGroup);
-                }
-                else if (rightClickedHierarchyTrack is EASTrack)
-                {
-                    EASEditor.Instance.ShowTrackOptionsMenu(rightClickedHierarchyTrack as EASTrack);
-                }
+                EASEditor.Instance.SelectObject(rightClickedHierarchyTrack, singleSelection: true);
+
+                m_RightClickedEASSerializable = rightClickedHierarchyTrack;
             }
             else
             {
