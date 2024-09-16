@@ -18,8 +18,8 @@ MonoBehaviour:
     m_NameHash: 1556535090
     m_TracksAndGroups:
     - rid: 2068510770221809696
-    - rid: 2068510770221809703
     - rid: 2068510802048712704
+    - rid: 2056542110648369152
   - m_ID: -1090012126
     m_Name: Galop_WindUp
     m_NameHash: 436167999
@@ -52,6 +52,147 @@ MonoBehaviour:
         m_AnimationName: Galop_Male
         m_AnimationHash: 1272229344
         m_SyncWithAnimation: 1
+    - rid: 2056542110648369152
+      type: {class: EASTrackGroup, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 998669710
+        m_Name: Track Group
+        m_Muted: 0
+        m_Locked: 0
+        m_Collapsed: 0
+        m_Tracks:
+        - m_ID: -41020780
+          m_Name: Track
+          m_Muted: 0
+          m_Locked: 0
+          m_ParentTrackGroup:
+            rid: 2056542110648369152
+          m_Events:
+          - rid: 2056542320335519802
+          - rid: 2056542321429708806
+    - rid: 2056542320335519802
+      type: {class: EASTestEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1074691439
+        m_Name: Test
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2056542320335519804
+        m_StartFrame: 1
+        m_Duration: 3
+        m_Owner: {fileID: 0}
+        m_AnimationCurve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 1
+            outSlope: 1
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 1
+            outSlope: 1
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Array: []
+        m_List: []
+        m_Bool: 1
+        m_Class:
+          LastName: 
+          Age: 0
+        m_Color: {r: 0, g: 0, b: 0, a: 0}
+        m_Double: 1.4800000190734863
+        m_Float: 3.22
+        m_Int: 75
+        m_Object: {fileID: 0}
+        m_String: 
+        m_Vector2: {x: 0, y: 0}
+        m_Vector3: {x: 0, y: 0, z: 0}
+        m_Vector4: {x: 0, y: 0, z: 0, w: 0}
+    - rid: 2056542320335519804
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -41020780
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: 2056542110648369152
+        m_Events:
+        - rid: 2056542320335519802
+    - rid: 2056542321429708806
+      type: {class: EASTestEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 457866567
+        m_Name: Test
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 2056542321429708807
+        m_StartFrame: 7
+        m_Duration: 3
+        m_Owner: {fileID: 0}
+        m_AnimationCurve:
+          serializedVersion: 2
+          m_Curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 1
+            outSlope: 1
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 1
+            value: 1
+            inSlope: 1
+            outSlope: 1
+            tangentMode: 34
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          m_PreInfinity: 2
+          m_PostInfinity: 2
+          m_RotationOrder: 4
+        m_Array: []
+        m_List: []
+        m_Bool: 1
+        m_Class:
+          LastName: 
+          Age: 0
+        m_Color: {r: 0, g: 0, b: 0, a: 0}
+        m_Double: 1.4800000190734863
+        m_Float: 3.22
+        m_Int: 75
+        m_Object: {fileID: 0}
+        m_String: 
+        m_Vector2: {x: 0, y: 0}
+        m_Vector3: {x: 0, y: 0, z: 0}
+        m_Vector4: {x: 0, y: 0, z: 0, w: 0}
+    - rid: 2056542321429708807
+      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -41020780
+        m_Name: Track
+        m_Muted: 0
+        m_Locked: 0
+        m_ParentTrackGroup:
+          rid: 2056542110648369152
+        m_Events:
+        - rid: 2056542320335519802
+        - rid: 2056542321429708806
     - rid: 2068510770221809696
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -91,17 +232,6 @@ MonoBehaviour:
         m_AnimationName: Galop_WindUp_Male
         m_AnimationHash: -1567913441
         m_SyncWithAnimation: 1
-    - rid: 2068510770221809703
-      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
-      data:
-        m_ID: 691443313
-        m_Name: Track
-        m_Muted: 0
-        m_Locked: 0
-        m_ParentTrackGroup:
-          rid: -2
-        m_Events:
-        - rid: 2068510817288978436
     - rid: 2068510775429824521
       type: {class: EASAdvancedSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
       data:
@@ -176,17 +306,3 @@ MonoBehaviour:
           rid: -2
         m_Events:
         - rid: 2056542050315141123
-    - rid: 2068510817288978436
-      type: {class: EASLogEvent, ns: EAS, asm: Assembly-CSharp}
-      data:
-        m_ID: 868840286
-        m_Name: Log
-        m_Controller: {fileID: 0}
-        m_ParentTrack:
-          rid: 2068510770221809703
-        m_StartFrame: 8
-        m_Duration: 3
-        m_Owner: {fileID: 0}
-        m_Message: Hello
-        m_LogOnce: 1
-        m_LogType: 3

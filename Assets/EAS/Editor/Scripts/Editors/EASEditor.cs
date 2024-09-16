@@ -616,8 +616,8 @@ namespace EAS
         {
             GenericMenu eventOptionsMenu = new GenericMenu();
 
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Copy"), false, () => { });
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Paste"), false, () => { });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Copy"), true, () => { EASEditorUtils.OnCopy(baseEvent); });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Paste"), EASEditorUtils.CanPaste(baseEvent), () => { EASEditorUtils.OnPaste(baseEvent); });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Duplicate"), false, () => { });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Delete"), true, () => { RemoveEvent(baseEvent); });
 

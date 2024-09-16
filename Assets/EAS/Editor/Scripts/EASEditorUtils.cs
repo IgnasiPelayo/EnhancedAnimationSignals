@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using Unity.Plastic.Newtonsoft.Json.Linq;
 
 namespace EAS
 {
@@ -251,6 +252,8 @@ namespace EAS
             }
         }
 
+        protected static Dictionary<System.Type, EASPropertyInspectorDrawer> ms_PropertyInspectorDrawers = new Dictionary<System.Type, EASPropertyInspectorDrawer>();
+
         public static T GetAttribute<T>(System.Type type) where T : System.Attribute
         {
             MemberInfo memberInfo = type;
@@ -374,21 +377,92 @@ namespace EAS
             return null;
         }
 
-        public static Dictionary<System.Type, EASPropertyInspectorDrawer> GetAllEASCustomPropertyInspectorDrawers()
+        public static void GetAllEASCustomPropertyInspectorDrawers()
         {
-            Dictionary<System.Type, EASPropertyInspectorDrawer> propertyInspectorDrawers = new Dictionary<System.Type, EASPropertyInspectorDrawer>();
+            ms_PropertyInspectorDrawers = new Dictionary<System.Type, EASPropertyInspectorDrawer>();
 
             List<System.Type> allPropertyInspectorDrawers = GetAllDerivedTypesOf<EASPropertyInspectorDrawer>();
             for (int i = 0; i < allPropertyInspectorDrawers.Count; ++i)
             {
                 System.Type fieldTypeOfPropertyInspectorDrawer = GetEASCustomPropertyInspectorDrawerAttribute(allPropertyInspectorDrawers[i]);
-                if (fieldTypeOfPropertyInspectorDrawer != null && !propertyInspectorDrawers.ContainsKey(fieldTypeOfPropertyInspectorDrawer))
+                if (fieldTypeOfPropertyInspectorDrawer != null && !ms_PropertyInspectorDrawers.ContainsKey(fieldTypeOfPropertyInspectorDrawer))
                 {
-                    propertyInspectorDrawers.Add(fieldTypeOfPropertyInspectorDrawer, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(allPropertyInspectorDrawers[i]) as EASPropertyInspectorDrawer);
+                    ms_PropertyInspectorDrawers.Add(fieldTypeOfPropertyInspectorDrawer, System.Runtime.Serialization.FormatterServices.GetUninitializedObject(allPropertyInspectorDrawers[i]) as EASPropertyInspectorDrawer);
+                }
+            }
+        }
+
+        public static EASPropertyInspectorDrawer GetPropertyInspectorDrawer(System.Type type, bool getArrayAndListDrawers = true)
+        {
+            if (ms_PropertyInspectorDrawers.ContainsKey(type))
+            {
+                return ms_PropertyInspectorDrawers[type];
+            }
+
+            System.Type unityEngineObjectType = typeof(UnityEngine.Object);
+            if (type.IsSubclassOf(unityEngineObjectType))
+            {
+                if (ms_PropertyInspectorDrawers.ContainsKey(unityEngineObjectType))
+                {
+                    return ms_PropertyInspectorDrawers[unityEngineObjectType];
                 }
             }
 
-            return propertyInspectorDrawers;
+            if (typeof(EASBaseReference).IsAssignableFrom(type))
+            {
+                System.Type easBaseReferenceType = typeof(EASBaseReference);
+                if (ms_PropertyInspectorDrawers.ContainsKey(easBaseReferenceType))
+                {
+                    return ms_PropertyInspectorDrawers[easBaseReferenceType];
+                }
+            }
+
+            if (getArrayAndListDrawers)
+            {
+                if (type.IsArray)
+                {
+                    if (ms_PropertyInspectorDrawers.ContainsKey(typeof(System.Array)))
+                    {
+                        return ms_PropertyInspectorDrawers[typeof(System.Array)];
+                    }
+                }
+
+                if (type.IsGenericType)
+                {
+                    System.Type genericTypeDefinition = type.GetGenericTypeDefinition();
+                    if (genericTypeDefinition == typeof(List<>))
+                    {
+                        if (ms_PropertyInspectorDrawers.ContainsKey(typeof(List<>)))
+                        {
+                            return ms_PropertyInspectorDrawers[typeof(List<>)];
+                        }
+                    }
+                }
+            }
+
+            if (type.IsEnum)
+            {
+                if (ms_PropertyInspectorDrawers.ContainsKey(typeof(System.Enum)))
+                {
+                    return ms_PropertyInspectorDrawers[typeof(System.Enum)];
+                }
+            }
+
+            System.Type rootType = type.BaseType;
+            while (rootType.BaseType != null)
+            {
+                rootType = rootType.BaseType;
+            }
+
+            if (rootType == typeof(System.Object) && type.IsDefined(typeof(System.SerializableAttribute)))
+            {
+                if (ms_PropertyInspectorDrawers.ContainsKey(typeof(System.Object)))
+                {
+                    return ms_PropertyInspectorDrawers[typeof(System.Object)];
+                }
+            }
+
+            return null;
         }
 
         public static string GetReadableEventNameWithCategory(System.Type type)
@@ -529,6 +603,136 @@ namespace EAS
             }
 
             return freeSpaces;
+        }
+
+        public static List<FieldInfo> GetFields(System.Type type)
+        {
+            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            List<FieldInfo> inspectorFields = new List<FieldInfo>();
+
+            for (int i = 0; i < fields.Length; ++i)
+            {
+                if (IsInspectorField(fields[i]))
+                {
+                    inspectorFields.Add(fields[i]);
+                }
+            }
+
+            return inspectorFields.OrderByDescending(i => GetDepthLevelOfFieldInfo(type, i.DeclaringType)).ToList();
+        }
+
+        protected static bool IsInspectorField(FieldInfo fieldInfo)
+        {
+            if (!fieldInfo.IsPublic && !fieldInfo.IsDefined(typeof(SerializeField), false))
+            {
+                return false;
+            }
+
+            object[] attributes = fieldInfo.GetCustomAttributes(true);
+            if (GetAttribute<HideInInspector>(attributes) != null || GetAttribute<System.NonSerializedAttribute>(attributes) != null)
+            {
+                return false;
+            }
+
+            if (fieldInfo.Name == "m_ID" && fieldInfo.FieldType == typeof(System.Int32))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        protected static int GetDepthLevelOfFieldInfo(System.Type initialType, System.Type targetType)
+        {
+            if (initialType == targetType)
+            {
+                return 0;
+            }
+
+            return GetDepthLevelOfFieldInfo(initialType.BaseType, targetType) + 1;
+        }
+
+        public static void OnCopy(IEASSerializable serializable)
+        {
+            string json = ConvertToJSON(serializable);
+
+            if (!string.IsNullOrEmpty(json))
+            {
+                GUIUtility.systemCopyBuffer = json;
+            }
+        }
+
+        public static bool CanPaste(IEASSerializable serializable)
+        {
+            if (!string.IsNullOrEmpty(GUIUtility.systemCopyBuffer))
+            {
+                try
+                {
+                    JObject copyBufferJSON = JObject.Parse(GUIUtility.systemCopyBuffer);
+
+                    if (copyBufferJSON.HasValues)
+                    {
+                        JToken assemblyToken = copyBufferJSON.SelectToken("Assembly");
+                        JToken typeToken = copyBufferJSON.SelectToken("Type");
+
+                        if (assemblyToken != null && typeToken != null)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            return false;
+        }
+
+        public static void OnPaste(IEASSerializable serializable)
+        {
+            JObject copyJSON = JObject.Parse(GUIUtility.systemCopyBuffer);
+            Assembly assembly = Assembly.Load(copyJSON.SelectToken("Assembly").ToString());
+            System.Type type = assembly.GetType(copyJSON.SelectToken("Type").ToString());
+
+            if (serializable is EASBaseEvent)
+            {
+                FromJSON(serializable as EASBaseEvent, copyJSON.SelectToken("Event"));
+            }
+        }
+
+        protected static string ConvertToJSON(IEASSerializable serializable)
+        {
+            JObject outputJSON = new JObject();
+            outputJSON.Add("Assembly", serializable.GetType().Assembly.FullName);
+            outputJSON.Add("Type", serializable.GetType().FullName);
+
+            if (serializable is EASBaseEvent)
+            {
+                outputJSON.Add("Event", ToJSON(serializable as EASBaseEvent));
+            }
+
+            return outputJSON.ToString();
+        }
+
+        protected static JObject ToJSON(EASBaseEvent baseEvent)
+        {
+            string unityJSON = JsonUtility.ToJson(baseEvent);
+            JObject unityJSONObject = JObject.Parse(unityJSON);
+
+            JObject outputJSON = new JObject();
+
+            List<FieldInfo> baseEventFields = GetFields(baseEvent.GetType());
+            foreach (FieldInfo field in baseEventFields)
+            {
+                JToken fieldNode = unityJSONObject.SelectToken(field.Name);
+                outputJSON.Add(field.Name, fieldNode);
+            }
+
+            return outputJSON;
+        }
+
+        protected static void FromJSON(EASBaseEvent baseEvent, JToken eventToken)
+        {
+            JsonUtility.FromJsonOverwrite(eventToken.ToString(), baseEvent);
         }
     }
 }

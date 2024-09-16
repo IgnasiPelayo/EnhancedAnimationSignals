@@ -13,9 +13,6 @@ namespace EAS
         public static bool HasInstance { get => m_Instance != null; }
 
         [SerializeField]
-        protected Dictionary<System.Type, EASPropertyInspectorDrawer> m_PropertyInspectorDrawers = new Dictionary<System.Type, EASPropertyInspectorDrawer>();
-
-        [SerializeField]
         protected List<EASPropertyInspectorVariable> m_PropertyInspectorVariables = new List<EASPropertyInspectorVariable>();
 
         protected Vector2 m_Scroll;
@@ -32,7 +29,7 @@ namespace EAS
 
         protected void OnEnable()
         {
-            m_PropertyInspectorDrawers = EASEditorUtils.GetAllEASCustomPropertyInspectorDrawers();
+            EASEditorUtils.GetAllEASCustomPropertyInspectorDrawers();
 
             if (!HasInstance)
             {
@@ -229,7 +226,7 @@ namespace EAS
 
         public void BaseOnGUIInspector(Rect rect, EASBaseEvent baseEvent)
         {
-            List<FieldInfo> fields = GetFields(baseEvent.GetType());
+            List<FieldInfo> fields = EASEditorUtils.GetFields(baseEvent.GetType());
 
             bool hasChanged = false;
             for (int i = 0; i < fields.Count; ++i)
@@ -352,129 +349,14 @@ namespace EAS
             return false;
         }
 
-        public EASPropertyInspectorDrawer GetPropertyInspectorDrawer(System.Type type, bool getArrayAndListDrawers = true)
+        public EASPropertyInspectorDrawer GetPropertyInspectorDrawer(FieldInfo property, bool getArrayAndListDrawers = true)
         {
-            if (m_PropertyInspectorDrawers.ContainsKey(type))
-            {
-                return m_PropertyInspectorDrawers[type];
-            }
-
-            System.Type unityEngineObjectType = typeof(UnityEngine.Object);
-            if (type.IsSubclassOf(unityEngineObjectType))
-            {
-                if (m_PropertyInspectorDrawers.ContainsKey(unityEngineObjectType))
-                {
-                    return m_PropertyInspectorDrawers[unityEngineObjectType];
-                }
-            }
-
-            if (typeof(EASBaseReference).IsAssignableFrom(type))
-            {
-                System.Type easBaseReferenceType = typeof(EASBaseReference);
-                if (m_PropertyInspectorDrawers.ContainsKey(easBaseReferenceType))
-                {
-                    return m_PropertyInspectorDrawers[easBaseReferenceType];
-                }
-            }
-
-            if (getArrayAndListDrawers)
-            {
-                if (type.IsArray)
-                {
-                    if (m_PropertyInspectorDrawers.ContainsKey(typeof(System.Array)))
-                    {
-                        return m_PropertyInspectorDrawers[typeof(System.Array)];
-                    }
-                }
-
-                if (type.IsGenericType)
-                {
-                    System.Type genericTypeDefinition = type.GetGenericTypeDefinition();
-                    if (genericTypeDefinition == typeof(List<>))
-                    {
-                        if (m_PropertyInspectorDrawers.ContainsKey(typeof(List<>)))
-                        {
-                            return m_PropertyInspectorDrawers[typeof(List<>)];
-                        }
-                    }
-                }
-            }
-
-            if (type.IsEnum)
-            {
-                if (m_PropertyInspectorDrawers.ContainsKey(typeof(System.Enum)))
-                {
-                    return m_PropertyInspectorDrawers[typeof(System.Enum)];
-                }
-            }
-
-            System.Type rootType = type.BaseType;
-            while (rootType.BaseType != null)
-            {
-                rootType = rootType.BaseType;
-            }
-
-            if (rootType == typeof(System.Object) && type.IsDefined(typeof(System.SerializableAttribute)))
-            {
-                if (m_PropertyInspectorDrawers.ContainsKey(typeof(System.Object)))
-                {
-                    return m_PropertyInspectorDrawers[typeof(System.Object)];
-                }
-            }
-
-            return null;
+            return EASEditorUtils.GetPropertyInspectorDrawer(property.FieldType, getArrayAndListDrawers);
         }
 
-        public EASPropertyInspectorDrawer GetPropertyInspectorDrawer(FieldInfo property)
+        public EASPropertyInspectorDrawer GetPropertyInspectorDrawer(System.Type propertyType, bool getArrayAndListDrawers = true)
         {
-            return GetPropertyInspectorDrawer(property.FieldType);
-        }
-
-        public List<FieldInfo> GetFields(System.Type type)
-        {
-            FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            List<FieldInfo> inspectorFields = new List<FieldInfo>();
-
-            for (int i = 0; i < fields.Length; ++i)
-            {
-                if (IsInspectorField(fields[i]))
-                {
-                    inspectorFields.Add(fields[i]);
-                }
-            }
-
-            return inspectorFields.OrderByDescending(i => GetDepthLevelOfFieldInfo(type, i.DeclaringType)).ToList();
-        }
-
-        protected int GetDepthLevelOfFieldInfo(System.Type initialType, System.Type targetType)
-        {
-            if (initialType == targetType)
-            {
-                return 0;
-            }
-
-            return GetDepthLevelOfFieldInfo(initialType.BaseType, targetType) + 1;
-        }
-
-        protected bool IsInspectorField(FieldInfo fieldInfo)
-        {
-            if (!fieldInfo.IsPublic && !fieldInfo.IsDefined(typeof(SerializeField), false))
-            {
-                return false;
-            }
-
-            object[] attributes = fieldInfo.GetCustomAttributes(true);
-            if (EASEditorUtils.GetAttribute<HideInInspector>(attributes) != null || EASEditorUtils.GetAttribute<System.NonSerializedAttribute>(attributes) != null)
-            {
-                return false;
-            }
-
-            if (fieldInfo.Name == "m_ID" && fieldInfo.FieldType == typeof(System.Int32))
-            {
-                return false;
-            }
-
-            return true;
+            return EASEditorUtils.GetPropertyInspectorDrawer(propertyType, getArrayAndListDrawers);
         }
 
         public T GetVariable<T>(IEASSerializable serializable, string variableName)
@@ -529,7 +411,7 @@ namespace EAS
 
         public bool ShowPasteOption(System.Type propertyType)
         {
-            EASPropertyInspectorDrawer propertyInspectorDrawer = GetPropertyInspectorDrawer(propertyType);
+            EASPropertyInspectorDrawer propertyInspectorDrawer = EASEditorUtils.GetPropertyInspectorDrawer(propertyType);
             if (propertyInspectorDrawer != null)
             {
                 return propertyInspectorDrawer.PasteValueFromClipboardIsValid();
@@ -554,7 +436,7 @@ namespace EAS
 
         public bool CanPasteProperty(EASBaseEvent baseEvent, object property, string propertyPath, ref FieldInfo refField, ref object refFinalInstance)
         {
-            List<FieldInfo> fields = GetFields(property.GetType());
+            List<FieldInfo> fields = EASEditorUtils.GetFields(property.GetType());
             for (int i = 0; i < fields.Count; ++i)
             {
                 EASPropertyInspectorDrawer propertyInspectorDrawer = GetPropertyInspectorDrawer(fields[i]);

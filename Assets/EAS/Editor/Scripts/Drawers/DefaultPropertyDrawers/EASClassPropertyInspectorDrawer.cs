@@ -14,7 +14,7 @@ namespace EAS
             {
                 float height = EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
-                List<FieldInfo> fields = EASInspector.Instance.GetFields(propertyType);
+                List<FieldInfo> fields = EASEditorUtils.GetFields(propertyType);
                 for (int i = 0; i < fields.Count; ++i)
                 {
                     object[] fieldAttributes = fields[i].GetCustomAttributes(true);
@@ -51,7 +51,7 @@ namespace EAS
             {
                 EditorGUI.indentLevel++;
 
-                List<FieldInfo> fields = EASInspector.Instance.GetFields(propertyType);
+                List<FieldInfo> fields = EASEditorUtils.GetFields(propertyType);
 
                 Rect propertyRect = new Rect(rect.x, foldoutRect.y, rect.width, foldoutRect.height);
 

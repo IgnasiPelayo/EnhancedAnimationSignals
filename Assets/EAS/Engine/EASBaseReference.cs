@@ -6,6 +6,8 @@ namespace EAS
     [System.Serializable]
     public abstract class EASBaseReference
     {
+        public abstract string Path { get; set; }
+
         public abstract bool IsGlobal { get; }
 
         public abstract System.Type GetObjectType();
@@ -24,7 +26,7 @@ namespace EAS
     {
         [SerializeField, HideInInspector]
         protected string m_Path;
-        public string Path { get => m_Path; set => m_Path = value; }
+        public override string Path { get => m_Path; set => m_Path = value; }
 
         protected static string m_RootPath = "Path@RootController";
 

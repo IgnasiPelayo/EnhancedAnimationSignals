@@ -118,6 +118,8 @@ namespace EAS
             OnGUIFrameLines(timelineWorkAreaRect);
             OnGUIEvents();
 
+            OnGUIMutedOrLockedTracks();
+
             OnGUIKeyFrames();
             OnGUITimerLine();
 
@@ -416,6 +418,45 @@ namespace EAS
 
             labelGUIStyle.normal.textColor = labelGUIStyle.hover.textColor = labelGUIStyle.active.textColor = textColor;
             GUI.Label(eventLabelRect, eventLabelContent, labelGUIStyle);
+        }
+
+        protected void OnGUIMutedOrLockedTracks()
+        {
+            for (int i = 0; i < m_TimelineTracksAndGroups.Count; ++i)
+            {
+                EASBaseTrack baseTrack = m_TimelineTracksAndGroups[i].EASSerializable as EASBaseTrack;
+                if (baseTrack is EASTrack)
+                {
+                    EASTrack track = baseTrack as EASTrack;
+                    if (track.ParentTrackGroup != null && (track.ParentTrackGroupLocked || track.ParentTrackGroupMuted))
+                    {
+                        continue;
+                    }
+                }
+
+                if (baseTrack.Muted || baseTrack.Locked)
+                {
+                    string trackStatus = (baseTrack.Locked ? "Locked" : string.Empty);
+                    trackStatus += (baseTrack.Muted ? (string.IsNullOrEmpty(trackStatus) ? "Muted" : " and Muted") : string.Empty);
+                    GUIContent trackStatusGUIContent = new GUIContent(trackStatus);
+
+                    Rect trackStatusBackgroundRect = m_TimelineTracksAndGroups[i].Rect;
+                    if (m_TimelineTracksAndGroups[i].EASSerializable is EASTrackGroup)
+                    {
+                        trackStatusBackgroundRect.height = EASSkin.HierarchyTrackHeight;
+                    }
+
+                    EditorGUI.DrawRect(m_TimelineTracksAndGroups[i].Rect, EASSkin.TimelineLockedMutedBackgroundColor);
+
+                    Vector2 trackStatusSize = EditorStyles.label.CalcSize(trackStatusGUIContent);
+                    Rect trackStatusRect = ExtendedGUI.ExtendedGUI.GetInnerRect(trackStatusBackgroundRect, trackStatusSize.x + 10, EASSkin.HierarchyTrackHeight - 10);
+
+                    bool wasEnabled = GUI.enabled;
+                    GUI.enabled = false;
+                    GUI.Button(trackStatusRect, trackStatusGUIContent);
+                    GUI.enabled = wasEnabled;
+                }
+            }
         }
 
         protected void OnGUIKeyFrames()
