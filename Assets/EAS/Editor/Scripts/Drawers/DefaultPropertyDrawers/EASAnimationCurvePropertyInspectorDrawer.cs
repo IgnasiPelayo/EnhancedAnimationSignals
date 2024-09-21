@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using Unity.Plastic.Newtonsoft.Json;
 
 namespace EAS
 {
@@ -9,6 +8,12 @@ namespace EAS
     {
         protected override bool OnGUIProperty(Rect rect, GUIContent label, EASBaseEvent baseEvent, string propertyName, System.Type propertyType, ref object propertyValue, object[] propertyAttributes)
         {
+            AnimationCurve propertyValueAsAnimationCurve = propertyValue as AnimationCurve;
+            if (propertyValueAsAnimationCurve == null)
+            {
+                propertyValue = new AnimationCurve();
+            }
+
             ShowEventOptionsMenuOnRightClick(rect, baseEvent, propertyValue, propertyName, propertyType);
 
             EditorGUI.BeginChangeCheck();

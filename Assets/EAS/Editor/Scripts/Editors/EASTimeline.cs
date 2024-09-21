@@ -707,7 +707,7 @@ namespace EAS
         protected void PerformNormalDrag()
         {
             EASTrack trackAtMousePosition = null;
-            EASBaseGUIItem trackGUIItemAtMousePosition = TimelineTrackAtMousePosition();
+            EASBaseGUIItem trackGUIItemAtMousePosition = TimelineTrackAtPosition(Event.current.mousePosition);
             if (trackGUIItemAtMousePosition != null && trackGUIItemAtMousePosition.EASSerializable is EASTrack)
             {
                 trackAtMousePosition = trackGUIItemAtMousePosition.EASSerializable as EASTrack;
@@ -721,7 +721,7 @@ namespace EAS
                 if (draggingItem.EASSerializable is EASBaseEvent)
                 {
                     EASBaseEvent baseEvent = draggingItem.EASSerializable as EASBaseEvent;
-                    if (allowVerticalDrag)
+                    if (allowVerticalDrag && EASEditorUtils.GetSerializableID(baseEvent.ParentTrack) != EASEditorUtils.GetSerializableID(trackGUIItemAtMousePosition.EASSerializable))
                     {
                         EASEditor.Instance.MoveEvent(baseEvent, trackAtMousePosition);
                     }
@@ -875,12 +875,12 @@ namespace EAS
             return new Rect(clippedRect.x + m_WholeTimelineRect.x, clippedRect.y + m_WholeTimelineRect.y, clippedRect.width, clippedRect.height);
         }
 
-        protected EASBaseGUIItem TimelineTrackAtMousePosition(bool clipped = false)
+        protected EASBaseGUIItem TimelineTrackAtPosition(Vector2 position, bool clipped = false)
         {
             for (int i = 0; i < m_TimelineTracksAndGroups.Count; ++i)
             {
                 Rect rect = clipped ? m_TimelineTracksAndGroups[i].Rect : TransformClippedRect(m_TimelineTracksAndGroups[i].Rect);
-                if (rect.Contains(Event.current.mousePosition))
+                if (rect.Contains(position))
                 {
                     return m_TimelineTracksAndGroups[i];
                 }
@@ -912,7 +912,7 @@ namespace EAS
                 return eventAtClippedMousePosition;
             }
 
-            return TimelineTrackAtMousePosition(clipped);
+            return TimelineTrackAtPosition(Event.current.mousePosition, clipped);
         }
 
         public void OnAnimationChanged()

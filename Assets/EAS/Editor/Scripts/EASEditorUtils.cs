@@ -692,10 +692,11 @@ namespace EAS
             JObject copyJSON = JObject.Parse(GUIUtility.systemCopyBuffer);
             Assembly assembly = Assembly.Load(copyJSON.SelectToken("Assembly").ToString());
             System.Type type = assembly.GetType(copyJSON.SelectToken("Type").ToString());
+            string valueJSON = copyJSON.SelectToken("Value").ToString();
 
             if (serializable is EASBaseEvent)
             {
-                FromJSON(serializable as EASBaseEvent, copyJSON.SelectToken("Event"));
+                FromJSON(serializable as EASBaseEvent, valueJSON);
             }
         }
 
@@ -707,7 +708,7 @@ namespace EAS
 
             if (serializable is EASBaseEvent)
             {
-                outputJSON.Add("Event", ToJSON(serializable as EASBaseEvent));
+                outputJSON.Add("Value", ToJSON(serializable as EASBaseEvent));
             }
 
             return outputJSON.ToString();
@@ -730,9 +731,9 @@ namespace EAS
             return outputJSON;
         }
 
-        protected static void FromJSON(EASBaseEvent baseEvent, JToken eventToken)
+        protected static void FromJSON(EASBaseEvent baseEvent, string valueJSON)
         {
-            JsonUtility.FromJsonOverwrite(eventToken.ToString(), baseEvent);
+            JsonUtility.FromJsonOverwrite(valueJSON, baseEvent);
         }
     }
 }

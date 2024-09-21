@@ -422,6 +422,11 @@ namespace EAS
             RemoveEvent(baseEvent);
             track.AddEvent(baseEvent);
 
+            if (!IsSelected(baseEvent))
+            {
+                SelectObject(baseEvent, singleSelection: false);
+            }
+
             EditorUtility.SetDirty(Controller.Data);
         }
 
