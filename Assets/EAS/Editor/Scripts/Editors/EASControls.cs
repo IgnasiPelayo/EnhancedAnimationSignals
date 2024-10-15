@@ -74,7 +74,12 @@ namespace EAS
 
             if (ControlRect(ref buttonRect, EASSkin.CustomIcon("import_export"), 3, false, -1))
             {
+                GenericMenu importExportMenu = new GenericMenu();
 
+                importExportMenu.AddItem(new GUIContent("Import"), false, () => { EASEditorUtils.ImportEASAnimationData(); });
+                importExportMenu.AddItem(new GUIContent("Export"), false, () => { EASEditorUtils.ExportEASAnimationData(); });
+
+                importExportMenu.ShowAsContext();
             }
 
             buttonRect.x -= buttonRect.width / 2.0f;

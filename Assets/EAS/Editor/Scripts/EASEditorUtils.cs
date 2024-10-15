@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 using static PlasticPipe.Server.MonitorStats;
+using System.IO;
 
 namespace EAS
 {
@@ -655,12 +656,17 @@ namespace EAS
 
         public static void OnCopy(IEASSerializable serializable)
         {
-            string json = ConvertToJSON(serializable, copyStartFrameAndDuration: false).ToString();
+            string json = OnCopyInternal(serializable);
 
             if (!string.IsNullOrEmpty(json))
             {
                 GUIUtility.systemCopyBuffer = json;
             }
+        }
+
+        protected static string OnCopyInternal(IEASSerializable serializable)
+        {
+            return ConvertToJSON(serializable, copyStartFrameAndDuration: false).ToString();
         }
 
         public static bool CanPaste(IEASSerializable serializable, int trackLength)
@@ -709,7 +715,11 @@ namespace EAS
             System.Type type = assembly.GetType(copyJSON.SelectToken("Type").ToString());
             string valueJSON = copyJSON.SelectToken("Value").ToString();
 
-            if (serializable is EASBaseEvent)
+            if (serializable is EASAnimationData)
+            {
+                FromJSON(serializable as EASAnimationData, valueJSON);
+            }
+            else if (serializable is EASBaseEvent)
             {
                 EASBaseEvent baseEvent = serializable as EASBaseEvent;
                 if (type.IsAssignableFrom(serializable.GetType()) || serializable.GetType().IsAssignableFrom(type))
@@ -721,11 +731,11 @@ namespace EAS
                     FromJSON(baseEvent.ParentTrack, valueJSON, type, allowCreationInAnyFrame);
                 }
             }
-            else if (serializable is EASTrack)
+            else if (serializable is EASTrack || (serializable == null && type == typeof(EASTrack)))
             {
                 FromJSON(serializable as EASTrack, valueJSON, type, allowCreationInAnyFrame);
             }
-            else if (serializable is EASTrackGroup)
+            else if (serializable is EASTrackGroup || (serializable == null && type == typeof(EASTrackGroup)))
             {
                 FromJSON(serializable as EASTrackGroup, valueJSON, type, allowCreationInAnyFrame);
             }
@@ -767,7 +777,11 @@ namespace EAS
             outputJSON.Add("Assembly", serializable.GetType().Assembly.FullName);
             outputJSON.Add("Type", serializable.GetType().FullName);
 
-            if (serializable is EASBaseEvent)
+            if (serializable is EASAnimationData)
+            {
+                outputJSON.Add("Value", ToJSON(serializable as EASAnimationData));
+            }
+            else if (serializable is EASBaseEvent)
             {
                 outputJSON.Add("Value", ToJSON(serializable as EASBaseEvent, copyStartFrameAndDuration));
             }
@@ -778,6 +792,18 @@ namespace EAS
             else if (serializable is EASTrackGroup)
             {
                 outputJSON.Add("Value", ToJSON(serializable as EASTrackGroup));
+            }
+
+            return outputJSON;
+        }
+
+        protected static JToken ToJSON(EASAnimationData animationData)
+        {
+            JArray outputJSON = new JArray();
+
+            for (int i = 0; i < animationData.TracksAndGroups.Count; ++i)
+            {
+                outputJSON.Add(ConvertToJSON(animationData.TracksAndGroups[i], true));
             }
 
             return outputJSON;
@@ -831,6 +857,17 @@ namespace EAS
             return outputJSON;
         }
 
+        protected static void FromJSON(EASAnimationData animationData, string valueJSON)
+        {
+            JArray tracksAndTrackGroupsJArray = JArray.Parse(valueJSON);
+            JToken[] tracksAndTrackGroups = tracksAndTrackGroupsJArray.ToArray();
+
+            for (int i = 0; i < tracksAndTrackGroups.Length; ++i)
+            {
+                OnPaste(null, tracksAndTrackGroups[i].ToString());
+            }
+        }
+
         protected static void FromJSON(EASBaseEvent baseEvent, string valueJSON)
         {
             JsonUtility.FromJsonOverwrite(valueJSON, baseEvent);
@@ -848,7 +885,7 @@ namespace EAS
             }
             else if (jsonType == typeof(EASTrack))
             {
-                EASTrack pastedTrack = track.ParentTrackGroup != null ? track.ParentTrackGroup.AddTrack() : EASEditor.Instance.AddTrack();
+                EASTrack pastedTrack = track != null && track.ParentTrackGroup != null ? track.ParentTrackGroup.AddTrack() : EASEditor.Instance.AddTrack();
 
                 JArray eventsJArray = JArray.Parse(valueJSON);
                 JToken[] events = eventsJArray.ToArray();
@@ -895,7 +932,7 @@ namespace EAS
             }
             else
             {
-                EASBaseTrack pastedTrack = jsonType == typeof(EASTrack) ? trackGroup.AddTrack() : EASEditor.Instance.AddTrackGroup();
+                EASBaseTrack pastedTrack = trackGroup != null && jsonType == typeof(EASTrack) ? trackGroup.AddTrack() : EASEditor.Instance.AddTrackGroup();
 
                 JArray eventsJArray = JArray.Parse(valueJSON);
                 JToken[] events = eventsJArray.ToArray();
@@ -904,6 +941,31 @@ namespace EAS
                 {
                     OnPaste(pastedTrack, events[i].ToString());
                 }
+            }
+        }
+
+        public static void ImportEASAnimationData()
+        {
+            string filePath = EditorUtility.OpenFilePanel("Import EASAnimationData", "", "EASjson");
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                if (EditorUtility.DisplayDialog("Import EAS Animation", "By continuing with the import, you will overwrite the current EAS Animation", "Import", "Cancel"))
+                {
+                    EASAnimationData currentAnimationData = EASEditor.Instance.GetAnimationData();
+                    currentAnimationData.TracksAndGroups.Clear();
+
+                    OnPaste(currentAnimationData, File.ReadAllText(filePath));
+                }
+            }
+        }
+
+        public static void ExportEASAnimationData()
+        {
+            string path = EditorUtility.SaveFilePanel("Export EASAnimationData", "", EASEditor.Instance.SelectedAnimationName + ".EASjson", "EASjson");
+
+            if (!string.IsNullOrEmpty(path))
+            {
+                File.WriteAllText(path, OnCopyInternal(EASEditor.Instance.GetAnimationData()));
             }
         }
     }

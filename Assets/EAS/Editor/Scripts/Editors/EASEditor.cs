@@ -314,6 +314,11 @@ namespace EAS
             }
         }
 
+        public EASAnimationData GetAnimationData()
+        {
+            return Controller.Data.GetAnimationData(SelectedAnimationName);
+        }
+
         public string[] GetAnimationNames()
         {
             return Controller.GetAnimationNames();

@@ -39,7 +39,7 @@ namespace EAS
             return wasRemoved;
         }
 
-        protected EASAnimationData GetAnimationData(string animationName)
+        public EASAnimationData GetAnimationData(string animationName)
         {
             int animationNameHash = Animator.StringToHash(animationName);
             for (int i = 0; i < m_AnimationsData.Count; ++i)

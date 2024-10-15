@@ -17,10 +17,9 @@ MonoBehaviour:
     m_Name: Galop
     m_NameHash: 1556535090
     m_TracksAndGroups:
-    - rid: 2056542560040779792
-    - rid: 2056542560040779793
-    - rid: 2056542560040779801
-    - rid: 2056542560040779809
+    - rid: 470105339365687456
+    - rid: 470105339365687457
+    - rid: 470105339365687458
   - m_ID: -1090012126
     m_Name: Galop_WindUp
     m_NameHash: 436167999
@@ -36,66 +35,56 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
-    - rid: 2056542050315141123
-      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
-      data:
-        m_ID: -998548189
-        m_Name: Play Animation
-        m_Controller: {fileID: 0}
-        m_ParentTrack:
-          rid: 2056542560040779793
-        m_StartFrame: 0
-        m_Duration: 16
-        m_Owner: {fileID: 0}
-        m_Animator:
-          m_Path: Horns
-          m_Instance: {fileID: 0}
-        m_AnimationName: Galop_Male
-        m_AnimationHash: 1272229344
-        m_SyncWithAnimation: 1
-    - rid: 2056542560040779792
+    - rid: 470105339365687456
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -1905830539
+        m_ID: 1664065297
         m_Name: Track
         m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
         m_Events:
-        - rid: 2056542560040779802
-        - rid: 2056542560040779803
-        - rid: 2056542560040779807
-        - rid: 2056542560040779808
-    - rid: 2056542560040779793
+        - rid: 470105339365687459
+        - rid: 470105339365687460
+        - rid: 470105339365687461
+        - rid: 470105339365687462
+    - rid: 470105339365687457
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 1557633498
+        m_ID: -1907665483
         m_Name: Track
         m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
           rid: -2
         m_Events:
-        - rid: 2056542050315141123
-    - rid: 2056542560040779801
-      type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
+        - rid: 470105339365687463
+    - rid: 470105339365687458
+      type: {class: EASTrackGroup, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -395665963
-        m_Name: Track
+        m_ID: -1261533779
+        m_Name: Track Group
         m_Muted: 0
         m_Locked: 0
-        m_ParentTrackGroup:
-          rid: -2
-        m_Events: []
-    - rid: 2056542560040779802
+        m_Collapsed: 0
+        m_Tracks:
+        - m_ID: 378067315
+          m_Name: Track
+          m_Muted: 0
+          m_Locked: 0
+          m_ParentTrackGroup:
+            rid: 470105339365687458
+          m_Events:
+          - rid: 470105339365687464
+    - rid: 470105339365687459
       type: {class: EASAdvancedSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 117660672
+        m_ID: -269041681
         m_Name: Galop SFX
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2056542560040779792
+          rid: 470105339365687456
         m_StartFrame: 0
         m_Duration: 3
         m_Owner: {fileID: 0}
@@ -123,14 +112,14 @@ MonoBehaviour:
         m_Loop: 0
         m_Volume: {x: 0.8, y: 1}
         m_Pitch: {x: 0.8, y: 1.5}
-    - rid: 2056542560040779803
+    - rid: 470105339365687460
       type: {class: EASAdvancedSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -2119178232
+        m_ID: 1487747259
         m_Name: Galop SFX
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2056542560040779792
+          rid: 470105339365687456
         m_StartFrame: 3
         m_Duration: 3
         m_Owner: {fileID: 0}
@@ -158,14 +147,14 @@ MonoBehaviour:
         m_Loop: 0
         m_Volume: {x: 0.8, y: 1}
         m_Pitch: {x: 0.8, y: 1.5}
-    - rid: 2056542560040779807
+    - rid: 470105339365687461
       type: {class: EASAdvancedSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: 110071993
+        m_ID: -591756720
         m_Name: Galop SFX
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2056542560040779792
+          rid: 470105339365687456
         m_StartFrame: 6
         m_Duration: 3
         m_Owner: {fileID: 0}
@@ -193,14 +182,14 @@ MonoBehaviour:
         m_Loop: 0
         m_Volume: {x: 0.8, y: 1}
         m_Pitch: {x: 0.8, y: 1.5}
-    - rid: 2056542560040779808
+    - rid: 470105339365687462
       type: {class: EASAdvancedSoundFXEvent, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -1001724403
+        m_ID: 1535426483
         m_Name: Galop SFX
         m_Controller: {fileID: 0}
         m_ParentTrack:
-          rid: 2056542560040779792
+          rid: 470105339365687456
         m_StartFrame: 9
         m_Duration: 3
         m_Owner: {fileID: 0}
@@ -228,16 +217,51 @@ MonoBehaviour:
         m_Loop: 0
         m_Volume: {x: 0.8, y: 1}
         m_Pitch: {x: 0.8, y: 1.5}
-    - rid: 2056542560040779809
+    - rid: 470105339365687463
+      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: -1234496598
+        m_Name: Play Animation
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 470105339365687457
+        m_StartFrame: 0
+        m_Duration: 16
+        m_Owner: {fileID: 0}
+        m_Animator:
+          m_Path: Horns
+          m_Instance: {fileID: 0}
+        m_AnimationName: Galop_Male
+        m_AnimationHash: 1272229344
+        m_SyncWithAnimation: 1
+    - rid: 470105339365687464
+      type: {class: EASPlayAnimationEvent, ns: EAS, asm: Assembly-CSharp}
+      data:
+        m_ID: 1661099063
+        m_Name: Play Animation
+        m_Controller: {fileID: 0}
+        m_ParentTrack:
+          rid: 470105339365687465
+        m_StartFrame: 5
+        m_Duration: 7
+        m_Owner: {fileID: 0}
+        m_Animator:
+          m_Path: Horns
+          m_Instance: {fileID: 0}
+        m_AnimationName: Galop_Male
+        m_AnimationHash: 1272229344
+        m_SyncWithAnimation: 1
+    - rid: 470105339365687465
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
-        m_ID: -1822608686
+        m_ID: 378067315
         m_Name: Track
         m_Muted: 0
         m_Locked: 0
         m_ParentTrackGroup:
-          rid: -2
-        m_Events: []
+          rid: 470105339365687458
+        m_Events:
+        - rid: 470105339365687464
     - rid: 2068510770221809698
       type: {class: EASTrack, ns: EAS, asm: Assembly-CSharp}
       data:
