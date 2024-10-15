@@ -731,6 +731,36 @@ namespace EAS
             }
         }
 
+        public static bool CanDuplicate(IEASSerializable serializable, int trackLength)
+        {
+            if (serializable is EASBaseEvent)
+            {
+                EASBaseEvent baseEvent = serializable as EASBaseEvent;
+                return HasSpaceForNewEvents(baseEvent.ParentTrack, trackLength);
+            }
+
+            return true;
+        }
+
+        public static void OnDuplicate(IEASSerializable serializable)
+        {
+            OnCopy(serializable);
+            if (serializable is EASBaseEvent)
+            {
+                EASBaseEvent baseEvent = serializable as EASBaseEvent;
+                OnPaste(baseEvent.ParentTrack);
+            }
+            else if (serializable is EASTrack)
+            {
+                EASTrack track = serializable as EASTrack;
+                OnPaste(track.ParentTrackGroup != null ? track.ParentTrackGroup : track);
+            }
+            else if (serializable is EASTrackGroup)
+            {
+                OnPaste(serializable);
+            }
+        }
+
         protected static JObject ConvertToJSON(IEASSerializable serializable, bool copyStartFrameAndDuration)
         {
             JObject outputJSON = new JObject();
@@ -818,7 +848,7 @@ namespace EAS
             }
             else if (jsonType == typeof(EASTrack))
             {
-                EASTrack pastedTrack = EASEditor.Instance.AddTrack();
+                EASTrack pastedTrack = track.ParentTrackGroup != null ? track.ParentTrackGroup.AddTrack() : EASEditor.Instance.AddTrack();
 
                 JArray eventsJArray = JArray.Parse(valueJSON);
                 JToken[] events = eventsJArray.ToArray();
@@ -863,9 +893,9 @@ namespace EAS
                     FromJSON(track, valueJSON, jsonType, allowCreationInAnyFrame);
                 }
             }
-            else 
+            else
             {
-                EASTrack pastedTrack = trackGroup.AddTrack();
+                EASBaseTrack pastedTrack = jsonType == typeof(EASTrack) ? trackGroup.AddTrack() : EASEditor.Instance.AddTrackGroup();
 
                 JArray eventsJArray = JArray.Parse(valueJSON);
                 JToken[] events = eventsJArray.ToArray();

@@ -562,8 +562,11 @@ namespace EAS
 
         public void ShowGenericEASSerializableOptionsMenu(IEASSerializable serializable, GenericMenu menu)
         {
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent("Copy"), true, () => { EASEditorUtils.OnCopy(serializable); });
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent("Paste"), EASEditorUtils.CanPaste(serializable, GetCurrentAnimationFrames()), () => { EASEditorUtils.OnPaste(serializable); });
+            int currentAnimationFrames = GetCurrentAnimationFrames();
+
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent("Copy %C"), true, () => { EASEditorUtils.OnCopy(serializable); });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent("Paste %V"), EASEditorUtils.CanPaste(serializable, currentAnimationFrames), () => { EASEditorUtils.OnPaste(serializable); });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent("Duplicate %D"), EASEditorUtils.CanDuplicate(serializable, currentAnimationFrames), () => { EASEditorUtils.OnDuplicate(serializable); });
         }
 
         public void ShowTrackGroupOptionsMenu(EASTrackGroup trackGroup)
@@ -571,7 +574,6 @@ namespace EAS
             GenericMenu trackOptionsMenu = new GenericMenu();
 
             ShowGenericEASSerializableOptionsMenu(trackGroup, trackOptionsMenu);
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Duplicate"), false, () => { });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !trackGroup.Locked, () => { RemoveTrackOrGroup(trackGroup); });
             trackOptionsMenu.AddSeparator("");
             trackOptionsMenu.AddItem(new GUIContent($"{(trackGroup.Locked ? "Unl" : "L")}ock _L"), false, () => { trackGroup.Locked = !trackGroup.Locked; });
@@ -588,7 +590,6 @@ namespace EAS
             GenericMenu trackOptionsMenu = new GenericMenu();
 
             ShowGenericEASSerializableOptionsMenu(track, trackOptionsMenu);
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Duplicate"), false, () => { });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !track.Locked && !track.ParentTrackGroupLocked, () => { RemoveTrackOrGroup(track); });
             trackOptionsMenu.AddSeparator("");
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Locked ? "Unl" : "L")}ock _L"), !track.ParentTrackGroupLocked, () => { track.Locked = !track.Locked; });
@@ -638,7 +639,6 @@ namespace EAS
             GenericMenu eventOptionsMenu = new GenericMenu();
 
             ShowGenericEASSerializableOptionsMenu(baseEvent, eventOptionsMenu);
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Duplicate"), false, () => { });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Delete"), true, () => { RemoveEvent(baseEvent); });
 
             eventOptionsMenu.ShowAsContext();
