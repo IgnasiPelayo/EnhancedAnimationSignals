@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using Unity.Plastic.Newtonsoft.Json.Linq;
+using static PlasticPipe.Server.MonitorStats;
 
 namespace EAS
 {
@@ -605,14 +606,14 @@ namespace EAS
             return freeSpaces;
         }
 
-        public static List<FieldInfo> GetFields(System.Type type)
+        public static List<FieldInfo> GetFields(System.Type type, params string[] additionalFields)
         {
             FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             List<FieldInfo> inspectorFields = new List<FieldInfo>();
 
             for (int i = 0; i < fields.Length; ++i)
             {
-                if (IsInspectorField(fields[i]))
+                if (IsInspectorField(fields[i]) || additionalFields.Contains(fields[i].Name))
                 {
                     inspectorFields.Add(fields[i]);
                 }
@@ -654,7 +655,7 @@ namespace EAS
 
         public static void OnCopy(IEASSerializable serializable)
         {
-            string json = ConvertToJSON(serializable);
+            string json = ConvertToJSON(serializable, copyStartFrameAndDuration: false).ToString();
 
             if (!string.IsNullOrEmpty(json))
             {
@@ -662,7 +663,7 @@ namespace EAS
             }
         }
 
-        public static bool CanPaste(IEASSerializable serializable)
+        public static bool CanPaste(IEASSerializable serializable, int trackLength)
         {
             if (!string.IsNullOrEmpty(GUIUtility.systemCopyBuffer))
             {
@@ -677,7 +678,21 @@ namespace EAS
 
                         if (assemblyToken != null && typeToken != null)
                         {
-                            return true;
+                            Assembly assembly = Assembly.Load(assemblyToken.Value<string>());
+                            System.Type type = assembly.GetType(typeToken.Value<string>());
+
+                            if (serializable is EASBaseEvent)
+                            {
+                                return type.IsSubclassOf(typeof(EASBaseEvent));
+                            }
+                            else if (serializable is EASTrack)
+                            {
+                                return (type.IsSubclassOf(typeof(EASBaseEvent)) && HasSpaceForNewEvents(serializable as EASTrack, trackLength)) || type.IsSubclassOf(typeof(EASBaseTrack));
+                            }
+                            else if (serializable is EASTrackGroup)
+                            {
+                                return type.IsSubclassOf(typeof(EASBaseEvent)) || type.IsSubclassOf(typeof(EASBaseTrack));
+                            }
                         }
                     }
                 }
@@ -687,20 +702,36 @@ namespace EAS
             return false;
         }
 
-        public static void OnPaste(IEASSerializable serializable)
+        public static void OnPaste(IEASSerializable serializable, string json = "", bool allowCreationInAnyFrame = true)
         {
-            JObject copyJSON = JObject.Parse(GUIUtility.systemCopyBuffer);
+            JObject copyJSON = JObject.Parse(string.IsNullOrEmpty(json) ? GUIUtility.systemCopyBuffer : json);
             Assembly assembly = Assembly.Load(copyJSON.SelectToken("Assembly").ToString());
             System.Type type = assembly.GetType(copyJSON.SelectToken("Type").ToString());
             string valueJSON = copyJSON.SelectToken("Value").ToString();
 
             if (serializable is EASBaseEvent)
             {
-                FromJSON(serializable as EASBaseEvent, valueJSON);
+                EASBaseEvent baseEvent = serializable as EASBaseEvent;
+                if (type.IsAssignableFrom(serializable.GetType()) || serializable.GetType().IsAssignableFrom(type))
+                {
+                    FromJSON(baseEvent, valueJSON);
+                }
+                else
+                {
+                    FromJSON(baseEvent.ParentTrack, valueJSON, type, allowCreationInAnyFrame);
+                }
+            }
+            else if (serializable is EASTrack)
+            {
+                FromJSON(serializable as EASTrack, valueJSON, type, allowCreationInAnyFrame);
+            }
+            else if (serializable is EASTrackGroup)
+            {
+                FromJSON(serializable as EASTrackGroup, valueJSON, type, allowCreationInAnyFrame);
             }
         }
 
-        protected static string ConvertToJSON(IEASSerializable serializable)
+        protected static JObject ConvertToJSON(IEASSerializable serializable, bool copyStartFrameAndDuration)
         {
             JObject outputJSON = new JObject();
             outputJSON.Add("Assembly", serializable.GetType().Assembly.FullName);
@@ -708,20 +739,35 @@ namespace EAS
 
             if (serializable is EASBaseEvent)
             {
-                outputJSON.Add("Value", ToJSON(serializable as EASBaseEvent));
+                outputJSON.Add("Value", ToJSON(serializable as EASBaseEvent, copyStartFrameAndDuration));
+            }
+            else if (serializable is EASTrack)
+            {
+                outputJSON.Add("Value", ToJSON(serializable as EASTrack));
+            }
+            else if (serializable is EASTrackGroup)
+            {
+                outputJSON.Add("Value", ToJSON(serializable as EASTrackGroup));
             }
 
-            return outputJSON.ToString();
+            return outputJSON;
         }
 
-        protected static JObject ToJSON(EASBaseEvent baseEvent)
+        protected static JToken ToJSON(EASBaseEvent baseEvent, bool copyStartFrameAndDuration)
         {
             string unityJSON = JsonUtility.ToJson(baseEvent);
             JObject unityJSONObject = JObject.Parse(unityJSON);
 
             JObject outputJSON = new JObject();
 
-            List<FieldInfo> baseEventFields = GetFields(baseEvent.GetType());
+            List<string> additionalFields = new List<string>{ "m_Name" };
+            if (copyStartFrameAndDuration)
+            {
+                additionalFields.Add("m_StartFrame");
+                additionalFields.Add("m_Duration");
+            }
+
+            List<FieldInfo> baseEventFields = GetFields(baseEvent.GetType(), additionalFields.ToArray());
             foreach (FieldInfo field in baseEventFields)
             {
                 JToken fieldNode = unityJSONObject.SelectToken(field.Name);
@@ -731,9 +777,104 @@ namespace EAS
             return outputJSON;
         }
 
+        protected static JToken ToJSON(EASTrack track)
+        {
+            JArray outputJSON = new JArray();
+
+            for (int i = 0; i < track.Events.Count; ++i)
+            {
+                outputJSON.Add(ConvertToJSON(track.Events[i], copyStartFrameAndDuration: true));
+            }
+
+            return outputJSON;
+        }
+
+        protected static JToken ToJSON(EASTrackGroup trackGroup)
+        {
+            JArray outputJSON = new JArray();
+
+            for (int i = 0; i < trackGroup.Tracks.Count; ++i)
+            {
+                outputJSON.Add(ConvertToJSON(trackGroup.Tracks[i], copyStartFrameAndDuration: true));
+            }
+
+            return outputJSON;
+        }
+
         protected static void FromJSON(EASBaseEvent baseEvent, string valueJSON)
         {
             JsonUtility.FromJsonOverwrite(valueJSON, baseEvent);
+        }
+
+        protected static void FromJSON(EASTrack track, string valueJSON, System.Type jsonType, bool allowCreationInAnyFrame)
+        {
+            if (jsonType.IsSubclassOf(typeof(EASBaseEvent)))
+            {
+                EASBaseEvent baseEvent = EASEditor.Instance.AddEvent(jsonType, track, allowCreationInAnyFrame);
+                if (baseEvent != null)
+                {
+                    FromJSON(baseEvent, valueJSON);
+                }
+            }
+            else if (jsonType == typeof(EASTrack))
+            {
+                EASTrack pastedTrack = EASEditor.Instance.AddTrack();
+
+                JArray eventsJArray = JArray.Parse(valueJSON);
+                JToken[] events = eventsJArray.ToArray();
+             
+                for (int i = 0; i < events.Length; ++i)
+                {
+                    OnPaste(pastedTrack, events[i].ToString());
+                }
+            }
+            else
+            {
+                EASTrackGroup pastedTrackGroup = EASEditor.Instance.AddTrackGroup();
+
+                JArray tracksJArray = JArray.Parse(valueJSON);
+                JToken[] tracks = tracksJArray.ToArray();
+
+                for (int i = 0; i < tracks.Length; ++i)
+                {
+                    OnPaste(pastedTrackGroup, tracks[i].ToString());
+                }
+            }
+        }
+
+        protected static void FromJSON(EASTrackGroup trackGroup, string valueJSON, System.Type jsonType, bool allowCreationInAnyFrame)
+        {
+            if (jsonType.IsSubclassOf(typeof(EASBaseEvent)))
+            {
+                bool eventCreated = false;
+                for (int i = 0; i < trackGroup.Tracks.Count && !eventCreated; ++i)
+                {
+                    EASBaseEvent baseEvent = EASEditor.Instance.AddEvent(jsonType, trackGroup.Tracks[i], allowCreationInAnyFrame);
+                    if (baseEvent != null)
+                    {
+                        FromJSON(baseEvent, valueJSON);
+                        eventCreated = true;
+                    }
+                }
+
+                if (!eventCreated)
+                {
+                    EASTrack track = trackGroup.AddTrack();
+                    FromJSON(track, valueJSON, jsonType, allowCreationInAnyFrame);
+                }
+            }
+            else 
+            {
+                EASTrack pastedTrack = trackGroup.AddTrack();
+
+                JArray eventsJArray = JArray.Parse(valueJSON);
+                JToken[] events = eventsJArray.ToArray();
+
+                for (int i = 0; i < events.Length; ++i)
+                {
+                    OnPaste(pastedTrack, events[i].ToString());
+                }
+            }
         }
     }
 }

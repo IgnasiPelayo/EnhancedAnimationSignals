@@ -430,7 +430,7 @@ namespace EAS
             EditorUtility.SetDirty(Controller.Data);
         }
 
-        public EASBaseEvent AddEvent(System.Type eventType, EASBaseTrack baseTrack)
+        public EASBaseEvent AddEvent(System.Type eventType, EASBaseTrack baseTrack, bool allowCreationInAnyFrame = false)
         {
             EASTrack track = null;
             if (baseTrack == null)
@@ -449,19 +449,31 @@ namespace EAS
             int trackLength = GetCurrentAnimationFrames();
 
             EASBaseEvent baseEvent = track.CreateEvent(eventType);
-            if (EASEditorUtils.HasSpaceForNewEvents(track, GetCurrentAnimationFrames()) && m_Timeline.IsMouseOnTimeline(m_MousePosition) ? 
-                    EASEditorUtils.SetStartFrameAndDurationForNewEvent(baseEvent, m_Timeline.GetSafeFrameAtPosition(m_MousePosition.x), trackLength) :
-                    EASEditorUtils.SetStartFrameAndDurationForNewEvent(baseEvent, trackLength))
+            if (EASEditorUtils.HasSpaceForNewEvents(track, GetCurrentAnimationFrames()))
             {
-                baseEvent = track.AddEvent(baseEvent);
+                bool canCreateEvent = false;
+                if (m_Timeline.IsMouseOnTimeline(m_MousePosition))
+                {
+                    canCreateEvent = EASEditorUtils.SetStartFrameAndDurationForNewEvent(baseEvent, m_Timeline.GetSafeFrameAtPosition(m_MousePosition.x), trackLength);
+                }
 
-                OnAnimationModified();
+                if (!canCreateEvent && allowCreationInAnyFrame)
+                {
+                    canCreateEvent = EASEditorUtils.SetStartFrameAndDurationForNewEvent(baseEvent, trackLength);
+                }
 
-                EditorUtility.SetDirty(Controller.Data);
+                if (canCreateEvent)
+                {
+                    baseEvent = track.AddEvent(baseEvent);
 
-                SelectObject(baseEvent, singleSelection: true);
+                    OnAnimationModified();
 
-                return baseEvent;
+                    EditorUtility.SetDirty(Controller.Data);
+
+                    SelectObject(baseEvent, singleSelection: true);
+
+                    return baseEvent;
+                }
             }
 
             return null;
@@ -548,12 +560,17 @@ namespace EAS
             return false;
         }
 
+        public void ShowGenericEASSerializableOptionsMenu(IEASSerializable serializable, GenericMenu menu)
+        {
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent("Copy"), true, () => { EASEditorUtils.OnCopy(serializable); });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(menu, new GUIContent("Paste"), EASEditorUtils.CanPaste(serializable, GetCurrentAnimationFrames()), () => { EASEditorUtils.OnPaste(serializable); });
+        }
+
         public void ShowTrackGroupOptionsMenu(EASTrackGroup trackGroup)
         {
             GenericMenu trackOptionsMenu = new GenericMenu();
 
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Copy"), false, () => { });
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Paste"), false, () => { });
+            ShowGenericEASSerializableOptionsMenu(trackGroup, trackOptionsMenu);
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Duplicate"), false, () => { });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !trackGroup.Locked, () => { RemoveTrackOrGroup(trackGroup); });
             trackOptionsMenu.AddSeparator("");
@@ -570,8 +587,7 @@ namespace EAS
         {
             GenericMenu trackOptionsMenu = new GenericMenu();
 
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Copy"), false, () => { });
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Paste"), false, () => { });
+            ShowGenericEASSerializableOptionsMenu(track, trackOptionsMenu);
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Duplicate"), false, () => { });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !track.Locked && !track.ParentTrackGroupLocked, () => { RemoveTrackOrGroup(track); });
             trackOptionsMenu.AddSeparator("");
@@ -621,8 +637,7 @@ namespace EAS
         {
             GenericMenu eventOptionsMenu = new GenericMenu();
 
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Copy"), true, () => { EASEditorUtils.OnCopy(baseEvent); });
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Paste"), EASEditorUtils.CanPaste(baseEvent), () => { EASEditorUtils.OnPaste(baseEvent); });
+            ShowGenericEASSerializableOptionsMenu(baseEvent, eventOptionsMenu);
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Duplicate"), false, () => { });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Delete"), true, () => { RemoveEvent(baseEvent); });
 
