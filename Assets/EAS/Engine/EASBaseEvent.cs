@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -87,6 +88,11 @@ namespace EAS
             return newEvent;
         }
 
+        public EASBaseEvent Duplicate()
+        {
+            return MemberwiseClone() as EASBaseEvent;
+        }
+
         public virtual bool CanPreviewInEditor(IEASEditorBridge editorBridge) => true;
 
         public virtual void OnStartEditor(int currentFrame, IEASEditorBridge editorBridge) { }
@@ -125,7 +131,6 @@ namespace EAS
                 }
             }
         }
-
 #endif // UNITY_EDITOR
     }
 

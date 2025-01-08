@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using Unity.Plastic.Newtonsoft.Json.Linq;
 using static PlasticPipe.Server.MonitorStats;
 using System.IO;
+using System;
+using System.Runtime.Serialization;
 
 namespace EAS
 {
@@ -654,9 +656,24 @@ namespace EAS
             return GetDepthLevelOfFieldInfo(initialType.BaseType, targetType) + 1;
         }
 
-        public static void OnCopy(IEASSerializable serializable)
+        protected static IEASSerializable GetSerializableFromID(int serializableID)
         {
-            string json = OnCopyInternal(serializable);
+            List<IEASSerializable> tracksAndGroups = EASEditor.Instance.GetTracksAndGroups();
+            foreach (IEASSerializable trackOrGroup in tracksAndGroups)
+            {
+                IEASSerializable serializableFound = (trackOrGroup as EASID).GetSerializableFromID(serializableID);
+                if (serializableFound != null)
+                {
+                    return serializableFound;
+                }
+            }
+
+            return null;
+        }
+
+        public static void OnCopy(params IEASSerializable[] serializables)
+        {
+            string json = OnCopyInternal(serializables);
 
             if (!string.IsNullOrEmpty(json))
             {
@@ -664,9 +681,111 @@ namespace EAS
             }
         }
 
-        protected static string OnCopyInternal(IEASSerializable serializable)
+        protected static string OnCopyInternal(params IEASSerializable[] serializables)
         {
-            return ConvertToJSON(serializable, copyStartFrameAndDuration: false).ToString();
+            if (serializables.Length == 1)
+            {
+                return ConvertToJSON(serializables[0], copyStartFrameAndDuration: false).ToString();
+            }
+
+            if (serializables.Length > 1)
+            {
+                Dictionary<int, List<IEASSerializable>> tracksToCopy = new Dictionary<int, List<IEASSerializable>>();
+
+                foreach (IEASSerializable serializable in serializables)
+                {
+                    if (serializable is EASBaseEvent)
+                    {
+                        EASBaseEvent baseEvent = serializable as EASBaseEvent;
+                        if (baseEvent.ParentTrack.ParentTrackGroup == null || !tracksToCopy.ContainsKey(GetSerializableID(baseEvent.ParentTrack.ParentTrackGroup)))
+                        {
+                            int serializableID = GetSerializableID(baseEvent.ParentTrack);
+                            if (tracksToCopy.ContainsKey(GetSerializableID(baseEvent.ParentTrack)))
+                            {
+                                if (tracksToCopy[serializableID].Count != 0)
+                                {
+                                    tracksToCopy[serializableID].Add(baseEvent);
+                                }
+                            }
+                            else
+                            {
+                                tracksToCopy.Add(serializableID, new List<IEASSerializable>() { baseEvent });
+                            }
+                        }
+                    }
+                    else if (serializable is EASTrack)
+                    {
+                        EASTrack track = serializable as EASTrack;
+                        if (track.ParentTrackGroup == null || !tracksToCopy.ContainsKey(GetSerializableID(track.ParentTrackGroup)))
+                        {
+                            tracksToCopy[GetSerializableID(track)] = new List<IEASSerializable>();
+                        }
+                    }
+                    else if (serializable is EASTrackGroup)
+                    {
+                        EASTrackGroup trackGroup = serializable as EASTrackGroup;
+                        for (int i = 0; i < trackGroup.Tracks.Count; ++i)
+                        {
+                            int serializableID = GetSerializableID(trackGroup.Tracks[i]);
+                            if (tracksToCopy.ContainsKey(serializableID))
+                            {
+                                tracksToCopy.Remove(serializableID);
+                            }
+                        }
+
+                        tracksToCopy.Add(GetSerializableID(trackGroup), new List<IEASSerializable>());
+                    }
+                }
+
+                List<EASBaseTrack> validTracks = new List<EASBaseTrack>();
+                foreach (KeyValuePair<int, List<IEASSerializable>> trackToCopy in tracksToCopy)
+                {
+                    IEASSerializable serializable = GetSerializableFromID(trackToCopy.Key);
+                    if (serializable != null)
+                    {
+                        if (serializable is EASTrack)
+                        {
+                            if (trackToCopy.Value.Count != 0)
+                            {
+                                EASTrack newTrack = new EASTrack();
+                                for (int i = 0; i < trackToCopy.Value.Count; ++i)
+                                {
+                                    EASBaseEvent baseEventToCopy = trackToCopy.Value[i] as EASBaseEvent;
+                                    newTrack.AddEvent(baseEventToCopy.Duplicate());
+                                }
+
+                                validTracks.Add(newTrack);
+                            }
+                            else
+                            {
+                                validTracks.Add(serializable as EASTrack);
+                            }
+                        }
+                        else if (serializable is EASTrackGroup)
+                        {
+                            validTracks.Add(serializable as EASTrackGroup);
+                        }
+                    }
+                }
+
+                if (validTracks.Count == 1)
+                {
+                    return ConvertToJSON(validTracks[0], copyStartFrameAndDuration: true).ToString();
+                }
+
+                JObject outputJSON = new JObject();
+                JArray serializablesJSON = new JArray();
+
+                for (int i = 0; i < validTracks.Count; ++i)
+                {
+                    serializablesJSON.Add(ConvertToJSON(validTracks[i], copyStartFrameAndDuration: true));
+                }
+
+                outputJSON.Add("Value", serializablesJSON);
+                return outputJSON.ToString();
+            }
+
+            return string.Empty;
         }
 
         public static bool CanPaste(IEASSerializable serializable, int trackLength)
@@ -700,6 +819,12 @@ namespace EAS
                                 return type.IsSubclassOf(typeof(EASBaseEvent)) || type.IsSubclassOf(typeof(EASBaseTrack));
                             }
                         }
+                        else
+                        {
+                            JToken valuesToken = copyBufferJSON.SelectToken("Value");
+
+                            return valuesToken != null;
+                        }
                     }
                 }
                 catch { }
@@ -708,37 +833,98 @@ namespace EAS
             return false;
         }
 
+        protected class EASPasteInformation
+        {
+            [SerializeField]
+            protected Assembly m_Assembly;
+            public Assembly Assembly => m_Assembly;
+
+            [SerializeField]
+            protected System.Type m_Type;
+            public System.Type Type => m_Type;
+
+            [SerializeField]
+            protected string m_ValueJSON;
+            public string ValueJSON => m_ValueJSON;
+
+            public EASPasteInformation(string json)
+            {
+                JObject copyJSON = JObject.Parse(string.IsNullOrEmpty(json) ? GUIUtility.systemCopyBuffer : json);
+
+                JToken assemblyToken = copyJSON.SelectToken("Assembly");
+                JToken typeToken = copyJSON.SelectToken("Type");
+                JToken valueToken = copyJSON.SelectToken("Value");
+
+                if (assemblyToken != null && typeToken != null)
+                {
+                    m_Assembly = Assembly.Load(assemblyToken.ToString());
+                    m_Type = m_Assembly.GetType(typeToken.ToString());
+                }
+
+                m_ValueJSON = valueToken.ToString();
+            }
+        }
+
         public static void OnPaste(IEASSerializable serializable, string json = "", bool allowCreationInAnyFrame = true)
         {
-            JObject copyJSON = JObject.Parse(string.IsNullOrEmpty(json) ? GUIUtility.systemCopyBuffer : json);
-            Assembly assembly = Assembly.Load(copyJSON.SelectToken("Assembly").ToString());
-            System.Type type = assembly.GetType(copyJSON.SelectToken("Type").ToString());
-            string valueJSON = copyJSON.SelectToken("Value").ToString();
+            EASPasteInformation pasteInformation = new EASPasteInformation(json);
 
             if (serializable is EASAnimationData)
             {
-                FromJSON(serializable as EASAnimationData, valueJSON);
+                FromJSON(serializable as EASAnimationData, pasteInformation.ValueJSON);
             }
             else if (serializable is EASBaseEvent)
             {
                 EASBaseEvent baseEvent = serializable as EASBaseEvent;
-                if (type.IsAssignableFrom(serializable.GetType()) || serializable.GetType().IsAssignableFrom(type))
+                if (pasteInformation.Type.IsAssignableFrom(serializable.GetType()) || serializable.GetType().IsAssignableFrom(pasteInformation.Type))
                 {
-                    FromJSON(baseEvent, valueJSON);
+                    FromJSON(baseEvent, pasteInformation.ValueJSON);
                 }
                 else
                 {
-                    FromJSON(baseEvent.ParentTrack, valueJSON, type, allowCreationInAnyFrame);
+                    FromJSON(baseEvent.ParentTrack, pasteInformation.ValueJSON, pasteInformation.Type, allowCreationInAnyFrame);
                 }
             }
-            else if (serializable is EASTrack || (serializable == null && type == typeof(EASTrack)))
+            else if (serializable is EASTrack || (serializable == null && pasteInformation.Type == typeof(EASTrack)))
             {
-                FromJSON(serializable as EASTrack, valueJSON, type, allowCreationInAnyFrame);
+                FromJSON(serializable as EASTrack, pasteInformation.ValueJSON, pasteInformation.Type, allowCreationInAnyFrame);
             }
-            else if (serializable is EASTrackGroup || (serializable == null && type == typeof(EASTrackGroup)))
+            else if (serializable is EASTrackGroup || (serializable == null && pasteInformation.Type == typeof(EASTrackGroup)))
             {
-                FromJSON(serializable as EASTrackGroup, valueJSON, type, allowCreationInAnyFrame);
+                FromJSON(serializable as EASTrackGroup, pasteInformation.ValueJSON, pasteInformation.Type, allowCreationInAnyFrame);
             }
+        }
+
+        public static void OnPaste(string json = "", bool allowCreationInAnyFrame = true)
+        {
+            EASPasteInformation pasteInformation = new EASPasteInformation(json);
+
+            /*
+            if (serializable is EASAnimationData)
+            {
+                FromJSON(serializable as EASAnimationData, pasteInformation.ValueJSON);
+            }
+            else if (serializable is EASBaseEvent)
+            {
+                EASBaseEvent baseEvent = serializable as EASBaseEvent;
+                if (pasteInformation.Type.IsAssignableFrom(serializable.GetType()) || serializable.GetType().IsAssignableFrom(pasteInformation.Type))
+                {
+                    FromJSON(baseEvent, pasteInformation.ValueJSON);
+                }
+                else
+                {
+                    FromJSON(baseEvent.ParentTrack, pasteInformation.ValueJSON, pasteInformation.Type, allowCreationInAnyFrame);
+                }
+            }
+            else if (serializable is EASTrack || (serializable == null && pasteInformation.Type == typeof(EASTrack)))
+            {
+                FromJSON(serializable as EASTrack, pasteInformation.ValueJSON, pasteInformation.Type, allowCreationInAnyFrame);
+            }
+            else if (serializable is EASTrackGroup || (serializable == null && pasteInformation.Type == typeof(EASTrackGroup)))
+            {
+                FromJSON(serializable as EASTrackGroup, pasteInformation.ValueJSON, pasteInformation.Type, allowCreationInAnyFrame);
+            }
+            */
         }
 
         public static bool CanDuplicate(IEASSerializable serializable, int trackLength)
@@ -864,7 +1050,7 @@ namespace EAS
 
             for (int i = 0; i < tracksAndTrackGroups.Length; ++i)
             {
-                OnPaste(null, tracksAndTrackGroups[i].ToString());
+                OnPaste(tracksAndTrackGroups[i].ToString());
             }
         }
 

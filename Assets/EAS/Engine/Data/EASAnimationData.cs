@@ -2,6 +2,7 @@ using UnityEngine;
 using CustomAttributes;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.PackageManager;
 
 namespace EAS
 {
@@ -176,6 +177,24 @@ namespace EAS
             m_Events = m_Events.OrderBy(e => (e as EASBaseEvent).StartFrame).ToList();
 #endif // UNITY_EDITOR
         }
+
+        public override IEASSerializable GetSerializableFromID(int serializableID)
+        {
+            if (ID == serializableID)
+            {
+                return this;
+            }    
+
+            foreach (EASBaseEvent baseEvent in Events)
+            {
+                if (baseEvent.ID == serializableID)
+                {
+                    return baseEvent;
+                }
+            }
+
+            return null;
+        }
     }
 
     [System.Serializable]
@@ -228,6 +247,25 @@ namespace EAS
         public bool RemoveTrack(EASTrack track)
         {
             return m_Tracks.Remove(track);
+        }
+
+        public override IEASSerializable GetSerializableFromID(int serializableID)
+        {
+            if (ID == serializableID)
+            {
+                return this;
+            }
+
+            foreach (EASTrack track in Tracks)
+            {
+                IEASSerializable serializable = track.GetSerializableFromID(serializableID);
+                if (serializable != null)
+                {
+                    return serializable;
+                }
+            }
+
+            return null;
         }
     }
 }

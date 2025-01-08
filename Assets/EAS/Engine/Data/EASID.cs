@@ -23,5 +23,10 @@ namespace EAS
         public virtual string DefaultName { get; }
 
         public static int GenerateID() => System.Guid.NewGuid().GetHashCode();
+
+        public virtual IEASSerializable GetSerializableFromID(int serializableID)
+        {
+            return null;
+        }
     }
 }

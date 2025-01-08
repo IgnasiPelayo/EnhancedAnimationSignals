@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using ExtendedGUI;
+using static PlasticPipe.Server.MonitorStats;
 
 namespace EAS
 {
@@ -151,6 +152,7 @@ namespace EAS
             }
 
             RenderOnGUI();
+            HandleInput();
         }
 
         protected void OnDisable()
@@ -234,6 +236,36 @@ namespace EAS
             m_Hierarchy.OnGUI(hierarchyRect);
             m_Timeline.OnGUI(timelineRect);
             m_Controls.OnGUI(toolbarRect);
+        }
+
+        protected void HandleInput()
+        {
+            if (Event.current.type == EventType.KeyDown)
+            {
+                bool hasControlCommandModifier = (Event.current.modifiers == EventModifiers.Command || Event.current.modifiers == EventModifiers.Control);
+
+                if (Event.current.keyCode == KeyCode.C && hasControlCommandModifier)
+                {
+                    EASEditorUtils.OnCopy(m_SelectedObjects.ToArray());
+                }
+                else if (Event.current.keyCode == KeyCode.V && hasControlCommandModifier)
+                {
+                    if (EASEditorUtils.CanPaste(null, GetCurrentAnimationFrames()))
+                    {
+                        EASEditorUtils.OnPaste();
+                    }
+                }
+                else if (Event.current.keyCode == KeyCode.Delete)
+                {
+                    RemoveSelected<EASBaseEvent>();
+                    RemoveSelected<EASTrack>();
+                    RemoveSelected<EASTrackGroup>();
+
+                    OnAnimationModified();
+
+                    EditorUtility.SetDirty(Controller.Data);
+                }
+            }
         }
 
         protected void OnSelectionChange()
@@ -380,9 +412,67 @@ namespace EAS
             return track;
         }
 
+        public bool CanRemove(IEASSerializable serializable)
+        {
+            if (serializable is EASBaseEvent)
+            {
+                EASBaseEvent baseEvent = serializable as EASBaseEvent;
+                return !baseEvent.ParentTrack.Locked && !baseEvent.ParentTrack.ParentTrackGroupLocked;
+            }
+
+            if (serializable is EASTrack)
+            {
+                EASTrack track = serializable as EASTrack;
+                return !track.Locked && !track.ParentTrackGroupLocked;
+            }
+
+            if (serializable is EASTrackGroup)
+            {
+                EASTrackGroup trackGroup = serializable as EASTrackGroup;
+                return !trackGroup.Locked;
+            }
+
+            return false;
+        }
+
+        public bool FastRemove(IEASSerializable serializable)
+        {
+            if (serializable is EASBaseEvent)
+            {
+                EASBaseEvent baseEvent = serializable as EASBaseEvent;
+                if (!Application.isPlaying)
+                {
+                    baseEvent.OnDeleteEvent(this);
+                }
+
+                return baseEvent.ParentTrack.Events.Remove(baseEvent);
+            }
+
+            if (serializable is EASBaseTrack)
+            {
+                EASBaseTrack baseTrack = serializable as EASBaseTrack;
+                return Controller.Data.RemoveTrackOrGroup(SelectedAnimationName, baseTrack);
+            }
+
+            return false;
+        }
+
+        public void RemoveSelected<T>() where T : IEASSerializable
+        {
+            List<IEASSerializable> selectedObjects = GetSelected<T>();
+            for (int i = 0; i < selectedObjects.Count; ++i)
+            {
+                if (CanRemove(selectedObjects[i]))
+                {
+                    FastRemove(selectedObjects[i]);
+                    SelectObject(selectedObjects[i], singleSelection: false);
+                }
+            }
+        }
+
         public bool RemoveTrackOrGroup(IEASSerializable trackOrGroup)
         {
-            bool success = Controller.Data.RemoveTrackOrGroup(SelectedAnimationName, trackOrGroup);
+            bool success = FastRemove(trackOrGroup);
 
             OnAnimationModified();
 
@@ -398,12 +488,7 @@ namespace EAS
 
         public bool RemoveEvent(EASBaseEvent baseEvent)
         {
-            if (!Application.isPlaying)
-            {
-                baseEvent.OnDeleteEvent(this);
-            }
-
-            bool success = baseEvent.ParentTrack.Events.Remove(baseEvent);
+            bool success = FastRemove(baseEvent);
 
             OnAnimationModified();
 
@@ -579,7 +664,7 @@ namespace EAS
             GenericMenu trackOptionsMenu = new GenericMenu();
 
             ShowGenericEASSerializableOptionsMenu(trackGroup, trackOptionsMenu);
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !trackGroup.Locked, () => { RemoveTrackOrGroup(trackGroup); });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), CanRemove(trackGroup), () => { RemoveTrackOrGroup(trackGroup); });
             trackOptionsMenu.AddSeparator("");
             trackOptionsMenu.AddItem(new GUIContent($"{(trackGroup.Locked ? "Unl" : "L")}ock _L"), false, () => { trackGroup.Locked = !trackGroup.Locked; });
             trackOptionsMenu.AddItem(new GUIContent($"{(trackGroup.Muted ? "Unm" : "M")}ute _M"), false, () => { trackGroup.Muted = !trackGroup.Muted; });
@@ -595,7 +680,7 @@ namespace EAS
             GenericMenu trackOptionsMenu = new GenericMenu();
 
             ShowGenericEASSerializableOptionsMenu(track, trackOptionsMenu);
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), !track.Locked && !track.ParentTrackGroupLocked, () => { RemoveTrackOrGroup(track); });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent("Delete"), CanRemove(track), () => { RemoveTrackOrGroup(track); });
             trackOptionsMenu.AddSeparator("");
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Locked ? "Unl" : "L")}ock _L"), !track.ParentTrackGroupLocked, () => { track.Locked = !track.Locked; });
             ExtendedGUI.ExtendedGUI.GenericMenuAddItem(trackOptionsMenu, new GUIContent($"{(track.Muted ? "Unm" : "M")}ute _M"), !track.ParentTrackGroupMuted, () => { track.Muted = !track.Muted; });
@@ -644,7 +729,7 @@ namespace EAS
             GenericMenu eventOptionsMenu = new GenericMenu();
 
             ShowGenericEASSerializableOptionsMenu(baseEvent, eventOptionsMenu);
-            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Delete"), true, () => { RemoveEvent(baseEvent); });
+            ExtendedGUI.ExtendedGUI.GenericMenuAddItem(eventOptionsMenu, new GUIContent("Delete"), CanRemove(baseEvent), () => { RemoveEvent(baseEvent); });
 
             eventOptionsMenu.ShowAsContext();
         }
